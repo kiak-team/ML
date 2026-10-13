@@ -1,0 +1,20 @@
+<class 'dict'> 950
+keys sample [0, 1, 2]
+mon[0] type <class 'list'> len 20
+sample[0][:15] [0.0, -0.14, 0.14, -0.31, 0.31, -0.51, 0.51, 0.51, -0.75, -0.75, -0.75, -0.75, -0.75, -0.75, -0.75]
+instances per URL: min 20 max 20 total 19000
+[mon] n=19000 len: min=50 p25=1530 med=3309 p75=6378 p95=9963 max=9993
+   duration(s): med=26.0 p95=56.9 max=86.0; outgoing ratio med=0.090 p5=0.044 p95=0.178
+   len<50: 0, len==0: 0
+exact-zero entries (direction ambiguous): 19000
+monotonic timestamps: 19000 / 19000
+unmon_standard10.pkl <class 'list'> 10000
+  [0][:10] [0.0, -0.13, 0.13, -0.36, 0.83, -1.1, 1.1, -1.35, -1.35, 2.1]
+[unmon_standard10.pkl] n=10000 len: min=51 p25=1459 med=4193 p75=8234 p95=9973 max=9992
+   duration(s): med=18.9 p95=52.2 max=55.5; outgoing ratio med=0.079 p5=0.041 p95=0.231
+   len<50: 0, len==0: 0
+unmon_standard10_3000.pkl <class 'list'> 3000
+  [0][:10] [0.0, -0.13, 0.13, -0.36, 0.83, -1.1, 1.1, -1.35, -1.35, 2.1]
+[unmon_standard10_3000.pkl] n=3000 len: min=51 p25=1510 med=4208 p75=8238 p95=9974 max=9991
+   duration(s): med=18.8 p95=52.1 max=55.5; outgoing ratio med=0.079 p5=0.040 p95=0.223
+   len<50: 0, len==0: 0
