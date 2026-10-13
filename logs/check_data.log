@@ -1,0 +1,16 @@
+mon URLs: 950  samples per URL: min 20 max 20
+sites: 95  samples per site: min 200 max 200
+labels == notebook (i // 10): True
+[mon] n=19000
+  len>=10000: 0  9900-9999: 2209  50-59: 168  <50: 0
+  values=79587362 offgrid(0.01)=0 nan/inf=0 time-backward traces=0
+  IAT==0 pooled=93.33% per-trace median=92.30% mean=91.04%
+  first==+0.0: 19000  second cell incoming: 19000
+  load_data.convert != notebook: 0
+[unmon10] n=10000
+  len>=10000: 0  9900-9999: 1787  50-59: 136  <50: 0
+  values=47562088 offgrid(0.01)=0 nan/inf=0 time-backward traces=0
+  IAT==0 pooled=94.28% per-trace median=93.13% mean=90.66%
+  first==+0.0: 10000  second cell incoming: 10000
+  load_data.convert != notebook: 0
+mon+unmon pooled IAT0 = 93.69%
