@@ -5,6 +5,7 @@
   2  피처 정리 가설 검증 (약 30분, mlp 제외)
   3  추가 피처 가설 검증. features_extra.py를 먼저 실행해야 한다 (약 1시간)
   3b 3단계 후속: @cumul100 없이도 같은 수준인지 (약 10분)
+  4  앞부분 패턴을 더 늘리면 좋아지나. features_extra2.py를 먼저 실행해야 한다
 
 모든 평가는 train 내부 5-fold CV(experiment.py)다. test는 쓰지 않는다.
 판단 기준(실험 전에 정함): 기준 조합 대비 차이가 1%p(≈ fold 표준편차) 이내면 같은 수준으로 보고 피처가 적은 쪽을 고른다.
@@ -75,6 +76,22 @@ def stage3b():
                 go(spec, m, name)
 
 
+def stage4():
+    # 기준은 3b단계에서 고른 후보 86개(C). @early·@bseq 효과가 컸으므로 같은 방향으로 더 늘린다
+    C = B + ['@early', '@bseq']
+    sets = {
+        'S4 C': C,
+        'S4 C+bseqlong': C + ['@bseqlong'],
+        'S4 C+dir50': C + ['@dir50'],
+        'S4 C+dir': C + ['@dir'],
+        'S4 C+bseqlong+dir': C + ['@bseqlong', '@dir'],
+    }
+    for models in (['knn', 'et', 'rf'], ['svm'], ['lr']):
+        for name, spec in sets.items():
+            for m in models:
+                go(spec, m, name)
+
+
 if __name__ == '__main__':
-    {'1': stage1, '2': stage2, '3': stage3, '3b': stage3b}[sys.argv[1]]()
+    {'1': stage1, '2': stage2, '3': stage3, '3b': stage3b, '4': stage4}[sys.argv[1]]()
     print('DONE', flush=True)

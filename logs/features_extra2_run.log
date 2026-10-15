@@ -1,0 +1,4 @@
+mon 19000 rows, unmon 10000 rows, 171 extra features
+bursts per trace (mon): min 9 p10 67 median 308
+traces with >= 100 bursts: 16143 / 19000
+constant in mon: ['dir_001', 'dir_002', 'dir_003', 'dir_004', 'dir_005']

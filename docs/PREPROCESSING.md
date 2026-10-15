@@ -26,12 +26,15 @@ wf_project/
 │  ├─ feature_importance.py   ⑥ 랜덤 포레스트 피처 중요도 (sklearn 필요)
 │  ├─ experiment.py           ⑦ 피처·모델을 골라 직접 실험 (sklearn 필요)
 │  ├─ features_extra.py       ⑧ 추가 피처 150개 추출 (3단계 실험용)
+│  ├─ features_extra2.py      ⑧-2 추가 피처 2차 추출 (4단계 실험용)
 │  └─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
 │  ├─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
 │  ├─ features_extra_mon.csv  ⑧이 저장한 추가 피처 (19,000행 × site,url,inst + 150열)
-│  └─ features_extra_unmon.csv ⑧이 저장한 추가 피처 (10,000행 × 150열)
+│  ├─ features_extra_unmon.csv ⑧이 저장한 추가 피처 (10,000행 × 150열)
+│  ├─ features_extra2_mon.csv ⑧-2가 저장한 추가 피처 (19,000행 × site,url,inst + 171열)
+│  └─ features_extra2_unmon.csv ⑧-2가 저장한 추가 피처 (10,000행 × 171열)
 └─ logs/                      각 코드의 실행 출력
    ├─ check_data.log          ②의 출력
    ├─ explore.log             ③의 출력
@@ -39,7 +42,8 @@ wf_project/
    ├─ eval_nearest_centroid.log ⑤의 출력
    ├─ feature_importance.log  ⑥의 출력
    ├─ experiments.csv         ⑦의 실험 기록 (각자 로컬, git에 올리지 않음)
-   └─ stage1~3.log            ⑨의 단계별 결과
+   ├─ features_extra2_run.log ⑧-2의 출력
+   └─ stage1~4.log            ⑨의 단계별 결과
 ```
 
 ### ① `code/load_data.py`: 공용 데이터 로더 (**팀 전원이 이 파일로 데이터를 읽는다**)
@@ -114,6 +118,13 @@ r = run(['@order', 'n_total'], model='knn', n_neighbors=3)   # r['cv_mean'], r['
 ```
 python -I -X utf8 code/features_extra.py <pkl 폴더> features         # 약 1분
 python -I -X utf8 code/run_stages.py 3 | tee logs/stage3.log          # 약 1시간
+```
+
+⑧-2 `code/features_extra2.py`는 4단계용 추가 피처 171개(31~100번째 버스트 길이 70개, 처음 100셀의 방향값 100개, 기록의 버스트 수 1개)를 같은 방식으로 별도 CSV에 저장한다. ⑦에서 `@bseqlong @dir @dir50` 그룹으로 쓴다.
+
+```
+python -I -X utf8 code/features_extra2.py <pkl 폴더> features        # 약 1분
+python -I -X utf8 code/run_stages.py 4 | tee logs/stage4.log          # 약 30분
 ```
 
 ## 실행 방법
@@ -216,6 +227,7 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - **2026-10-15**: 랜덤 포레스트 피처 중요도 분석(⑥) 추가. `requirements.txt` 추가.
 - **2026-10-15**: 직접 실험용 `experiment.py`(⑦) 추가. 마지막 방문(inst 19)의 수집 상태가 다르다는 것을 확인했다.
 - **2026-10-15**: 단계별 피처 실험(⑧⑨, [EXPERIMENTS.md](EXPERIMENTS.md)) 추가. 2단계 결과로 상수 피처 3개 제거를 채택했다.
+- **2026-10-15**: 4단계 실험(⑧-2) 추가. 처음 50셀의 방향값(@dir50)을 채택해 후보 피처셋을 131개로 바꿨다. 31~100번째 버스트 길이(@bseqlong)는 기각했다.
 
 ## 다음에 할 일 (전처리 담당)
 
@@ -225,5 +237,6 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - [x] 피처 정리: 상수 피처(`in_burst_1~3`) 제거 채택. 길이 계열 축소와 시간 그룹 제거는 모델에 따라 손해라 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 2단계)
 - [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
 - [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
-- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
+- [x] 앞부분 패턴 확장 → `features_extra2.py`. @dir50 채택, @bseqlong 기각. 후보 피처셋 131개 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
+- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 5단계)
 - [ ] test 분할 유지 여부 결정 (inst 19 문제)
