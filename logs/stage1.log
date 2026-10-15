@@ -1,0 +1,9 @@
+RESULT	S1 baseline	nb	55	0.2460	0.0115	5s
+RESULT	S1 baseline	lr	55	0.5961	0.0062	111s
+RESULT	S1 baseline	dt	55	0.6925	0.0123	37s
+RESULT	S1 baseline	knn	55	0.7486	0.0072	2s
+RESULT	S1 baseline	rf	55	0.8792	0.0070	85s
+RESULT	S1 baseline	et	55	0.8770	0.0090	29s
+RESULT	S1 baseline	svm	55	0.8198	0.0084	212s
+RESULT	S1 baseline	mlp	55	0.7876	0.0122	721s
+DONE

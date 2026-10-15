@@ -1,0 +1,21 @@
+RESULT	S2 B: -const	lr	52	0.5965	0.0057	110s
+RESULT	S2 B: -const	knn	52	0.7486	0.0072	2s
+RESULT	S2 B: -const	rf	52	0.8788	0.0078	42s
+RESULT	S2 B: -const	et	52	0.8792	0.0080	11s
+RESULT	S2 B: -const	svm	52	0.8211	0.0088	164s
+RESULT	S2 C: -const -timing	lr	34	0.5052	0.0053	68s
+RESULT	S2 C: -const -timing	knn	34	0.7468	0.0114	1s
+RESULT	S2 C: -const -timing	rf	34	0.8710	0.0089	22s
+RESULT	S2 C: -const -timing	et	34	0.8698	0.0079	10s
+RESULT	S2 C: -const -timing	svm	34	0.7778	0.0106	40s
+RESULT	S2 D: -const length->n_total	lr	36	0.5734	0.0064	54s
+RESULT	S2 D: -const length->n_total	knn	36	0.7288	0.0089	1s
+RESULT	S2 D: -const length->n_total	rf	36	0.8674	0.0054	34s
+RESULT	S2 D: -const length->n_total	et	36	0.8662	0.0083	12s
+RESULT	S2 D: -const length->n_total	svm	36	0.8185	0.0095	79s
+RESULT	S2 E: -const -timing length->n_total	lr	18	0.4697	0.0051	16s
+RESULT	S2 E: -const -timing length->n_total	knn	18	0.7198	0.0124	0s
+RESULT	S2 E: -const -timing length->n_total	rf	18	0.8612	0.0086	17s
+RESULT	S2 E: -const -timing length->n_total	et	18	0.8692	0.0095	9s
+RESULT	S2 E: -const -timing length->n_total	svm	18	0.7787	0.0127	32s
+DONE

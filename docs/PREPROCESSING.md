@@ -4,33 +4,42 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트의 **데이터 전처리** 작
 
 - 데이터 구조와 통계 → [DATA.md](DATA.md)
 - 피처 55개의 정의 → [FEATURES.md](FEATURES.md)
+- 피처 선택 실험의 단계별 기록 → [EXPERIMENTS.md](EXPERIMENTS.md)
 
 ## 폴더 구조와 파일별 역할
 
 ```
 wf_project/
 ├─ README.md                  프로젝트 전체 소개 (작성 예정)
-├─ requirements.txt           ⑥에 필요한 패키지 (numpy, pandas, scipy, scikit-learn)
+├─ requirements.txt           ⑥⑦에 필요한 패키지 (numpy, pandas, scipy, scikit-learn)
 ├─ docs/
 │  ├─ PREPROCESSING.md        ← 이 파일 (전처리 작업 정리)
 │  ├─ DATA.md                 데이터 설명 (구조, 통계, 품질 점검)
-│  └─ FEATURES.md             피처 55개 설명
+│  ├─ FEATURES.md             피처 55개 설명
+│  └─ EXPERIMENTS.md          피처 선택 실험 기록 (단계별 가설·결과·결정)
 ├─ code/
 │  ├─ load_data.py            ① 공용 데이터 로더
 │  ├─ check_data.py           ② 데이터 품질 점검
 │  ├─ explore.py              ③ 기본 통계 (길이·시간·송신 비율)
 │  ├─ features.py             ④ 피처 추출 + 피처 분석
 │  ├─ eval_nearest_centroid.py ⑤ 피처 유효성 간단 평가
-│  └─ feature_importance.py   ⑥ 랜덤 포레스트 피처 중요도 (sklearn 필요)
+│  ├─ feature_importance.py   ⑥ 랜덤 포레스트 피처 중요도 (sklearn 필요)
+│  ├─ experiment.py           ⑦ 피처·모델을 골라 직접 실험 (sklearn 필요)
+│  ├─ features_extra.py       ⑧ 추가 피처 150개 추출 (3단계 실험용)
+│  └─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
-│  └─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
+│  ├─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
+│  ├─ features_extra_mon.csv  ⑧이 저장한 추가 피처 (19,000행 × site,url,inst + 150열)
+│  └─ features_extra_unmon.csv ⑧이 저장한 추가 피처 (10,000행 × 150열)
 └─ logs/                      각 코드의 실행 출력
    ├─ check_data.log          ②의 출력
    ├─ explore.log             ③의 출력
    ├─ features_run.log        ④의 출력
    ├─ eval_nearest_centroid.log ⑤의 출력
-   └─ feature_importance.log  ⑥의 출력
+   ├─ feature_importance.log  ⑥의 출력
+   ├─ experiments.csv         ⑦의 실험 기록 (각자 로컬, git에 올리지 않음)
+   └─ stage1~3.log            ⑨의 단계별 결과
 ```
 
 ### ① `code/load_data.py`: 공용 데이터 로더 (**팀 전원이 이 파일로 데이터를 읽는다**)
@@ -73,6 +82,39 @@ X1, X2, y = ld.load_mon('C:/Users/user/Downloads')
 - **그룹 실험**: 그룹만 쓸 때 / 그룹을 뺄 때 정확도 (재학습)
 - **mon vs unmon**: open-world에서 어떤 피처가 mon과 unmon을 가르는가
 - test 결과를 보고 피처를 고르면 누수가 생긴다. 이 결과는 **방향을 잡는 탐색용**이고, 실제 선택은 train 내부 교차검증으로 한다.
+
+### ⑦ `code/experiment.py`: 피처·모델을 골라 직접 실험 (sklearn 필요)
+피처 조합과 모델을 바꿔 가며 정확도를 비교한다. **기본은 train 내부 5-fold 교차검증(CV)이고, test는 `--test`를 줄 때만 쓴다.** 피처를 고르는 동안에는 CV만 보고, 최종 조합이 정해지면 test를 한 번만 본다. test를 보면서 피처를 바꾸면 test에 우연히 맞는 조합을 고르게 된다.
+
+- **피처 지정**: 이름(`first30_out`), 그룹(`@all @count @timing @order @burst @cumul @length`), 제외(`-이름`, `-@그룹`)
+  - `@length`는 ⑥에서 한 묶음으로 나온 "기록 길이" 계열 17개다.
+- **모델**: 수업에서 다룬 모델 `lr nb svm dt rf et knn mlp`. 하이퍼파라미터는 `-p 키=값`
+- **전처리**: 트리 모델(dt, rf, et)은 그대로 쓴다. 나머지는 `sign(x)·log(1+|x|)` 후 표준화한다(기준은 학습 fold로만 계산). `--no-log`, `--no-scale`로 끌 수 있다.
+- **CV fold**: `inst % 5`
+- 실행할 때마다 `logs/experiments.csv`에 한 줄씩 쌓인다(`--note`로 메모 가능).
+
+```
+python -I -X utf8 code/experiment.py --list                          # 피처·그룹·모델 목록
+python -I -X utf8 code/experiment.py @all -@timing -m knn -p n_neighbors=3
+python -I -X utf8 code/experiment.py n_total frac_out first30_out -m svm -p C=10
+python -I -X utf8 code/experiment.py @all -m rf --test               # 최종 1회 평가
+```
+
+노트북에서는 다음처럼 쓴다.
+
+```python
+import sys; sys.path.insert(0, 'code')
+from experiment import run
+r = run(['@order', 'n_total'], model='knn', n_neighbors=3)   # r['cv_mean'], r['features']
+```
+
+### ⑧ `code/features_extra.py`, ⑨ `code/run_stages.py`: 단계별 피처 실험
+⑧은 원본 pkl에서 추가 피처 150개(앞부분 송신 수, 고정 위치 누적합, 버스트 순서, CUMUL식 보간 누적합)를 뽑아 별도 CSV로 저장한다. ④의 CSV는 그대로 둔다. ⑦은 이 CSV가 있으면 자동으로 붙여 `@early @cumulabs @bseq @cumul100 @extra` 그룹으로 쓸 수 있다. ⑨는 [EXPERIMENTS.md](EXPERIMENTS.md)의 단계별 실험을 그대로 다시 돌린다.
+
+```
+python -I -X utf8 code/features_extra.py <pkl 폴더> features         # 약 1분
+python -I -X utf8 code/run_stages.py 3 | tee logs/stage3.log          # 약 1시간
+```
 
 ## 실행 방법
 
@@ -145,6 +187,22 @@ python -I -X utf8 code/feature_importance.py .                  # 약 10~15분
 
 **mon vs unmon**: AUC 0.968. 1위는 `first30_out`이고, `duration`, `t_25pct` 같은 시간 피처가 상위권이다. mon과 unmon의 수집 환경 차이를 배운 것일 수 있으므로 주의한다.
 
+## 마지막 방문(inst 19)은 수집 상태가 다르다
+
+RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test로 빼면, **어느 2개를 빼도 87~90%인데 18~19만 73%** 다.
+
+| | inst 0~17 | inst 18 | inst 19 |
+|---|---|---|---|
+| 길이 중앙값 | 약 3,300~3,500 | 3,184 | **2,340** |
+| 지속 시간 중앙값 | 약 22~26초 | 29.9초 | **40.7초** |
+| 초당 셀 수 중앙값 | 약 124~131 | 117 | **76** |
+| RF 정확도 (inst 0~17로 학습) | - | 82.2% | **63.7%** |
+
+- inst 19는 더 느리고 짧다. 네트워크가 느렸거나 페이지 로딩이 덜 끝난 기록이 많은 것으로 보인다. 수집 코드가 없어 원인을 확정할 수는 없다.
+- `first30_out`, `cumul_at_500` 같은 앞부분 피처는 inst 19에서도 값이 같다. 기록이 덜 끝나도 앞부분은 영향을 받지 않기 때문이다. 길이 계열 피처는 영향을 크게 받는다.
+- 따라서 **현재 test(inst 18~19)는 일반적인 방문보다 어려운 세트**다. ⑤⑥의 test 정확도는 낮게 나온 값이고, ⑦의 CV(약 88%)와 직접 비교하면 안 된다.
+- **팀 결정 필요**: test 분할을 유지할지(보수적, 환경 변화에 대한 강건성까지 평가), 바꿀지(예: 방문마다 골고루 뽑기).
+
 **주의**: 분할 1개, 시드 1개 결과다. test 1,900개 기준 ±1%p는 오차 범위이므로 비슷한 순위끼리의 차이는 의미가 없다.
 
 ## 변경 기록
@@ -156,12 +214,16 @@ python -I -X utf8 code/feature_importance.py .                  # 약 10~15분
   - 그 결과 모든 기록에서 `n_out`이 1 감소, `n_in`이 1 증가했다. 방향을 쓰는 피처는 조금씩 바뀌었고 시간만 쓰는 피처는 그대로다. 정확도 변화는 ±0.3%p 이내다.
   - 피처 CSV와 로그를 모두 다시 생성했다.
 - **2026-10-15**: 랜덤 포레스트 피처 중요도 분석(⑥) 추가. `requirements.txt` 추가.
+- **2026-10-15**: 직접 실험용 `experiment.py`(⑦) 추가. 마지막 방문(inst 19)의 수집 상태가 다르다는 것을 확인했다.
+- **2026-10-15**: 단계별 피처 실험(⑧⑨, [EXPERIMENTS.md](EXPERIMENTS.md)) 추가. 2단계 결과로 상수 피처 3개 제거를 채택했다.
 
 ## 다음에 할 일 (전처리 담당)
 
 - [ ] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포
 - [ ] 시퀀스 모델(DF 등)용 입력: 고정 길이(예: 5,000)로 자르기/0 채우기. 잘리는 기록 비율도 확인
 - [ ] open-world용 데이터: unmon 라벨(예: -1) 결정과 train/test 분할
-- [ ] 거의 상수인 피처(`in_burst_1~3`) 제거, 서로 겹치는 피처 정리 (길이 계열 17개 → 대표 2~3개)
-- [ ] 앞부분 피처 추가: 처음 N셀 중 송신 수, 고정 위치(100, 200, …번째 셀)의 누적합
-- [ ] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만)
+- [x] 피처 정리: 상수 피처(`in_burst_1~3`) 제거 채택. 길이 계열 축소와 시간 그룹 제거는 모델에 따라 손해라 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 2단계)
+- [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
+- [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
+- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
+- [ ] test 분할 유지 여부 결정 (inst 19 문제)
