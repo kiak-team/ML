@@ -1,0 +1,11 @@
+RESULT	S3b B+early+bseq	knn	86	0.8481	0.0097	1s
+RESULT	S3b B+early+bseq	et	86	0.9496	0.0044	11s
+RESULT	S3b B+early+bseq	rf	86	0.9550	0.0045	35s
+RESULT	S3b B+early+bseq+cumulabs	knn	99	0.8518	0.0092	2s
+RESULT	S3b B+early+bseq+cumulabs	et	99	0.9523	0.0041	13s
+RESULT	S3b B+early+bseq+cumulabs	rf	99	0.9572	0.0037	42s
+RESULT	S3b B+early+bseq	svm	86	0.9308	0.0031	75s
+RESULT	S3b B+early+bseq+cumulabs	svm	99	0.9314	0.0034	72s
+RESULT	S3b B+early+bseq	lr	86	0.8338	0.0083	41s
+RESULT	S3b B+early+bseq+cumulabs	lr	99	0.8502	0.0077	53s
+DONE

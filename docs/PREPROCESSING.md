@@ -4,6 +4,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트의 **데이터 전처리** 작
 
 - 데이터 구조와 통계 → [DATA.md](DATA.md)
 - 피처 55개의 정의 → [FEATURES.md](FEATURES.md)
+- 피처 선택 실험의 단계별 기록 → [EXPERIMENTS.md](EXPERIMENTS.md)
 
 ## 폴더 구조와 파일별 역할
 
@@ -14,7 +15,8 @@ wf_project/
 ├─ docs/
 │  ├─ PREPROCESSING.md        ← 이 파일 (전처리 작업 정리)
 │  ├─ DATA.md                 데이터 설명 (구조, 통계, 품질 점검)
-│  └─ FEATURES.md             피처 55개 설명
+│  ├─ FEATURES.md             피처 55개 설명
+│  └─ EXPERIMENTS.md          피처 선택 실험 기록 (단계별 가설·결과·결정)
 ├─ code/
 │  ├─ load_data.py            ① 공용 데이터 로더
 │  ├─ check_data.py           ② 데이터 품질 점검
@@ -22,17 +24,22 @@ wf_project/
 │  ├─ features.py             ④ 피처 추출 + 피처 분석
 │  ├─ eval_nearest_centroid.py ⑤ 피처 유효성 간단 평가
 │  ├─ feature_importance.py   ⑥ 랜덤 포레스트 피처 중요도 (sklearn 필요)
-│  └─ experiment.py           ⑦ 피처·모델을 골라 직접 실험 (sklearn 필요)
+│  ├─ experiment.py           ⑦ 피처·모델을 골라 직접 실험 (sklearn 필요)
+│  ├─ features_extra.py       ⑧ 추가 피처 150개 추출 (3단계 실험용)
+│  └─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
-│  └─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
+│  ├─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
+│  ├─ features_extra_mon.csv  ⑧이 저장한 추가 피처 (19,000행 × site,url,inst + 150열)
+│  └─ features_extra_unmon.csv ⑧이 저장한 추가 피처 (10,000행 × 150열)
 └─ logs/                      각 코드의 실행 출력
    ├─ check_data.log          ②의 출력
    ├─ explore.log             ③의 출력
    ├─ features_run.log        ④의 출력
    ├─ eval_nearest_centroid.log ⑤의 출력
    ├─ feature_importance.log  ⑥의 출력
-   └─ experiments.csv         ⑦의 실험 기록 (각자 로컬, git에 올리지 않음)
+   ├─ experiments.csv         ⑦의 실험 기록 (각자 로컬, git에 올리지 않음)
+   └─ stage1~3.log            ⑨의 단계별 결과
 ```
 
 ### ① `code/load_data.py`: 공용 데이터 로더 (**팀 전원이 이 파일로 데이터를 읽는다**)
@@ -99,6 +106,14 @@ python -I -X utf8 code/experiment.py @all -m rf --test               # 최종 1�
 import sys; sys.path.insert(0, 'code')
 from experiment import run
 r = run(['@order', 'n_total'], model='knn', n_neighbors=3)   # r['cv_mean'], r['features']
+```
+
+### ⑧ `code/features_extra.py`, ⑨ `code/run_stages.py`: 단계별 피처 실험
+⑧은 원본 pkl에서 추가 피처 150개(앞부분 송신 수, 고정 위치 누적합, 버스트 순서, CUMUL식 보간 누적합)를 뽑아 별도 CSV로 저장한다. ④의 CSV는 그대로 둔다. ⑦은 이 CSV가 있으면 자동으로 붙여 `@early @cumulabs @bseq @cumul100 @extra` 그룹으로 쓸 수 있다. ⑨는 [EXPERIMENTS.md](EXPERIMENTS.md)의 단계별 실험을 그대로 다시 돌린다.
+
+```
+python -I -X utf8 code/features_extra.py <pkl 폴더> features         # 약 1분
+python -I -X utf8 code/run_stages.py 3 | tee logs/stage3.log          # 약 1시간
 ```
 
 ## 실행 방법
@@ -200,13 +215,15 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
   - 피처 CSV와 로그를 모두 다시 생성했다.
 - **2026-10-15**: 랜덤 포레스트 피처 중요도 분석(⑥) 추가. `requirements.txt` 추가.
 - **2026-10-15**: 직접 실험용 `experiment.py`(⑦) 추가. 마지막 방문(inst 19)의 수집 상태가 다르다는 것을 확인했다.
+- **2026-10-15**: 단계별 피처 실험(⑧⑨, [EXPERIMENTS.md](EXPERIMENTS.md)) 추가. 2단계 결과로 상수 피처 3개 제거를 채택했다.
 
 ## 다음에 할 일 (전처리 담당)
 
 - [ ] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포
 - [ ] 시퀀스 모델(DF 등)용 입력: 고정 길이(예: 5,000)로 자르기/0 채우기. 잘리는 기록 비율도 확인
 - [ ] open-world용 데이터: unmon 라벨(예: -1) 결정과 train/test 분할
-- [ ] 거의 상수인 피처(`in_burst_1~3`) 제거, 서로 겹치는 피처 정리 (길이 계열 17개 → 대표 2~3개)
-- [ ] 앞부분 피처 추가: 처음 N셀 중 송신 수, 고정 위치(100, 200, …번째 셀)의 누적합
-- [ ] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`
+- [x] 피처 정리: 상수 피처(`in_burst_1~3`) 제거 채택. 길이 계열 축소와 시간 그룹 제거는 모델에 따라 손해라 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 2단계)
+- [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
+- [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
+- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
 - [ ] test 분할 유지 여부 결정 (inst 19 문제)

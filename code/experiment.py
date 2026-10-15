@@ -17,7 +17,9 @@
 
 피처 지정:
   이름       그 피처를 추가 (예: first30_out)
-  @그룹      그룹 전체를 추가 (@all @count @timing @order @burst @cumul @length)
+  @그룹      그룹 전체를 추가 (@all @count @timing @order @burst @cumul @length @const)
+             features_extra.py를 실행했으면 @early @cumulabs @bseq @cumul100 @extra 도 쓸 수 있다
+             (@all은 기존 55개만 뜻한다)
   -이름/-@그룹  앞에서 고른 것에서 제외 (예: @all -@timing)
 
 분할:
@@ -51,6 +53,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV_PATH = os.path.join(ROOT, 'features', 'features_mon.csv')
+EXTRA_PATH = os.path.join(ROOT, 'features', 'features_extra_mon.csv')  # features_extra.py 출력 (있으면 붙인다)
 LOG_PATH = os.path.join(ROOT, 'logs', 'experiments.csv')
 
 # 수업에서 다룬 모델 (slide 16). 기본 하이퍼파라미터는 -p 키=값으로 바꾼다.
@@ -73,22 +76,38 @@ def load():
     if _data is None:
         df = pd.read_csv(CSV_PATH)
         names = [c for c in df.columns if c not in ('site', 'url', 'inst')]
+        if os.path.exists(EXTRA_PATH):
+            ex = pd.read_csv(EXTRA_PATH)
+            assert (ex[['site', 'url', 'inst']].values == df[['site', 'url', 'inst']].values).all(), '행 순서 불일치'
+            extra = [c for c in ex.columns if c not in ('site', 'url', 'inst')]
+            df = pd.concat([df, ex[extra]], axis=1)
+            names += extra
         _data = df, names
     return _data
 
 
 def groups(names):
+    base = names[:55]  # features_mon.csv의 55개. 추가 피처는 @extra 등으로 따로 고른다
     g = {
-        'all': list(names),
+        'all': base,
         'count': ['n_total', 'n_in', 'n_out', 'frac_out'],
-        'timing': [f for f in names if f.startswith(('duration', 'cells_per', 't_', 'iat', 'pps'))],
-        'order': [f for f in names if f.startswith(('out_order', 'in_order', 'first', 'last30', 'conc'))],
-        'burst': [f for f in names if 'burst' in f],
-        'cumul': [f for f in names if f.startswith('cumul')],
+        'timing': [f for f in base if f.startswith(('duration', 'cells_per', 't_', 'iat', 'pps'))],
+        'order': [f for f in base if f.startswith(('out_order', 'in_order', 'first', 'last30', 'conc'))],
+        'burst': [f for f in base if 'burst' in f],
+        'cumul': [f for f in base if f.startswith('cumul')],
     }
     # feature_importance.log에서 서로 상관이 높아 한 묶음으로 나온 "기록 길이" 계열 17개
     g['length'] = ['n_total', 'n_in', 'out_order_std', 'in_order_mean', 'in_order_std', 'in_burst_ge10',
                    'cumul_min'] + [f'cumul_{p}0pct' for p in range(1, 11)]
+    g['const'] = ['in_burst_1', 'in_burst_2', 'in_burst_3']  # 모든 기록에서 (거의) 상수
+    # features_extra.py의 추가 피처 (가설은 그 파일 맨 위 설명 참고)
+    extra = names[55:]
+    if extra:
+        g['early'] = [f for f in extra if f.startswith('first')]
+        g['cumulabs'] = [f for f in extra if f.startswith('cumul_at_')]
+        g['bseq'] = [f for f in extra if f.startswith('bseq_') and f not in ('bseq_1', 'bseq_2', 'bseq_3')]  # 1~3은 상수
+        g['cumul100'] = [f for f in extra if f.startswith('cumul100_')]
+        g['extra'] = g['early'] + g['cumulabs'] + g['bseq'] + g['cumul100']
     return g
 
 
