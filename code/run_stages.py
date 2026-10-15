@@ -6,6 +6,7 @@
   3  추가 피처 가설 검증. features_extra.py를 먼저 실행해야 한다 (약 1시간)
   3b 3단계 후속: @cumul100 없이도 같은 수준인지 (약 10분)
   4  앞부분 패턴을 더 늘리면 좋아지나. features_extra2.py를 먼저 실행해야 한다
+  5  RF 고정: 그룹 하나만 쓰기, η² 상위 N개만 쓰기 (약 5분)
 
 모든 평가는 train 내부 5-fold CV(experiment.py)다. test는 쓰지 않는다.
 판단 기준(실험 전에 정함): 기준 조합 대비 차이가 1%p(≈ fold 표준편차) 이내면 같은 수준으로 보고 피처가 적은 쪽을 고른다.
@@ -15,7 +16,7 @@ import os, sys, warnings
 
 warnings.filterwarnings('ignore')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from experiment import run
+from experiment import load, run, select
 
 B = ['@all', '-@const']  # 2단계에서 채택한 기준 조합 (52개)
 
@@ -92,6 +93,44 @@ def stage4():
                 go(spec, m, name)
 
 
+def eta2_rank(spec):
+    """spec 피처를 train(inst 0~17)에서 계산한 η²(사이트 구분력) 내림차순으로 정렬한다. test는 쓰지 않는다."""
+    df, names = load()
+    feats = select(spec, names)
+    tr = df[df.inst <= 17]
+    X = tr[feats].astype(float)
+    total = ((X - X.mean()) ** 2).sum()
+    between = (X.groupby(tr.site).transform('mean') - X.mean()).pow(2).sum()
+    eta2 = (between / total).fillna(0).sort_values(ascending=False)
+    print('η² top:', ' '.join(f'{f}={v:.3f}' for f, v in eta2.head(10).items()), flush=True)
+    return list(eta2.index)
+
+
+def stage5():
+    # 모델을 RF로 고정하고 피처만 바꾼다
+    # ① 그룹 하나만 넣으면 얼마나 맞히나 (어떤 종류의 정보가 중요한가)
+    sets = {
+        'S5 B (ref)': B,
+        'S5 C (ref)': B + ['@early', '@bseq'],
+        'S5 only count': ['@count'],
+        'S5 only timing': ['@timing'],
+        'S5 only order': ['@order'],
+        'S5 only burst': ['@burst', '-@const'],
+        'S5 only cumul': ['@cumul'],
+        'S5 only early': ['@early'],
+        'S5 only bseq': ['@bseq'],
+    }
+    # ② η² 상위 N개만 쓰면 전체보다 좋은가
+    rank_b = eta2_rank(B)
+    for n in (10, 20, 30):
+        sets[f'S5 B eta2 top{n}'] = rank_b[:n]
+    rank_c = eta2_rank(B + ['@early', '@bseq'])
+    for n in (20, 43):
+        sets[f'S5 C eta2 top{n}'] = rank_c[:n]
+    for name, spec in sets.items():
+        go(spec, 'rf', name)
+
+
 if __name__ == '__main__':
-    {'1': stage1, '2': stage2, '3': stage3, '3b': stage3b, '4': stage4}[sys.argv[1]]()
+    {'1': stage1, '2': stage2, '3': stage3, '3b': stage3b, '4': stage4, '5': stage5}[sys.argv[1]]()
     print('DONE', flush=True)

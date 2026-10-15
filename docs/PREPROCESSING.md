@@ -238,5 +238,5 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
 - [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
 - [x] 앞부분 패턴 확장 → `features_extra2.py`. @dir50 채택, @bseqlong 기각. 후보 피처셋 131개 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
-- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 5단계)
+- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 6단계, 모델 선정 담당)
 - [ ] test 분할 유지 여부 결정 (inst 19 문제)
