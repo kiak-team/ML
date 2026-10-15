@@ -19,6 +19,7 @@
   이름       그 피처를 추가 (예: first30_out)
   @그룹      그룹 전체를 추가 (@all @count @timing @order @burst @cumul @length @const)
              features_extra.py를 실행했으면 @early @cumulabs @bseq @cumul100 @extra 도 쓸 수 있다
+             features_extra2.py를 실행했으면 @bseqlong @dir @dir50 도 쓸 수 있다
              (@all은 기존 55개만 뜻한다)
   -이름/-@그룹  앞에서 고른 것에서 제외 (예: @all -@timing)
 
@@ -54,6 +55,7 @@ from sklearn.tree import DecisionTreeClassifier
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV_PATH = os.path.join(ROOT, 'features', 'features_mon.csv')
 EXTRA_PATH = os.path.join(ROOT, 'features', 'features_extra_mon.csv')  # features_extra.py 출력 (있으면 붙인다)
+EXTRA2_PATH = os.path.join(ROOT, 'features', 'features_extra2_mon.csv')  # features_extra2.py 출력 (있으면 붙인다)
 LOG_PATH = os.path.join(ROOT, 'logs', 'experiments.csv')
 
 # 수업에서 다룬 모델 (slide 16). 기본 하이퍼파라미터는 -p 키=값으로 바꾼다.
@@ -76,8 +78,10 @@ def load():
     if _data is None:
         df = pd.read_csv(CSV_PATH)
         names = [c for c in df.columns if c not in ('site', 'url', 'inst')]
-        if os.path.exists(EXTRA_PATH):
-            ex = pd.read_csv(EXTRA_PATH)
+        for path in (EXTRA_PATH, EXTRA2_PATH):
+            if not os.path.exists(path):
+                continue
+            ex = pd.read_csv(path)
             assert (ex[['site', 'url', 'inst']].values == df[['site', 'url', 'inst']].values).all(), '행 순서 불일치'
             extra = [c for c in ex.columns if c not in ('site', 'url', 'inst')]
             df = pd.concat([df, ex[extra]], axis=1)
@@ -105,9 +109,14 @@ def groups(names):
     if extra:
         g['early'] = [f for f in extra if f.startswith('first')]
         g['cumulabs'] = [f for f in extra if f.startswith('cumul_at_')]
-        g['bseq'] = [f for f in extra if f.startswith('bseq_') and f not in ('bseq_1', 'bseq_2', 'bseq_3')]  # 1~3은 상수
+        g['bseq'] = [f'bseq_{j}' for j in range(4, 31) if f'bseq_{j}' in extra]  # 1~3은 상수
         g['cumul100'] = [f for f in extra if f.startswith('cumul100_')]
         g['extra'] = g['early'] + g['cumulabs'] + g['bseq'] + g['cumul100']
+        # features_extra2.py의 추가 피처
+        if 'bseq_31' in extra:
+            g['bseqlong'] = [f'bseq_{j}' for j in range(31, 101)]
+            g['dir'] = [f'dir_{j:03d}' for j in range(6, 101)]  # dir_001~005는 상수
+            g['dir50'] = [f'dir_{j:03d}' for j in range(6, 51)]
     return g
 
 
