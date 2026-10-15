@@ -11,3 +11,8 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트
 - [docs/DATA.md](docs/DATA.md): 데이터 설명
 - [docs/FEATURES.md](docs/FEATURES.md): 피처 55개 설명
 - [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md): 피처 선택 실험 기록 (단계별 가설·결과·결정)
+
+## 현재 후보 피처셋
+
+`@all -@const @early @bseq @dir50` = **118개** (closed-world, RF 기준 CV 95.4%).
+모델별로 다르게 쓰는 것을 기본으로 한다 — 근거는 EXPERIMENTS.md 4단계·4b단계.

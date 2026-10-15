@@ -19,9 +19,12 @@
   이름       그 피처를 추가 (예: first30_out)
   @그룹      그룹 전체를 추가 (@all @count @timing @order @burst @cumul @length @const)
              features_extra.py를 실행했으면 @early @cumulabs @bseq @cumul100 @extra 도 쓸 수 있다
-             features_extra2.py를 실행했으면 @bseqlong @dir @dir50 도 쓸 수 있다
+             features_extra2.py를 실행했으면 @bseqlong @dir @dir50 @qconst 도 쓸 수 있다
              (@all은 기존 55개만 뜻한다)
   -이름/-@그룹  앞에서 고른 것에서 제외 (예: @all -@timing)
+
+  @qconst (13개)는 mon에서 준상수라 @early/@bseq/@dir50에서 빼 두었다. groups()의 설명 참고.
+  이전 로그(stage3/3b/4)의 피처 수를 재현하려면 맨 뒤에 @qconst를 붙인다.
 
 분할:
   train = inst 0~17 (17,100개), test = inst 18~19 (1,900개). eval_nearest_centroid.py와 같다.
@@ -107,16 +110,25 @@ def groups(names):
     # features_extra.py의 추가 피처 (가설은 그 파일 맨 위 설명 참고)
     extra = names[55:]
     if extra:
-        g['early'] = [f for f in extra if f.startswith('first')]
+        g['early'] = [f for f in extra if f.startswith('first') and f != 'first10_out']  # first10_out은 준상수
         g['cumulabs'] = [f for f in extra if f.startswith('cumul_at_')]
-        g['bseq'] = [f'bseq_{j}' for j in range(4, 31) if f'bseq_{j}' in extra]  # 1~3은 상수
+        g['bseq'] = [f'bseq_{j}' for j in range(7, 31) if f'bseq_{j}' in extra]  # 1~6은 준상수
         g['cumul100'] = [f for f in extra if f.startswith('cumul100_')]
         g['extra'] = g['early'] + g['cumulabs'] + g['bseq'] + g['cumul100']
         # features_extra2.py의 추가 피처
         if 'bseq_31' in extra:
             g['bseqlong'] = [f'bseq_{j}' for j in range(31, 101)]
-            g['dir'] = [f'dir_{j:03d}' for j in range(6, 101)]  # dir_001~005는 상수
-            g['dir50'] = [f'dir_{j:03d}' for j in range(6, 51)]
+            g['dir'] = [f'dir_{j:03d}' for j in range(15, 101)]  # dir_001~014는 준상수
+            g['dir50'] = [f'dir_{j:03d}' for j in range(15, 51)]
+        # mon에서 한 값이 99.98% 이상인 준상수 13개. 위 그룹에서 빼 두고 이름만 남긴다.
+        # closed-world(95-class)에서는 정보가 없다: train-only η² = 0.0054(우연 수준 0.005),
+        # 빼도 k-NN은 소수점 4자리까지 같고 RF는 -0.03%p다. 대신 RF가 1.6배 빨라진다.
+        # 주의: unmon에서는 값이 변하고(일부는 다른 상수: bseq_6 mon 2 / unmon 1),
+        #       이 13개만으로 mon/unmon이 AUC 0.9999로 갈린다. 수집 환경 차이로 보이지만
+        #       수집 코드가 없어 확정할 수 없다. open-world에서 쓸지는 따로 판단한다.
+        # 이전 로그(stage3/3b/4) 재현: @all -@const @early @bseq @dir50 @qconst → 131개
+        g['qconst'] = [f for f in ['first10_out'] + [f'bseq_{j}' for j in range(4, 7)]
+                       + [f'dir_{j:03d}' for j in range(6, 15)] if f in extra]
     return g
 
 
