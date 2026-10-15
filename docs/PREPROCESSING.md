@@ -10,6 +10,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트의 **데이터 전처리** 작
 ```
 wf_project/
 ├─ README.md                  프로젝트 전체 소개 (작성 예정)
+├─ requirements.txt           ⑥에 필요한 패키지 (numpy, pandas, scipy, scikit-learn)
 ├─ docs/
 │  ├─ PREPROCESSING.md        ← 이 파일 (전처리 작업 정리)
 │  ├─ DATA.md                 데이터 설명 (구조, 통계, 품질 점검)
@@ -19,7 +20,8 @@ wf_project/
 │  ├─ check_data.py           ② 데이터 품질 점검
 │  ├─ explore.py              ③ 기본 통계 (길이·시간·송신 비율)
 │  ├─ features.py             ④ 피처 추출 + 피처 분석
-│  └─ eval_nearest_centroid.py ⑤ 피처 유효성 간단 평가
+│  ├─ eval_nearest_centroid.py ⑤ 피처 유효성 간단 평가
+│  └─ feature_importance.py   ⑥ 랜덤 포레스트 피처 중요도 (sklearn 필요)
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
 │  └─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
@@ -27,7 +29,8 @@ wf_project/
    ├─ check_data.log          ②의 출력
    ├─ explore.log             ③의 출력
    ├─ features_run.log        ④의 출력
-   └─ eval_nearest_centroid.log ⑤의 출력
+   ├─ eval_nearest_centroid.log ⑤의 출력
+   └─ feature_importance.log  ⑥의 출력
 ```
 
 ### ① `code/load_data.py`: 공용 데이터 로더 (**팀 전원이 이 파일로 데이터를 읽는다**)
@@ -62,15 +65,30 @@ X1, X2, y = ld.load_mon('C:/Users/user/Downloads')
 - **전처리**: `sign(x)·log(1+|x|)`로 값의 크기를 줄인 뒤 train의 평균과 표준편차로 표준화한다.
 - ④와의 차이: 피처 선택용 η²를 **train으로만** 계산한다. ④는 test까지 포함해 계산하므로 데이터 누수가 있다.
 
+### ⑥ `code/feature_importance.py`: 피처 중요도 분석 (sklearn 필요)
+⑤와 같은 분할로 랜덤 포레스트를 학습해 "모델이 실제로 어떤 피처를 쓰는가"를 본다. η²는 피처를 하나씩 따로 보지만, 이 분석은 피처끼리 정보가 겹치는 것까지 반영한다.
+- **불순도 중요도**: 트리가 분기할 때 그 피처를 얼마나 효과적으로 썼는가
+- **permutation 중요도**: test에서 그 피처 값을 섞었을 때 정확도가 얼마나 떨어지는가
+- **상관 묶음 permutation**: 서로 대신하는 피처(상관 높음)를 묶음째 섞는다. 하나씩 섞으면 다른 피처가 대신해 중요도가 낮게 나오기 때문이다.
+- **그룹 실험**: 그룹만 쓸 때 / 그룹을 뺄 때 정확도 (재학습)
+- **mon vs unmon**: open-world에서 어떤 피처가 mon과 unmon을 가르는가
+- test 결과를 보고 피처를 고르면 누수가 생긴다. 이 결과는 **방향을 잡는 탐색용**이고, 실제 선택은 train 내부 교차검증으로 한다.
+
 ## 실행 방법
 
-Python 3 표준 라이브러리만 사용한다(numpy·sklearn 불필요). `<pkl 폴더>`는 pkl 3개를 둔 폴더다. 아래 명령은 **프로젝트 최상위 폴더(`wf_project/`)에서** 실행한다.
+①~⑤는 Python 3 표준 라이브러리만 사용한다(numpy·sklearn 불필요). `<pkl 폴더>`는 pkl 3개를 둔 폴더다. 아래 명령은 **프로젝트 최상위 폴더(`wf_project/`)에서** 실행한다.
 
 ```
 python -I code/check_data.py <pkl 폴더>                          # 수 분 소요
 python -I code/explore.py    <pkl 폴더>
 python -I -X utf8 code/features.py <pkl 폴더> features            # 약 2~3분, CSV 2개 생성
 python -I -X utf8 code/eval_nearest_centroid.py features/features_mon.csv
+```
+
+⑥은 패키지가 필요하다(`pip install -r requirements.txt`). pkl 없이 `features/`의 CSV만 읽는다.
+
+```
+python -I -X utf8 code/feature_importance.py .                  # 약 10~15분
 ```
 
 ## 현재까지 결과 (nearest centroid, 사이트 95개, test 1,900개)
@@ -93,6 +111,42 @@ python -I -X utf8 code/eval_nearest_centroid.py features/features_mon.csv
 - η² 상위 20개가 하위 20개보다 정확도가 **낮다**. 상위 피처끼리 같은 정보("기록 길이")를 반복해서 담고 있기 때문이다. 피처 선택 시 상관관계도 함께 봐야 한다.
 - 강의에서 소개된 기법(k-FP, CUMUL, DF)은 90% 이상이다. 실제 모델(랜덤 포레스트, SVM, k-NN 등)은 모델링 단계에서 이 CSV로 학습한다.
 
+## 랜덤 포레스트 피처 중요도 (⑥, 트리 300개)
+
+전체 55개 피처로 **73.2%** 다. nearest centroid(25.7%)보다 훨씬 높으므로, 피처가 쓸 만하고 이전 결과는 분류기가 너무 단순했던 탓이다.
+
+**1. 기록 길이(트래픽 양)가 가장 중요하지만, 피처 17개가 같은 정보다.**
+`n_total`, `n_in`, `cumul_*`, `*_order_*` 등 17개를 묶음째 섞으면 정확도가 **51.7%p** 떨어진다. 하나씩 섞으면 각각 0.5%p 안팎이다. 서로 대신하므로 대표 1~2개면 충분하다.
+
+**2. 기록 앞부분의 방향 패턴이 그다음이다.**
+
+| 피처 | 섞었을 때 정확도 하락 |
+|---|---|
+| `first30_out` (처음 30셀 중 송신 수) | 5.0%p (단일 피처 1위) |
+| `first100_out` | 3.5%p |
+| `cumul_at_500` (500번째 셀의 누적합) | 2.7%p |
+
+고정된 셀 위치의 값(`cumul_at_500`)이 길이 대비 비율 위치의 값(`cumul_10pct` 등)보다 유용하다.
+
+**3. 송신 비율과 버스트 리듬**: `frac_out`, `in_burst_mean`, `out_burst_mean`, `conc_std`가 각각 1~2%p를 기여한다.
+
+**그룹 실험**
+
+| 그룹 | 이 그룹만 | 이 그룹을 빼면 |
+|---|---|---|
+| 순서·집중도 (10개) | 69.2% | 69.0% (유일하게 빼면 손해) |
+| CUMUL (12개) | 60.5% | 70.7% |
+| 버스트 (11개) | 52.5% | 72.8% |
+| 시간 (18개) | 47.1% | 73.3% (빼도 그대로) |
+| 개수 (4개) | 38.6% | 72.6% |
+
+- 시간 피처는 사이트 분류에서 다른 피처와 정보가 겹친다. 0.01초 해상도 때문으로 보인다.
+- `in_burst_1~3`은 중요도 0이다.
+
+**mon vs unmon**: AUC 0.968. 1위는 `first30_out`이고, `duration`, `t_25pct` 같은 시간 피처가 상위권이다. mon과 unmon의 수집 환경 차이를 배운 것일 수 있으므로 주의한다.
+
+**주의**: 분할 1개, 시드 1개 결과다. test 1,900개 기준 ±1%p는 오차 범위이므로 비슷한 순위끼리의 차이는 의미가 없다.
+
 ## 변경 기록
 
 - **2026-10-12**: 최초 작성. 피처 추출과 평가.
@@ -101,10 +155,13 @@ python -I -X utf8 code/eval_nearest_centroid.py features/features_mon.csv
   - 첫 셀 `0.0`의 방향을 **송신 → 수신**으로 변경. 이전 코드는 `+0.0`을 송신으로 처리해 노트북과 달랐다.
   - 그 결과 모든 기록에서 `n_out`이 1 감소, `n_in`이 1 증가했다. 방향을 쓰는 피처는 조금씩 바뀌었고 시간만 쓰는 피처는 그대로다. 정확도 변화는 ±0.3%p 이내다.
   - 피처 CSV와 로그를 모두 다시 생성했다.
+- **2026-10-15**: 랜덤 포레스트 피처 중요도 분석(⑥) 추가. `requirements.txt` 추가.
 
 ## 다음에 할 일 (전처리 담당)
 
 - [ ] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포
 - [ ] 시퀀스 모델(DF 등)용 입력: 고정 길이(예: 5,000)로 자르기/0 채우기. 잘리는 기록 비율도 확인
 - [ ] open-world용 데이터: unmon 라벨(예: -1) 결정과 train/test 분할
-- [ ] 거의 상수인 피처(`in_burst_1~3`) 제거, 서로 겹치는 피처 정리
+- [ ] 거의 상수인 피처(`in_burst_1~3`) 제거, 서로 겹치는 피처 정리 (길이 계열 17개 → 대표 2~3개)
+- [ ] 앞부분 피처 추가: 처음 N셀 중 송신 수, 고정 위치(100, 200, …번째 셀)의 누적합
+- [ ] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만)

@@ -1,0 +1,85 @@
+[closed-world RF] all 55 acc = 0.7316
+
+== RF impurity importance top 20 ==
+  first100_out     0.0426
+  cumul_at_500     0.0419
+  frac_out         0.0374
+  in_burst_mean    0.0339
+  n_out            0.0334
+  first30_out      0.0332
+  out_order_mean   0.0293
+  out_burst_std    0.0259
+  out_burst_mean   0.0259
+  n_bursts         0.0256
+  out_order_std    0.0255
+  cumul_10pct      0.0251
+  n_total          0.0235
+  in_order_mean    0.0234
+  in_order_std     0.0231
+  cumul_20pct      0.0224
+  iat_in_std       0.0224
+  conc_std         0.0224
+  out_burst_max    0.0208
+  cumul_min        0.0206
+  ... bottom 5: conc_median=0.0026, iat_p90=0.0025, in_burst_3=0.0000, in_burst_1=0.0000, in_burst_2=0.0000
+
+== permutation importance on test (acc drop) top 15 ==
+  first30_out      +0.0497
+  first100_out     +0.0319
+  cumul_at_500     +0.0276
+  frac_out         +0.0125
+  in_burst_mean    +0.0091
+  out_burst_mean   +0.0088
+  n_out            +0.0079
+  cumul_10pct      +0.0054
+  n_total          +0.0049
+  conc_std         +0.0045
+  out_order_std    +0.0043
+  out_burst_std    +0.0036
+  in_order_mean    +0.0036
+  cumul_20pct      +0.0034
+  cumul_80pct      +0.0028
+
+== correlated clusters (|spearman| based), grouped permutation drop; 31 clusters ==
+  +0.5170  (17) n_total, n_in, out_order_std, in_order_mean, in_order_std, in_burst_ge10, cumul_min, cumul_10pct ...
+  +0.0500  ( 1) first30_out
+  +0.0347  ( 1) first100_out
+  +0.0270  ( 1) cumul_at_500
+  +0.0181  ( 2) conc_std, out_burst_mean
+  +0.0119  ( 1) frac_out
+  +0.0095  ( 1) in_burst_mean
+  +0.0081  ( 1) n_out
+  +0.0047  ( 4) cells_per_sec, iat_mean, iat_in_mean, pps_mean
+  +0.0046  ( 2) iat_std, iat_in_std
+  +0.0044  ( 2) out_order_mean, n_bursts
+  +0.0040  ( 1) last30_out
+  +0.0039  ( 1) out_burst_std
+  +0.0030  ( 1) duration
+  +0.0028  ( 1) pps_median
+  +0.0026  ( 1) iat_zero_frac
+  +0.0025  ( 2) conc_max, out_burst_max
+  +0.0014  ( 2) t_50pct, t_75pct
+  +0.0012  ( 1) iat_out_std
+  +0.0011  ( 1) in_burst_std
+  +0.0011  ( 1) in_burst_max
+  +0.0009  ( 1) t_25pct
+  +0.0005  ( 1) pps_std
+  +0.0004  ( 1) pps_max
+  +0.0004  ( 1) iat_max
+  +0.0004  ( 1) conc_median
+  +0.0004  ( 1) iat_p90
+  +0.0000  ( 1) in_burst_3
+  +0.0000  ( 1) in_burst_2
+  +0.0000  ( 1) in_burst_1
+  -0.0002  ( 1) iat_out_mean
+
+== group: only-this-group acc / drop-this-group acc ==
+  count       ( 4)  only=0.3863  without=0.7258
+  timing      (18)  only=0.4711  without=0.7332
+  order/conc  (10)  only=0.6916  without=0.6900
+  burst       (11)  only=0.5253  without=0.7279
+  cumul       (12)  only=0.6053  without=0.7074
+
+[mon vs unmon RF] AUC = 0.9676
+  top 10: first30_out=0.130, first100_out=0.055, out_burst_mean=0.049, duration=0.036, t_25pct=0.032, out_burst_std=0.030, cumul_at_500=0.028, in_burst_mean=0.028, conc_std=0.022, t_50pct=0.021
+

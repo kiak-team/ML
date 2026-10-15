@@ -1,0 +1,6 @@
+# feature_importance.py, experiment.py에 필요하다.
+# load_data / check_data / explore / features / eval_nearest_centroid는 표준 라이브러리만 쓴다.
+numpy>=2.0
+pandas>=2.0
+scipy>=1.11
+scikit-learn>=1.4
