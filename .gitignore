@@ -12,3 +12,7 @@ Thumbs.db
 
 # experiment.py 개인 실험 기록 (각자 로컬에 쌓인다)
 logs/experiments.csv
+
+# 가상환경 (각자 로컬)
+.venv/
+venv/
