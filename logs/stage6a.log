@@ -1,0 +1,121 @@
+﻿model=knn  log=True scale=True  features=52
+  CV 5-fold (train 내부): 0.7486 ± 0.0072   [0.750 0.737 0.744 0.757 0.754]
+  1.3s
+RESULT	S6a B	knn		52	0.7486	0.0072	1s
+model=et  log=False scale=False  features=52
+  CV 5-fold (train 내부): 0.8792 ± 0.0080   [0.880 0.866 0.884 0.890 0.876]
+  45.8s
+RESULT	S6a B	et		52	0.8792	0.0080	46s
+model=rf  log=False scale=False  features=52
+  CV 5-fold (train 내부): 0.8788 ± 0.0078   [0.874 0.867 0.883 0.890 0.879]
+  190.6s
+RESULT	S6a B	rf		52	0.8788	0.0078	191s
+model=knn  log=True scale=True  features=82
+  CV 5-fold (train 내부): 0.8481 ± 0.0097   [0.837 0.839 0.850 0.865 0.850]
+  4.4s
+RESULT	S6a C	knn		82	0.8481	0.0097	4s
+model=et  log=False scale=False  features=82
+  CV 5-fold (train 내부): 0.9492 ± 0.0041   [0.951 0.947 0.951 0.955 0.943]
+  108.6s
+RESULT	S6a C	et		82	0.9492	0.0041	109s
+model=rf  log=False scale=False  features=82
+  CV 5-fold (train 내부): 0.9547 ± 0.0039   [0.958 0.952 0.955 0.960 0.949]
+  176.8s
+RESULT	S6a C	rf		82	0.9547	0.0039	177s
+model=knn  log=True scale=True  features=95
+  CV 5-fold (train 내부): 0.8518 ± 0.0092   [0.842 0.844 0.853 0.868 0.852]
+  19.3s
+RESULT	S6a C+cumulabs	knn		95	0.8518	0.0092	19s
+model=et  log=False scale=False  features=95
+  CV 5-fold (train 내부): 0.9517 ± 0.0053   [0.956 0.947 0.952 0.959 0.945]
+  63.8s
+RESULT	S6a C+cumulabs	et		95	0.9517	0.0053	64s
+model=rf  log=False scale=False  features=95
+  CV 5-fold (train 내부): 0.9572 ± 0.0046   [0.961 0.951 0.955 0.964 0.955]
+  166.5s
+RESULT	S6a C+cumulabs	rf		95	0.9572	0.0046	166s
+model=knn  log=True scale=True  features=118
+  CV 5-fold (train 내부): 0.9022 ± 0.0074   [0.906 0.893 0.902 0.914 0.896]
+  14.2s
+RESULT	S6a C+dir50	knn		118	0.9022	0.0074	14s
+model=et  log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9539 ± 0.0025   [0.957 0.951 0.955 0.956 0.951]
+  73.4s
+RESULT	S6a C+dir50	et		118	0.9539	0.0025	73s
+model=rf  log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9538 ± 0.0035   [0.957 0.951 0.953 0.959 0.950]
+  187.3s
+RESULT	S6a C+dir50	rf		118	0.9538	0.0035	187s
+model=knn  log=True scale=True  features=131
+  CV 5-fold (train 내부): 0.9044 ± 0.0066   [0.907 0.896 0.903 0.915 0.901]
+  12.4s
+RESULT	S6a C+cumulabs+dir50	knn		131	0.9044	0.0066	12s
+model=et  log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9580 ± 0.0021   [0.961 0.956 0.958 0.959 0.955]
+  65.9s
+RESULT	S6a C+cumulabs+dir50	et		131	0.9580	0.0021	66s
+model=rf  log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9571 ± 0.0041   [0.959 0.954 0.955 0.964 0.953]
+  254.9s
+RESULT	S6a C+cumulabs+dir50	rf		131	0.9571	0.0041	255s
+model=knn  log=True scale=True  features=181
+  CV 5-fold (train 내부): 0.8836 ± 0.0081   [0.879 0.877 0.879 0.899 0.885]
+  28.3s
+RESULT	S6a C+cumulabs+dir	knn		181	0.8836	0.0081	28s
+model=et  log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9595 ± 0.0022   [0.960 0.957 0.961 0.963 0.958]
+  14.6s
+RESULT	S6a C+cumulabs+dir	et		181	0.9595	0.0022	15s
+model=rf  log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9584 ± 0.0040   [0.962 0.956 0.958 0.963 0.953]
+  21.2s
+RESULT	S6a C+cumulabs+dir	rf		181	0.9584	0.0040	21s
+model=svm  log=True scale=True  features=52
+  CV 5-fold (train 내부): 0.8211 ± 0.0088   [0.816 0.807 0.823 0.828 0.832]
+  197.1s
+RESULT	S6a B	svm		52	0.8211	0.0088	197s
+model=svm  log=True scale=True  features=82
+  CV 5-fold (train 내부): 0.9307 ± 0.0030   [0.929 0.927 0.931 0.936 0.930]
+  89.3s
+RESULT	S6a C	svm		82	0.9307	0.0030	89s
+model=svm  log=True scale=True  features=95
+  CV 5-fold (train 내부): 0.9312 ± 0.0036   [0.931 0.926 0.930 0.938 0.932]
+  72.4s
+RESULT	S6a C+cumulabs	svm		95	0.9312	0.0036	72s
+model=svm  log=True scale=True  features=118
+  CV 5-fold (train 내부): 0.9473 ± 0.0059   [0.954 0.939 0.944 0.954 0.946]
+  76.1s
+RESULT	S6a C+dir50	svm		118	0.9473	0.0059	76s
+model=svm  log=True scale=True  features=131
+  CV 5-fold (train 내부): 0.9485 ± 0.0054   [0.953 0.942 0.945 0.956 0.947]
+  89.0s
+RESULT	S6a C+cumulabs+dir50	svm		131	0.9485	0.0054	89s
+model=svm  log=True scale=True  features=181
+  CV 5-fold (train 내부): 0.9411 ± 0.0060   [0.943 0.936 0.937 0.952 0.937]
+  95.5s
+RESULT	S6a C+cumulabs+dir	svm		181	0.9411	0.0060	95s
+model=lr  log=True scale=True  features=52
+  CV 5-fold (train 내부): 0.5963 ± 0.0057   [0.598 0.588 0.596 0.606 0.594]
+  47.4s
+RESULT	S6a B	lr		52	0.5963	0.0057	47s
+model=lr  log=True scale=True  features=82
+  CV 5-fold (train 내부): 0.8336 ± 0.0072   [0.827 0.829 0.837 0.846 0.829]
+  894.9s
+RESULT	S6a C	lr		82	0.8336	0.0072	895s
+model=lr  log=True scale=True  features=95
+  CV 5-fold (train 내부): 0.8505 ± 0.0080   [0.847 0.844 0.849 0.866 0.845]
+  740.5s
+RESULT	S6a C+cumulabs	lr		95	0.8505	0.0080	741s
+model=lr  log=True scale=True  features=118
+  CV 5-fold (train 내부): 0.8901 ± 0.0077   [0.887 0.888 0.884 0.905 0.887]
+  1208.7s
+RESULT	S6a C+dir50	lr		118	0.8901	0.0077	1209s
+model=lr  log=True scale=True  features=131
+  CV 5-fold (train 내부): 0.8999 ± 0.0086   [0.894 0.900 0.894 0.916 0.895]
+  1032.9s
+RESULT	S6a C+cumulabs+dir50	lr		131	0.8999	0.0086	1033s
+model=lr  log=True scale=True  features=181
+  CV 5-fold (train 내부): 0.8833 ± 0.0093   [0.878 0.882 0.875 0.901 0.880]
+  1377.3s
+RESULT	S6a C+cumulabs+dir	lr		181	0.8833	0.0093	1377s
+DONE

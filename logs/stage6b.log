@@ -1,0 +1,73 @@
+﻿model=rf {'random_state': 0} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9538 ± 0.0035   [0.957 0.951 0.953 0.959 0.950]
+  56.7s
+RESULT	S6b C+dir50 seed0	rf	random_state=0	118	0.9538	0.0035	57s
+model=rf {'random_state': 1} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9537 ± 0.0030   [0.954 0.952 0.952 0.959 0.951]
+  66.4s
+RESULT	S6b C+dir50 seed1	rf	random_state=1	118	0.9537	0.0030	66s
+model=rf {'random_state': 2} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9542 ± 0.0039   [0.957 0.951 0.954 0.960 0.949]
+  117.0s
+RESULT	S6b C+dir50 seed2	rf	random_state=2	118	0.9542	0.0039	117s
+model=et {'random_state': 0} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9539 ± 0.0025   [0.957 0.951 0.955 0.956 0.951]
+  67.1s
+RESULT	S6b C+dir50 seed0	et	random_state=0	118	0.9539	0.0025	67s
+model=et {'random_state': 1} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9527 ± 0.0035   [0.956 0.948 0.955 0.955 0.949]
+  87.7s
+RESULT	S6b C+dir50 seed1	et	random_state=1	118	0.9527	0.0035	88s
+model=et {'random_state': 2} log=False scale=False  features=118
+  CV 5-fold (train 내부): 0.9538 ± 0.0018   [0.954 0.952 0.953 0.957 0.953]
+  58.9s
+RESULT	S6b C+dir50 seed2	et	random_state=2	118	0.9538	0.0018	59s
+model=rf {'random_state': 0} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9571 ± 0.0041   [0.959 0.954 0.955 0.964 0.953]
+  201.0s
+RESULT	S6b C+cumulabs+dir50 seed0	rf	random_state=0	131	0.9571	0.0041	201s
+model=rf {'random_state': 1} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9577 ± 0.0045   [0.961 0.952 0.957 0.965 0.954]
+  196.9s
+RESULT	S6b C+cumulabs+dir50 seed1	rf	random_state=1	131	0.9577	0.0045	197s
+model=rf {'random_state': 2} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9573 ± 0.0043   [0.962 0.955 0.957 0.962 0.951]
+  247.3s
+RESULT	S6b C+cumulabs+dir50 seed2	rf	random_state=2	131	0.9573	0.0043	247s
+model=et {'random_state': 0} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9580 ± 0.0021   [0.961 0.956 0.958 0.959 0.955]
+  102.9s
+RESULT	S6b C+cumulabs+dir50 seed0	et	random_state=0	131	0.9580	0.0021	103s
+model=et {'random_state': 1} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9588 ± 0.0029   [0.961 0.954 0.961 0.961 0.957]
+  11.7s
+RESULT	S6b C+cumulabs+dir50 seed1	et	random_state=1	131	0.9588	0.0029	12s
+model=et {'random_state': 2} log=False scale=False  features=131
+  CV 5-fold (train 내부): 0.9581 ± 0.0032   [0.961 0.953 0.959 0.961 0.956]
+  12.5s
+RESULT	S6b C+cumulabs+dir50 seed2	et	random_state=2	131	0.9581	0.0032	13s
+model=rf {'random_state': 0} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9584 ± 0.0040   [0.962 0.956 0.958 0.963 0.953]
+  32.5s
+RESULT	S6b C+cumulabs+dir seed0	rf	random_state=0	181	0.9584	0.0040	32s
+model=rf {'random_state': 1} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9580 ± 0.0041   [0.962 0.955 0.957 0.964 0.953]
+  34.9s
+RESULT	S6b C+cumulabs+dir seed1	rf	random_state=1	181	0.9580	0.0041	35s
+model=rf {'random_state': 2} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9587 ± 0.0044   [0.961 0.954 0.957 0.966 0.955]
+  29.2s
+RESULT	S6b C+cumulabs+dir seed2	rf	random_state=2	181	0.9587	0.0044	29s
+model=et {'random_state': 0} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9595 ± 0.0022   [0.960 0.957 0.961 0.963 0.958]
+  14.2s
+RESULT	S6b C+cumulabs+dir seed0	et	random_state=0	181	0.9595	0.0022	14s
+model=et {'random_state': 1} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9597 ± 0.0041   [0.965 0.953 0.960 0.962 0.959]
+  14.5s
+RESULT	S6b C+cumulabs+dir seed1	et	random_state=1	181	0.9597	0.0041	14s
+model=et {'random_state': 2} log=False scale=False  features=181
+  CV 5-fold (train 내부): 0.9586 ± 0.0030   [0.961 0.954 0.960 0.962 0.957]
+  13.4s
+RESULT	S6b C+cumulabs+dir seed2	et	random_state=2	181	0.9586	0.0030	13s
+DONE

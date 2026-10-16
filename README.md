@@ -16,3 +16,8 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트
 
 `@all -@const @early @bseq @dir50` = **118개** (closed-world, RF 기준 CV 95.4%).
 모델별로 다르게 쓰는 것을 기본으로 한다 — 근거는 EXPERIMENTS.md 4단계·4b단계.
+
+> **6단계 제안 (팀 결정 대기)**: 여기에 `@cumulabs` 13개를 더한 **131개**로 바꾸자.
+> 5개 모델 전부에서 118개보다 높다(RF 95.74, ET 95.83). → EXPERIMENTS.md 6단계
+
+open-world는 피처셋이 다르다 (`@all @early @bseq @dir50 @qconst`, 앞 14셀 버림, 134개) — docs/OPENWORLD.md.
