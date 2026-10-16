@@ -36,6 +36,9 @@
 전처리 (모델이 자동으로 정한다. --log/--no-log, --scale/--no-scale로 바꿀 수 있다):
   트리 모델(dt, rf, et): 그대로 쓴다. 트리는 값의 크기에 영향을 받지 않는다.
   그 외(lr, nb, svm, knn, mlp): sign(x)·log(1+|x|) 후 표준화. 표준화 기준은 학습 데이터로만 계산한다.
+  --gw: 표준화 뒤 그룹마다 1/√(그룹 크기)를 곱한다. 후보 131개에서 k-NN +1.4%p, SVM +0.4%p (EXPERIMENTS.md 6c단계).
+        LR에는 쓰지 않는다(−1.9%p. 값이 작아져 L2 정규화가 사실상 세진다).
+        예) python -I -X utf8 code/experiment.py @all -@const @early @bseq @cumulabs @dir50 -m knn --gw
 
 결과는 logs/experiments.csv에 한 줄씩 쌓인다.
 """
@@ -43,7 +46,7 @@ import argparse, csv, os, sys, time
 from datetime import datetime
 
 import numpy as np, pandas as pd
-from sklearn.base import clone
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import PredefinedSplit, cross_val_score
@@ -161,22 +164,59 @@ def signed_log(X):
     return np.sign(X) * np.log1p(np.abs(X))
 
 
-def build(model, params, log=None, scale=None):
+GW_ORDER = ['count', 'timing', 'order', 'burst', 'cumul', 'early', 'bseq', 'cumulabs', 'cumul100',
+            'bseqlong', 'dir', 'qconst', 'const']
+
+
+def group_weights(feats, names):
+    """피처마다 1/√(그 피처가 속한 그룹의 선택된 피처 수). 그룹이 없는 피처는 혼자 한 그룹이다.
+
+    k-NN·SVM·LR은 모든 피처를 똑같이 쓰므로 @dir50(36개)처럼 큰 그룹이 거리를 독차지한다.
+    그룹마다 비중을 맞추면 k-NN +1.4%p, SVM +0.4%p (6c단계, 5개 fold 전부 상승). LR은 −1.9%p라 쓰지 않는다.
+    """
+    owner = {}
+    for k in GW_ORDER:
+        for f in groups(names).get(k, []):
+            owner.setdefault(f, k)
+    key = [owner.get(f, f) for f in feats]
+    return np.array([1 / np.sqrt(key.count(k)) for k in key])
+
+
+class GroupWeight(TransformerMixin, BaseEstimator):
+    """표준화 뒤에 열마다 고정 가중치를 곱한다. 데이터로 학습하는 것은 없다."""
+    def __init__(self, w=None):
+        self.w = w
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X * self.w
+
+
+def build(model, params, log=None, scale=None, weights=None):
+    """weights: 열마다 곱할 가중치 (표준화 뒤). group_weights()의 결과를 넣는다. 트리 모델에는 의미가 없다."""
     make, is_tree = MODELS[model]
     est = make().set_params(**params)
     log = (not is_tree) if log is None else log
     scale = (not is_tree) if scale is None else scale
-    steps = ([FunctionTransformer(signed_log)] if log else []) + ([StandardScaler()] if scale else []) + [est]
+    steps = ([FunctionTransformer(signed_log)] if log else []) + ([StandardScaler()] if scale else []) \
+        + ([GroupWeight(weights)] if weights is not None else []) + [est]
     return make_pipeline(*steps), log, scale
 
 
-def run(features=('@all',), model='rf', test=False, log=None, scale=None, note='', save=True, **params):
-    """피처 지정과 모델로 실험하고 결과 dict를 반환한다. 노트북에서 쓰기 위한 함수."""
+def run(features=('@all',), model='rf', test=False, log=None, scale=None, note='', save=True, gw=False, **params):
+    """피처 지정과 모델로 실험하고 결과 dict를 반환한다. 노트북에서 쓰기 위한 함수.
+
+    gw=True: 그룹 가중치(group_weights)를 표준화 뒤에 곱한다. k-NN·SVM용 (LR은 손해).
+    """
     df, names = load()
     if isinstance(features, str):
         features = [features]
     feats = select(features, names)
-    pipe, log, scale = build(model, params, log, scale)
+    pipe, log, scale = build(model, params, log, scale, group_weights(feats, names) if gw else None)
+    if gw:
+        params = {**params, 'gw': True}  # 출력과 experiments.csv에 남기기 위해
 
     tr, te = df[df.inst <= 17], df[df.inst >= 18]
     Xtr, ytr = tr[feats].values, tr.site.values
@@ -232,6 +272,7 @@ def main():
     ap.add_argument('--no-log', dest='log', action='store_false')
     ap.add_argument('--scale', dest='scale', action='store_true', default=None)
     ap.add_argument('--no-scale', dest='scale', action='store_false')
+    ap.add_argument('--gw', action='store_true', help='그룹 가중치: 큰 피처 그룹이 거리를 독차지하지 않게 한다 (k-NN·SVM용, LR은 손해)')
     ap.add_argument('--note', default='', help='experiments.csv에 남길 메모')
     ap.add_argument('--list', action='store_true', help='피처·그룹·모델 목록 출력')
     # '-in_burst_1', '-@timing' 같은 제외 표기를 argparse가 옵션으로 오인하지 않도록 미리 분리한다
@@ -256,7 +297,7 @@ def main():
         return
     params = dict(kv.split('=', 1) for kv in a.param)
     params = {k: parse_value(v) for k, v in params.items()}
-    run(a.features, a.model, a.test, a.log, a.scale, a.note, **params)
+    run(a.features, a.model, a.test, a.log, a.scale, a.note, gw=a.gw, **params)
 
 
 if __name__ == '__main__':

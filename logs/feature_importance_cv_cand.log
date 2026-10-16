@@ -1,0 +1,81 @@
+fold 0: acc 0.9592  (445s)
+fold 1: acc 0.9550  (746s)
+fold 2: acc 0.9561  (1042s)
+fold 3: acc 0.9635  (1317s)
+fold 4: acc 0.9523  (1558s)
+
+[cand] features=131  RF(300) CV acc = 0.9572 ± 0.0039
+
+== RF 불순도 중요도 상위 20 (fold 평균) ==
+  bseq_7           0.0321
+  bseq_11          0.0234
+  bseq_9           0.0187
+  bseq_13          0.0181
+  frac_out         0.0180
+  n_out            0.0179
+  first20_out      0.0169
+  first50_out      0.0164
+  cumul_at_1500    0.0162
+  in_burst_mean    0.0159
+  cumul_at_2000    0.0156
+  first30_out      0.0152
+  cumul_at_100     0.0151
+  first100_out     0.0147
+  first1000_out    0.0147
+  cumul_at_1000    0.0146
+  first200_out     0.0137
+  cumul_at_200     0.0133
+  cumul_at_900     0.0131
+  n_bursts         0.0130
+
+== permutation 중요도 상위 20 (빼 둔 fold에서 섞었을 때 정확도 하락, fold 평균 ± 표준편차) ==
+  bseq_9           +0.0066 ± 0.0005
+  bseq_11          +0.0035 ± 0.0010
+  first30_out      +0.0026 ± 0.0005
+  bseq_13          +0.0023 ± 0.0007
+  first100_out     +0.0011 ± 0.0006
+  cumul_at_200     +0.0011 ± 0.0006
+  dir_021          +0.0010 ± 0.0006
+  cumul_at_2000    +0.0010 ± 0.0005
+  first50_out      +0.0009 ± 0.0008
+  bseq_7           +0.0009 ± 0.0005
+  bseq_15          +0.0009 ± 0.0004
+  cumul_at_100     +0.0008 ± 0.0006
+  first200_out     +0.0007 ± 0.0007
+  cumul_at_300     +0.0007 ± 0.0006
+  frac_out         +0.0007 ± 0.0009
+  first300_out     +0.0007 ± 0.0006
+  dir_018          +0.0007 ± 0.0014
+  in_burst_mean    +0.0006 ± 0.0007
+  cumul_at_400     +0.0006 ± 0.0006
+  cumul_at_1500    +0.0006 ± 0.0005
+  ... 하락이 0 이하인 피처: 46개
+
+== 그룹 permutation (그룹 전체를 함께 섞음, fold 평균) ==
+  @bseq      (24개)  +0.0649 ± 0.0046
+  @dir50     (36개)  +0.0548 ± 0.0042
+  @cumulabs  (13개)  +0.0422 ± 0.0029
+  @timing    (18개)  +0.0220 ± 0.0043
+  @cumul     (12개)  +0.0071 ± 0.0009
+  @early     ( 6개)  +0.0062 ± 0.0013
+  @order     (10개)  +0.0052 ± 0.0018
+  @burst     ( 8개)  +0.0040 ± 0.0014
+  @count     ( 4개)  +0.0010 ± 0.0016
+
+== 상관 묶음 permutation 상위 15 (111개 묶음) ==
+  +0.0064  ( 1) bseq_9
+  +0.0031  ( 1) bseq_11
+  +0.0024  ( 1) first30_out
+  +0.0024  ( 8) n_in, cumul_min, cumul_50pct, cumul_60pct, cumul_70pct, cumul_80pct, cumul_90pct, cumul_100pct
+  +0.0023  ( 1) bseq_13
+  +0.0015  ( 1) first50_out
+  +0.0013  ( 1) dir_021
+  +0.0011  ( 1) first200_out
+  +0.0010  ( 4) cells_per_sec, iat_mean, iat_in_mean, pps_mean
+  +0.0010  ( 1) dir_018
+  +0.0010  ( 1) cumul_at_200
+  +0.0009  ( 1) first100_out
+  +0.0009  ( 1) cumul_at_100
+  +0.0009  ( 1) first20_out
+  +0.0009  ( 1) bseq_7
+DONE
