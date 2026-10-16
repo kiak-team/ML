@@ -1,0 +1,57 @@
+mode=multi skip=14 model=knn  log=True scale=True features=89  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9325 (fold std 0.0028)   PR-AUC 0.9483
+  t=0.5    TPR 0.8382  FPR 0.1308  precision 0.9241  | TPR_site 0.7777  precision_site 0.8574
+  FPR≤5%   TPR 0.5615  FPR 0.0170  precision 0.9843  | TPR_site 0.5569  precision_site 0.9762
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  5.6s
+RESULT	OW3c B+early+bseq+qconst	knn	89	AUC 0.9325	std 0.0028	PR-AUC 0.9483	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=89  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9871 (fold std 0.0013)   PR-AUC 0.9934
+  t=0.5    TPR 0.6908  FPR 0.0000  precision 1.0000  | TPR_site 0.6904  precision_site 0.9994
+  FPR≤5%   TPR 0.9335  FPR 0.0464  precision 0.9745  | TPR_site 0.9168  precision_site 0.9571
+  FPR≤1%   TPR 0.8841  FPR 0.0093  precision 0.9945  | TPR_site 0.8775  precision_site 0.9870
+  43.6s
+RESULT	OW3c B+early+bseq+qconst	et	89	AUC 0.9871	std 0.0013	PR-AUC 0.9934	TPR@1% 0.8841	TPRsite@1% 0.8775
+mode=multi skip=14 model=rf  log=False scale=False features=89  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9921 (fold std 0.0009)   PR-AUC 0.9958
+  t=0.5    TPR 0.6949  FPR 0.0001  precision 0.9999  | TPR_site 0.6944  precision_site 0.9993
+  FPR≤5%   TPR 0.9509  FPR 0.0454  precision 0.9755  | TPR_site 0.9321  precision_site 0.9561
+  FPR≤1%   TPR 0.8961  FPR 0.0093  precision 0.9945  | TPR_site 0.8896  precision_site 0.9873
+  122.9s
+RESULT	OW3c B+early+bseq+qconst	rf	89	AUC 0.9921	std 0.0009	PR-AUC 0.9958	TPR@1% 0.8961	TPRsite@1% 0.8896
+mode=multi skip=14 model=knn  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9587 (fold std 0.0022)   PR-AUC 0.9680
+  t=0.5    TPR 0.8960  FPR 0.1111  precision 0.9387  | TPR_site 0.8465  precision_site 0.8869
+  FPR≤5%   TPR 0.7898  FPR 0.0444  precision 0.9712  | TPR_site 0.7712  precision_site 0.9484
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  6.4s
+RESULT	OW3c B+early+bseq+dir50+qconst	knn	134	AUC 0.9587	std 0.0022	PR-AUC 0.9680	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9922 (fold std 0.0006)   PR-AUC 0.9959
+  t=0.5    TPR 0.7689  FPR 0.0014  precision 0.9990  | TPR_site 0.7678  precision_site 0.9976
+  FPR≤5%   TPR 0.9573  FPR 0.0490  precision 0.9738  | TPR_site 0.9334  precision_site 0.9494
+  FPR≤1%   TPR 0.8807  FPR 0.0099  precision 0.9941  | TPR_site 0.8726  precision_site 0.9849
+  42.4s
+RESULT	OW3c B+early+bseq+dir50+qconst	et	134	AUC 0.9922	std 0.0006	PR-AUC 0.9959	TPR@1% 0.8807	TPRsite@1% 0.8726
+mode=multi skip=14 model=rf  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9932 (fold std 0.0007)   PR-AUC 0.9964
+  t=0.5    TPR 0.7149  FPR 0.0002  precision 0.9998  | TPR_site 0.7145  precision_site 0.9993
+  FPR≤5%   TPR 0.9601  FPR 0.0492  precision 0.9737  | TPR_site 0.9413  precision_site 0.9547
+  FPR≤1%   TPR 0.9135  FPR 0.0099  precision 0.9943  | TPR_site 0.9056  precision_site 0.9857
+  106.6s
+RESULT	OW3c B+early+bseq+dir50+qconst	rf	134	AUC 0.9932	std 0.0007	PR-AUC 0.9964	TPR@1% 0.9135	TPRsite@1% 0.9056
+mode=multi skip=14 model=lr  log=True scale=True features=89  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9366 (fold std 0.0025)   PR-AUC 0.9610
+  t=0.5    TPR 0.7043  FPR 0.0682  precision 0.9515  | TPR_site 0.6549  precision_site 0.8847
+  FPR≤5%   TPR 0.6440  FPR 0.0500  precision 0.9607  | TPR_site 0.6103  precision_site 0.9104
+  FPR≤1%   TPR 0.4218  FPR 0.0100  precision 0.9877  | TPR_site 0.4150  precision_site 0.9718
+  244.2s
+RESULT	OW3c B+early+bseq+qconst	lr	89	AUC 0.9366	std 0.0025	PR-AUC 0.9610	TPR@1% 0.4218	TPRsite@1% 0.4150
+mode=multi skip=14 model=lr  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9664 (fold std 0.0020)   PR-AUC 0.9802
+  t=0.5    TPR 0.8546  FPR 0.0746  precision 0.9561  | TPR_site 0.7969  precision_site 0.8915
+  FPR≤5%   TPR 0.7922  FPR 0.0500  precision 0.9678  | TPR_site 0.7551  precision_site 0.9225
+  FPR≤1%   TPR 0.5430  FPR 0.0100  precision 0.9904  | TPR_site 0.5377  precision_site 0.9806
+  306.2s
+RESULT	OW3c B+early+bseq+dir50+qconst	lr	134	AUC 0.9664	std 0.0020	PR-AUC 0.9802	TPR@1% 0.5430	TPRsite@1% 0.5377
+DONE

@@ -1,0 +1,25 @@
+mode=binary model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 1.0000   PR-AUC 1.0000
+  t=0.5    TPR 0.9999  FPR 0.0001  precision 0.9999
+  FPR≤5%   TPR 0.9999  FPR 0.0383  precision 0.9802
+  FPR≤1%   TPR 0.9999  FPR 0.0093  precision 0.9951
+  5.3s
+mode=multi model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 1.0000   PR-AUC 1.0000
+  t=0.5    TPR 0.8264  FPR 0.0000  precision 1.0000  | TPR_site 0.8249  precision_site 0.9982
+  FPR≤5%   TPR 0.9999  FPR 0.0409  precision 0.9789  | TPR_site 0.9558  precision_site 0.9358
+  FPR≤1%   TPR 0.9999  FPR 0.0096  precision 0.9950  | TPR_site 0.9558  precision_site 0.9511
+  28.4s
+=== 시간 피처 제외
+mode=binary model=rf  log=False scale=False features=113  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 1.0000   PR-AUC 1.0000
+  t=0.5    TPR 0.9999  FPR 0.0002  precision 0.9999
+  FPR≤5%   TPR 0.9999  FPR 0.0434  precision 0.9776
+  FPR≤1%   TPR 0.9999  FPR 0.0083  precision 0.9956
+  5.3s
+mode=multi model=rf  log=False scale=False features=113  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 1.0000   PR-AUC 1.0000
+  t=0.5    TPR 0.8393  FPR 0.0000  precision 1.0000  | TPR_site 0.8365  precision_site 0.9967
+  FPR≤5%   TPR 0.9999  FPR 0.0333  precision 0.9828  | TPR_site 0.9546  precision_site 0.9382
+  FPR≤1%   TPR 0.9999  FPR 0.0093  precision 0.9951  | TPR_site 0.9546  precision_site 0.9500
+  22.7s

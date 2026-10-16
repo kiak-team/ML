@@ -1,0 +1,39 @@
+=== skip 14, 후보 131개
+mode=binary skip=14 model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9869   PR-AUC 0.9923
+  t=0.5    TPR 0.9895  FPR 0.1452  precision 0.9283
+  FPR≤5%   TPR 0.9263  FPR 0.0499  precision 0.9724
+  FPR≤1%   TPR 0.7484  FPR 0.0096  precision 0.9933
+  20.9s
+mode=multi skip=14 model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9917   PR-AUC 0.9956
+  t=0.5    TPR 0.6649  FPR 0.0000  precision 1.0000  | TPR_site 0.6645  precision_site 0.9995
+  FPR≤5%   TPR 0.9522  FPR 0.0488  precision 0.9737  | TPR_site 0.9313  precision_site 0.9523
+  FPR≤1%   TPR 0.8956  FPR 0.0094  precision 0.9945  | TPR_site 0.8865  precision_site 0.9844
+  53.2s
+=== skip 30, 후보 131개
+mode=binary skip=30 model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9579   PR-AUC 0.9760
+  t=0.5    TPR 0.9664  FPR 0.2738  precision 0.8702
+  FPR≤5%   TPR 0.7816  FPR 0.0481  precision 0.9686
+  FPR≤1%   TPR 0.5380  FPR 0.0097  precision 0.9906
+  24.4s
+mode=multi skip=30 model=rf  log=False scale=False features=131  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9629   PR-AUC 0.9812
+  t=0.5    TPR 0.5061  FPR 0.0006  precision 0.9994  | TPR_site 0.5051  precision_site 0.9975
+  FPR≤5%   TPR 0.8458  FPR 0.0467  precision 0.9718  | TPR_site 0.8257  precision_site 0.9486
+  FPR≤1%   TPR 0.7286  FPR 0.0092  precision 0.9934  | TPR_site 0.7225  precision_site 0.9851
+  62.5s
+=== skip 14, 시간 피처 제외
+mode=binary skip=14 model=rf  log=False scale=False features=113  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9869   PR-AUC 0.9925
+  t=0.5    TPR 0.9868  FPR 0.1431  precision 0.9291
+  FPR≤5%   TPR 0.9287  FPR 0.0492  precision 0.9729
+  FPR≤1%   TPR 0.7583  FPR 0.0100  precision 0.9931
+  20.3s
+mode=multi skip=14 model=rf  log=False scale=False features=113  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9916   PR-AUC 0.9956
+  t=0.5    TPR 0.7077  FPR 0.0002  precision 0.9998  | TPR_site 0.7071  precision_site 0.9989
+  FPR≤5%   TPR 0.9527  FPR 0.0459  precision 0.9753  | TPR_site 0.9297  precision_site 0.9517
+  FPR≤1%   TPR 0.8907  FPR 0.0091  precision 0.9946  | TPR_site 0.8822  precision_site 0.9851
+  39.6s

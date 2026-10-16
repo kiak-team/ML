@@ -1,0 +1,18 @@
+=== skip 14 | @all
+  ROC-AUC 0.9852 (fold std 0.0015)   PR-AUC 0.9923
+  FPR≤1%   TPR 0.8409  FPR 0.0096  precision 0.9941  | TPR_site 0.8341  precision_site 0.9860
+=== skip 14 | @all @early @bseq @dir50
+  ROC-AUC 0.9903 (fold std 0.0014)   PR-AUC 0.9949
+  FPR≤1%   TPR 0.8916  FPR 0.0099  precision 0.9942  | TPR_site 0.8840  precision_site 0.9858
+=== skip 14 | @all @early @bseq @dir50 @qconst
+  ROC-AUC 0.9932 (fold std 0.0007)   PR-AUC 0.9964
+  FPR≤1%   TPR 0.9135  FPR 0.0099  precision 0.9943  | TPR_site 0.9056  precision_site 0.9857
+=== skip 30 | @all
+  ROC-AUC 0.9585 (fold std 0.0033)   PR-AUC 0.9789
+  FPR≤1%   TPR 0.6938  FPR 0.0097  precision 0.9927  | TPR_site 0.6886  precision_site 0.9853
+=== skip 30 | @all @early @bseq @dir50
+  ROC-AUC 0.9645 (fold std 0.0041)   PR-AUC 0.9820
+  FPR≤1%   TPR 0.7320  FPR 0.0097  precision 0.9931  | TPR_site 0.7261  precision_site 0.9851
+=== skip 30 | @all @early @bseq @dir50 @qconst
+  ROC-AUC 0.9671 (fold std 0.0033)   PR-AUC 0.9833
+  FPR≤1%   TPR 0.7595  FPR 0.0100  precision 0.9931  | TPR_site 0.7517  precision_site 0.9829

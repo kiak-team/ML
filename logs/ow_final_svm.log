@@ -1,0 +1,6 @@
+mode=multi skip=14 model=svm  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9683 (fold std 0.0031)   PR-AUC 0.9840
+  t=0.5    TPR 1.0000  FPR 1.0000  precision 0.6552  | TPR_site 0.9381  precision_site 0.6146
+  FPR≤5%   TPR 0.9435  FPR 0.0500  precision 0.9729  | TPR_site 0.9143  precision_site 0.9428
+  FPR≤1%   TPR 0.7461  FPR 0.0100  precision 0.9930  | TPR_site 0.7341  precision_site 0.9770
+  1183.2s
