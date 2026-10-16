@@ -7,6 +7,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트
 ## 문서
 
 - [docs/WORK_SUMMARY.md](docs/WORK_SUMMARY.md): **데이터 전처리 담당 작업 전체 정리** (여기부터 읽기)
+- [docs/SCORES.md](docs/SCORES.md): **지금 점수가 무슨 뜻인지 쉽게 정리** (CV vs test, 현재 점수, 최종 점수 내는 순서)
 - [docs/PREPROCESSING.md](docs/PREPROCESSING.md): 데이터 전처리 작업 정리 (폴더 구조, 파일별 역할, 실행 방법, 결과, 변경 기록, 다음에 할 일)
 - [docs/DATA.md](docs/DATA.md): 데이터 설명
 - [docs/FEATURES.md](docs/FEATURES.md): 피처 55개 설명
