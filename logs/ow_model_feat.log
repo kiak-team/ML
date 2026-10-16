@@ -1,0 +1,36 @@
+﻿mode=multi skip=14 model=rf  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9932 (fold std 0.0007)   PR-AUC 0.9964
+  t=0.5    TPR 0.7149  FPR 0.0002  precision 0.9998  | TPR_site 0.7145  precision_site 0.9993
+  FPR≤5%   TPR 0.9601  FPR 0.0492  precision 0.9737  | TPR_site 0.9413  precision_site 0.9547
+  FPR≤1%   TPR 0.9135  FPR 0.0099  precision 0.9943  | TPR_site 0.9056  precision_site 0.9857
+  258.8s
+RESULT	OWf OW 후보 134	rf		134	0.9932	0.0007	0.9964	0.9135	0.9056	0.9943
+mode=multi skip=14 model=rf  log=False scale=False features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9903 (fold std 0.0014)   PR-AUC 0.9949
+  t=0.5    TPR 0.6271  FPR 0.0000  precision 1.0000  | TPR_site 0.6268  precision_site 0.9995
+  FPR≤5%   TPR 0.9445  FPR 0.0457  precision 0.9752  | TPR_site 0.9249  precision_site 0.9550
+  FPR≤1%   TPR 0.8916  FPR 0.0099  precision 0.9942  | TPR_site 0.8840  precision_site 0.9858
+  212.0s
+RESULT	OWf OW -qconst 121	rf		121	0.9903	0.0014	0.9949	0.8916	0.8840	0.9942
+mode=multi skip=14 model=rf  log=False scale=False features=147  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9939 (fold std 0.0008)   PR-AUC 0.9967
+  t=0.5    TPR 0.7271  FPR 0.0000  precision 1.0000  | TPR_site 0.7267  precision_site 0.9994
+  FPR≤5%   TPR 0.9642  FPR 0.0458  precision 0.9756  | TPR_site 0.9477  precision_site 0.9590
+  FPR≤1%   TPR 0.9136  FPR 0.0097  precision 0.9945  | TPR_site 0.9074  precision_site 0.9877
+  275.3s
+RESULT	OWf OW +cumulabs	rf		147	0.9939	0.0008	0.9967	0.9136	0.9074	0.9945
+mode=multi skip=14 model=rf  log=False scale=False features=184  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9930 (fold std 0.0009)   PR-AUC 0.9963
+  t=0.5    TPR 0.6953  FPR 0.0000  precision 1.0000  | TPR_site 0.6947  precision_site 0.9992
+  FPR≤5%   TPR 0.9602  FPR 0.0483  precision 0.9742  | TPR_site 0.9418  precision_site 0.9556
+  FPR≤1%   TPR 0.9105  FPR 0.0098  precision 0.9944  | TPR_site 0.9025  precision_site 0.9856
+  272.3s
+RESULT	OWf OW +dir (앞100셀)	rf		184	0.9930	0.0009	0.9963	0.9105	0.9025	0.9944
+mode=multi skip=14 model=rf  log=False scale=False features=116  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9933 (fold std 0.0008)   PR-AUC 0.9965
+  t=0.5    TPR 0.7492  FPR 0.0002  precision 0.9998  | TPR_site 0.7484  precision_site 0.9988
+  FPR≤5%   TPR 0.9623  FPR 0.0480  precision 0.9744  | TPR_site 0.9406  precision_site 0.9524
+  FPR≤1%   TPR 0.9118  FPR 0.0100  precision 0.9943  | TPR_site 0.9029  precision_site 0.9845
+  149.1s
+RESULT	OWf OW -timing	rf		116	0.9933	0.0008	0.9965	0.9118	0.9029	0.9943
+DONE
