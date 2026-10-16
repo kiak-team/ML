@@ -16,3 +16,9 @@ logs/experiments.csv
 # 가상환경 (각자 로컬)
 .venv/
 venv/
+
+# open-world 피처: 후보에 쓰는 ow_skip14만 올린다. 나머지는 확인용이라 features_ow.py로 다시 만든다
+# (ow_skip0 = 기존 CSV와 같은 값, ow_skip20/30 = 버리는 셀 수 비교용)
+features/ow_skip0_*.csv
+features/ow_skip20_*.csv
+features/ow_skip30_*.csv

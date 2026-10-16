@@ -277,9 +277,9 @@ RF를 시드 3개로 반복했다. **시드 변동폭은 최대 0.09%p**로 작�
 
 - [ ] **test 분할 (팀 결정)**: 마지막 방문(inst 19)이 다른 방문보다 짧고 느려서 test 정확도가 CV보다 크게 낮다([PREPROCESSING.md](PREPROCESSING.md) "마지막 방문" 절). 유지할지, 바꿀지
 - [ ] 6단계 (모델 선정 담당): 후보 피처셋(C + @dir50, **118개**)으로 후보 모델 2~3개(RF, ET, SVM 등) 하이퍼파라미터 튜닝 (train 내부 CV) → 모델 선택. 4b단계 결정에 따라 **모델별로 피처셋을 다르게 둔다**(RF는 @cumulabs 추가 검토, SVM·k-NN·LR은 @dir50 유지)
-- [ ] **open-world (팀 결정)**: `@qconst` 13개를 쓸지. mon/unmon을 AUC 0.9999로 가르지만 사이트 구분력은 우연 수준이다(4b단계). 쓰면 점수가 수집 환경 차이로 부풀 수 있다
+- [x] **open-world**: `@qconst` 문제 해결. 흔적은 앞 14셀에 있으므로 open-world 피처는 앞 14셀을 버리고 다시 계산한다. 그러면 `@qconst` 이름의 피처는 15번째 셀 이후를 가리켜 흔적이 아니다. open-world 후보는 `@all @early @bseq @dir50 @qconst`(134개) → [OPENWORLD.md](OPENWORLD.md)
 - [ ] k-NN·SVM·LR용 전처리 확인: 피처 수가 늘어 표준화 외에 피처 가중치나 선택이 필요한지
 - [ ] 7단계: test로 최종 1회 평가
-- [ ] open-world: unmon 라벨·분할·임계값. mon/unmon 분포 차이 주의
+- [x] open-world: unmon 라벨·분할, 피처 실험 → [OPENWORLD.md](OPENWORLD.md). 남은 것: 임계값, PR·ROC 그래프, 모델 튜닝, test
 - [ ] 0단계 중요도를 train 내부에서 다시 계산
 - [ ] 피처 선택과 평가를 같은 CV로 했다. 여러 조합 중 가장 좋은 것을 골랐으므로 후보 피처셋의 CV 점수는 약간 낙관적이다. 7단계 test로 확인한다

@@ -16,7 +16,8 @@ wf_project/
 │  ├─ PREPROCESSING.md        ← 이 파일 (전처리 작업 정리)
 │  ├─ DATA.md                 데이터 설명 (구조, 통계, 품질 점검)
 │  ├─ FEATURES.md             피처 55개 설명
-│  └─ EXPERIMENTS.md          피처 선택 실험 기록 (단계별 가설·결과·결정)
+│  ├─ EXPERIMENTS.md          피처 선택 실험 기록 (단계별 가설·결과·결정)
+│  └─ OPENWORLD.md            open-world 실험 기록 (앞 14셀 흔적, 피처 실험)
 ├─ code/
 │  ├─ load_data.py            ① 공용 데이터 로더
 │  ├─ check_data.py           ② 데이터 품질 점검
@@ -27,14 +28,18 @@ wf_project/
 │  ├─ experiment.py           ⑦ 피처·모델을 골라 직접 실험 (sklearn 필요)
 │  ├─ features_extra.py       ⑧ 추가 피처 150개 추출 (3단계 실험용)
 │  ├─ features_extra2.py      ⑧-2 추가 피처 2차 추출 (4단계 실험용)
-│  └─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
+│  ├─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
+│  ├─ features_ow.py          ⑩ open-world용 피처: 앞 K셀을 버리고 다시 계산
+│  ├─ openworld.py            ⑪ open-world 실험 도구 (sklearn 필요)
+│  └─ run_ow_stages.py        ⑫ OPENWORLD.md의 단계별 실험 배치
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
 │  ├─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
 │  ├─ features_extra_mon.csv  ⑧이 저장한 추가 피처 (19,000행 × site,url,inst + 150열)
 │  ├─ features_extra_unmon.csv ⑧이 저장한 추가 피처 (10,000행 × 150열)
 │  ├─ features_extra2_mon.csv ⑧-2가 저장한 추가 피처 (19,000행 × site,url,inst + 171열)
-│  └─ features_extra2_unmon.csv ⑧-2가 저장한 추가 피처 (10,000행 × 171열)
+│  ├─ features_extra2_unmon.csv ⑧-2가 저장한 추가 피처 (10,000행 × 171열)
+│  └─ ow_skip14_mon/unmon.csv ⑩이 저장한 open-world 피처 (376열). K = 0, 20, 30은 확인용이라 git에 올리지 않음
 └─ logs/                      각 코드의 실행 출력
    ├─ check_data.log          ②의 출력
    ├─ explore.log             ③의 출력
@@ -43,7 +48,9 @@ wf_project/
    ├─ feature_importance.log  ⑥의 출력
    ├─ experiments.csv         ⑦의 실험 기록 (각자 로컬, git에 올리지 않음)
    ├─ features_extra2_run.log ⑧-2의 출력
-   └─ stage1~4.log            ⑨의 단계별 결과
+   ├─ stage1~4.log            ⑨의 단계별 결과
+   ├─ features_ow_run.log     ⑩의 출력
+   └─ openworld_*.log, ow_*.log ⑪⑫의 결과 (OPENWORLD.md 5절)
 ```
 
 ### ① `code/load_data.py`: 공용 데이터 로더 (**팀 전원이 이 파일로 데이터를 읽는다**)
@@ -125,6 +132,15 @@ python -I -X utf8 code/run_stages.py 3 | tee logs/stage3.log          # 약 1시
 ```
 python -I -X utf8 code/features_extra2.py <pkl 폴더> features        # 약 1분
 python -I -X utf8 code/run_stages.py 4 | tee logs/stage4.log          # 약 30분
+```
+
+### ⑩ `code/features_ow.py`, ⑪ `code/openworld.py`, ⑫ `code/run_ow_stages.py`: open-world
+mon과 unmon은 처음 14셀이 수집 환경 차이로 다르다([OPENWORLD.md](OPENWORLD.md) 2절). ⑩은 기록의 앞 K셀을 버리고 ④⑧⑧-2의 피처를 전부 다시 계산해 `features/ow_skip<K>_*.csv`로 저장한다. ⑪은 mon + unmon으로 open-world 실험을 한다(피처 지정은 ⑦과 같다). ⑫는 단계별 실험을 다시 돌린다.
+
+```
+python -I -X utf8 code/features_ow.py <pkl 폴더> features 14            # K당 약 2분
+python -I -X utf8 code/openworld.py @all @early @bseq @dir50 @qconst --skip 14 --mode multi   # 후보, RF 약 1분
+python -I -X utf8 code/run_ow_stages.py 3c nosvm | tee logs/ow_stage3c_main.log
 ```
 
 ## 실행 방법
@@ -228,12 +244,13 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - **2026-10-15**: 직접 실험용 `experiment.py`(⑦) 추가. 마지막 방문(inst 19)의 수집 상태가 다르다는 것을 확인했다.
 - **2026-10-15**: 단계별 피처 실험(⑧⑨, [EXPERIMENTS.md](EXPERIMENTS.md)) 추가. 2단계 결과로 상수 피처 3개 제거를 채택했다.
 - **2026-10-15**: 4단계 실험(⑧-2) 추가. 처음 50셀의 방향값(@dir50)을 채택해 후보 피처셋을 131개로 바꿨다. 31~100번째 버스트 길이(@bseqlong)는 기각했다.
+- **2026-10-16**: open-world 실험 추가(⑩⑪⑫, [OPENWORLD.md](OPENWORLD.md)). mon과 unmon은 처음 14셀이 수집 환경 차이로 달라서, open-world 피처는 앞 14셀을 버리고 다시 계산한다. open-world 후보 피처셋 134개.
 
 ## 다음에 할 일 (전처리 담당)
 
 - [ ] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포
 - [ ] 시퀀스 모델(DF 등)용 입력: 고정 길이(예: 5,000)로 자르기/0 채우기. 잘리는 기록 비율도 확인
-- [ ] open-world용 데이터: unmon 라벨(예: -1) 결정과 train/test 분할
+- [x] open-world용 데이터: unmon 라벨 −1, 무작위 분할(test 1,000개), 앞 14셀 흔적 제거, 피처 실험 ([OPENWORLD.md](OPENWORLD.md))
 - [x] 피처 정리: 상수 피처(`in_burst_1~3`) 제거 채택. 길이 계열 축소와 시간 그룹 제거는 모델에 따라 손해라 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 2단계)
 - [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
 - [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`

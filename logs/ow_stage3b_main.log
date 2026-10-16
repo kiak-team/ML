@@ -1,0 +1,98 @@
+mode=multi skip=14 model=knn  log=True scale=True features=85  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9166 (fold std 0.0025)   PR-AUC 0.9374
+  t=0.5    TPR 0.8171  FPR 0.1449  precision 0.9146  | TPR_site 0.7584  precision_site 0.8489
+  FPR≤5%   TPR 0.5326  FPR 0.0197  precision 0.9809  | TPR_site 0.5284  precision_site 0.9732
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  3.1s
+RESULT	OW3b B+early+bseq	knn	85	AUC 0.9166	std 0.0025	PR-AUC 0.9374	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=85  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9804 (fold std 0.0021)   PR-AUC 0.9902
+  t=0.5    TPR 0.6550  FPR 0.0000  precision 1.0000  | TPR_site 0.6544  precision_site 0.9991
+  FPR≤5%   TPR 0.9105  FPR 0.0446  precision 0.9749  | TPR_site 0.8971  precision_site 0.9606
+  FPR≤1%   TPR 0.8549  FPR 0.0100  precision 0.9939  | TPR_site 0.8495  precision_site 0.9877
+  35.3s
+RESULT	OW3b B+early+bseq	et	85	AUC 0.9804	std 0.0021	PR-AUC 0.9902	TPR@1% 0.8549	TPRsite@1% 0.8495
+mode=multi skip=14 model=rf  log=False scale=False features=85  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9905 (fold std 0.0011)   PR-AUC 0.9950
+  t=0.5    TPR 0.6420  FPR 0.0001  precision 0.9999  | TPR_site 0.6416  precision_site 0.9993
+  FPR≤5%   TPR 0.9442  FPR 0.0451  precision 0.9755  | TPR_site 0.9261  precision_site 0.9568
+  FPR≤1%   TPR 0.8885  FPR 0.0093  precision 0.9945  | TPR_site 0.8815  precision_site 0.9866
+  98.4s
+RESULT	OW3b B+early+bseq	rf	85	AUC 0.9905	std 0.0011	PR-AUC 0.9950	TPR@1% 0.8885	TPRsite@1% 0.8815
+mode=multi skip=14 model=knn  log=True scale=True features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9209 (fold std 0.0055)   PR-AUC 0.9407
+  t=0.5    TPR 0.8381  FPR 0.1509  precision 0.9134  | TPR_site 0.7757  precision_site 0.8454
+  FPR≤5%   TPR 0.5522  FPR 0.0188  precision 0.9824  | TPR_site 0.5470  precision_site 0.9731
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  6.3s
+RESULT	OW3b B+early+bseq+dir50	knn	121	AUC 0.9209	std 0.0055	PR-AUC 0.9407	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9863 (fold std 0.0012)   PR-AUC 0.9931
+  t=0.5    TPR 0.6747  FPR 0.0000  precision 1.0000  | TPR_site 0.6743  precision_site 0.9993
+  FPR≤5%   TPR 0.9337  FPR 0.0454  precision 0.9750  | TPR_site 0.9118  precision_site 0.9521
+  FPR≤1%   TPR 0.8740  FPR 0.0093  precision 0.9944  | TPR_site 0.8663  precision_site 0.9856
+  35.3s
+RESULT	OW3b B+early+bseq+dir50	et	121	AUC 0.9863	std 0.0012	PR-AUC 0.9931	TPR@1% 0.8740	TPRsite@1% 0.8663
+mode=multi skip=14 model=rf  log=False scale=False features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9903 (fold std 0.0014)   PR-AUC 0.9949
+  t=0.5    TPR 0.6271  FPR 0.0000  precision 1.0000  | TPR_site 0.6268  precision_site 0.9995
+  FPR≤5%   TPR 0.9445  FPR 0.0457  precision 0.9752  | TPR_site 0.9249  precision_site 0.9550
+  FPR≤1%   TPR 0.8916  FPR 0.0099  precision 0.9942  | TPR_site 0.8840  precision_site 0.9858
+  87.7s
+RESULT	OW3b B+early+bseq+dir50	rf	121	AUC 0.9903	std 0.0014	PR-AUC 0.9949	TPR@1% 0.8916	TPRsite@1% 0.8840
+mode=multi skip=14 model=knn  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9216 (fold std 0.0046)   PR-AUC 0.9411
+  t=0.5    TPR 0.8415  FPR 0.1526  precision 0.9129  | TPR_site 0.7794  precision_site 0.8455
+  FPR≤5%   TPR 0.5602  FPR 0.0194  precision 0.9821  | TPR_site 0.5554  precision_site 0.9736
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  5.6s
+RESULT	OW3b B+early+bseq+dir50+cumulabs	knn	134	AUC 0.9216	std 0.0046	PR-AUC 0.9411	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9867 (fold std 0.0015)   PR-AUC 0.9932
+  t=0.5    TPR 0.6904  FPR 0.0001  precision 0.9999  | TPR_site 0.6899  precision_site 0.9992
+  FPR≤5%   TPR 0.9354  FPR 0.0489  precision 0.9732  | TPR_site 0.9178  precision_site 0.9549
+  FPR≤1%   TPR 0.8770  FPR 0.0097  precision 0.9942  | TPR_site 0.8708  precision_site 0.9872
+  38.9s
+RESULT	OW3b B+early+bseq+dir50+cumulabs	et	134	AUC 0.9867	std 0.0015	PR-AUC 0.9932	TPR@1% 0.8770	TPRsite@1% 0.8708
+mode=multi skip=14 model=rf  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9903 (fold std 0.0014)   PR-AUC 0.9949
+  t=0.5    TPR 0.6474  FPR 0.0001  precision 0.9999  | TPR_site 0.6470  precision_site 0.9994
+  FPR≤5%   TPR 0.9460  FPR 0.0473  precision 0.9743  | TPR_site 0.9287  precision_site 0.9565
+  FPR≤1%   TPR 0.8968  FPR 0.0094  precision 0.9945  | TPR_site 0.8901  precision_site 0.9870
+  98.9s
+RESULT	OW3b B+early+bseq+dir50+cumulabs	rf	134	AUC 0.9903	std 0.0014	PR-AUC 0.9949	TPR@1% 0.8968	TPRsite@1% 0.8901
+mode=multi skip=14 model=knn  log=True scale=True features=118  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9104 (fold std 0.0049)   PR-AUC 0.9338
+  t=0.5    TPR 0.8147  FPR 0.1526  precision 0.9103  | TPR_site 0.7488  precision_site 0.8366
+  FPR≤5%   TPR 0.5208  FPR 0.0180  precision 0.9821  | TPR_site 0.5146  precision_site 0.9706
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  5.8s
+RESULT	OW3b closed-world 131	knn	118	AUC 0.9104	std 0.0049	PR-AUC 0.9338	TPR@1% 0.0000	TPRsite@1% 0.0000
+mode=multi skip=14 model=et  log=False scale=False features=118  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9783 (fold std 0.0024)   PR-AUC 0.9891
+  t=0.5    TPR 0.6233  FPR 0.0001  precision 0.9999  | TPR_site 0.6225  precision_site 0.9986
+  FPR≤5%   TPR 0.9044  FPR 0.0490  precision 0.9723  | TPR_site 0.8809  precision_site 0.9471
+  FPR≤1%   TPR 0.8299  FPR 0.0098  precision 0.9938  | TPR_site 0.8216  precision_site 0.9839
+  41.3s
+RESULT	OW3b closed-world 131	et	118	AUC 0.9783	std 0.0024	PR-AUC 0.9891	TPR@1% 0.8299	TPRsite@1% 0.8216
+mode=multi skip=14 model=rf  log=False scale=False features=118  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9739 (fold std 0.0035)   PR-AUC 0.9867
+  t=0.5    TPR 0.5072  FPR 0.0006  precision 0.9994  | TPR_site 0.5065  precision_site 0.9980
+  FPR≤5%   TPR 0.8823  FPR 0.0469  precision 0.9728  | TPR_site 0.8605  precision_site 0.9487
+  FPR≤1%   TPR 0.8006  FPR 0.0092  precision 0.9940  | TPR_site 0.7918  precision_site 0.9830
+  78.5s
+RESULT	OW3b closed-world 131	rf	118	AUC 0.9739	std 0.0035	PR-AUC 0.9867	TPR@1% 0.8006	TPRsite@1% 0.7918
+mode=multi skip=14 model=lr  log=True scale=True features=85  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9120 (fold std 0.0030)   PR-AUC 0.9479
+  t=0.5    TPR 0.6565  FPR 0.0680  precision 0.9483  | TPR_site 0.6091  precision_site 0.8798
+  FPR≤5%   TPR 0.5999  FPR 0.0500  precision 0.9580  | TPR_site 0.5669  precision_site 0.9052
+  FPR≤1%   TPR 0.3447  FPR 0.0100  precision 0.9850  | TPR_site 0.3399  precision_site 0.9713
+  146.5s
+RESULT	OW3b B+early+bseq	lr	85	AUC 0.9120	std 0.0030	PR-AUC 0.9479	TPR@1% 0.3447	TPRsite@1% 0.3399
+mode=multi skip=14 model=lr  log=True scale=True features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9346 (fold std 0.0042)   PR-AUC 0.9614
+  t=0.5    TPR 0.7469  FPR 0.0860  precision 0.9429  | TPR_site 0.6880  precision_site 0.8684
+  FPR≤5%   TPR 0.6477  FPR 0.0500  precision 0.9610  | TPR_site 0.6161  precision_site 0.9141
+  FPR≤1%   TPR 0.4205  FPR 0.0100  precision 0.9876  | TPR_site 0.4151  precision_site 0.9749
+  222.7s
+RESULT	OW3b B+early+bseq+dir50	lr	121	AUC 0.9346	std 0.0042	PR-AUC 0.9614	TPR@1% 0.4205	TPRsite@1% 0.4151
