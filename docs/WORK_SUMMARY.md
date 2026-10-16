@@ -16,9 +16,9 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | 항목 | 내용 |
 |---|---|
 | 한 일 | ① 데이터 전처리(로딩 규칙 통일, 품질 점검, 피처 추출) ② 모델을 도구로 쓴 1차 피처 검증(피처를 넣고 뺄 때 성능 변화 확인) |
-| 하지 않은 일 | 모델 선택, 하이퍼파라미터 튜닝, test 최종 평가, open-world 임계값·그래프 → 모델 담당 또는 다음 작업 |
+| 하지 않은 일 | 모델 선택, 하이퍼파라미터 튜닝, test 최종 평가 → 모델 담당. open-world 임계값 → 팀 결정(표는 준비됨) |
 | 핵심 결과 | 기록 **앞부분의 방향 패턴**(처음 N셀 중 송신 수, 앞쪽 버스트 길이 순서)을 피처로 추가해 정확도가 크게 올랐다. RF 기준 87.9% → **95.5%** (train 내부 교차검증, 기본 하이퍼파라미터) |
-| 후보 피처셋 | 현재 **118개** = 기존 55개 − 상수 3개 + `@early` 6개 + `@bseq` 24개 + `@dir50` 36개. (10/15 이전 문서의 "131개"에서 정보 없는 준상수 13개를 뺀 값이다 → 4b단계)<br>**6단계 제안: 여기에 `@cumulabs` 13개를 더한 131개로 바꾸자.** 5개 모델 전부에서 118개보다 높고 시드 3개로 재현했다. 개수가 4b단계 이전 131개와 우연히 같을 뿐 구성이 다르다 → 팀 결정 필요 |
+| 후보 피처셋 | **131개** = 기존 55개 − 상수 3개 + `@early` 6개 + `@bseq` 24개 + `@cumulabs` 13개 + `@dir50` 36개 (`@all -@const @early @bseq @cumulabs @dir50`). 6단계(10/16)에서 이전 후보 118개에 `@cumulabs`를 더했다. 5개 모델 전부에서 118개보다 높고 시드 3개로 재현했다.<br>⚠ 4단계(10/15)의 "131개"와 개수만 같고 구성이 다르다. 그때는 준상수 13개가 들어 있었다(4b단계에서 제거) |
 | open-world | mon과 unmon은 **처음 14셀이 수집 환경 차이로 다르다**(그대로 쓰면 ROC-AUC 1.0000). open-world 피처는 앞 14셀을 버리고 다시 계산한다. 후보 134개, RF ROC-AUC 0.993, unmon 오판 1%일 때 mon의 91.4%를 잡는다 → [OPENWORLD.md](OPENWORLD.md) |
 | 발견한 문제 | 마지막 방문(inst 19)의 기록이 다른 방문보다 짧고 느리다. 현재 test 분할(inst 18~19)은 정확도가 낮게 나온다 → **팀 결정 필요** |
 
@@ -222,7 +222,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 **재현되는 것과 아닌 것**: **88% → 95%(앞부분 방향 패턴)는 노이즈의 15배로 확실하다.** 95.4 vs 95.7 중 무엇이 최고인지는 이 노이즈 수준에서 정하기 어렵다. 86 / 99 / 118 / 131 / 181이 모두 95.4~95.7% 안에 있다.
 
 ### 4.9 결론
-- **후보 피처셋: 118개** (기존 55개 − `in_burst_1~3` + `@early` + `@bseq` + `@dir50`, 준상수 13개 제외). 최종 모델이 RF·ET라면 `@dir50`을 뺀 82개로도 같은 수준이고, RF만 보면 `@cumulabs`를 더한 쪽이 0.3%p 높다
+- **후보 피처셋: 131개** (기존 55개 − `in_burst_1~3` + `@early` + `@bseq` + `@cumulabs` + `@dir50`, 준상수 13개 제외). 4b단계 직후에는 118개였고, 6단계(10/16)에서 `@cumulabs`를 더했다. 최종 모델이 RF·ET로 확정되면 `@dir`(181개)도 후보다(트리에서만 +0.10%p)
 - **단일 공통 피처셋을 먼저 확정하려는 전제를 버렸다.** 모델이 정해진 뒤 모델별로 피처셋을 정하는 순서가 맞다 (4b단계)
 - 사이트 정보는 **기록 앞부분의 방향 패턴**에 가장 많다. 페이지 로딩 초반에 어떤 순서로 요청하고 받는지가 사이트마다 다르기 때문으로 보인다.
 - 시간 피처는 트리 모델에는 불필요하지만 SVM·LR에는 필요하다 → **모델별로 다르게 쓴다.**
@@ -246,6 +246,10 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | `code/run_model_stages.py` | 피처셋 × 모델 후보군 비교 (6단계). `a` = 피처셋 6개 × 모델 5개, `b` = 시드 3개 반복 |
 | `code/run_ow_model_stages.py` | open-world 피처셋 교차 확인 (OPENWORLD.md 3.8) |
 | `code/run_stages.py` | 1~4단계 실험 재현 배치 |
+| `code/run_scaling_stages.py` | k-NN·SVM·LR 전처리 점검 (6c단계) |
+| `code/feature_importance_cv.py` | 피처 중요도를 train 내부 CV로 다시 계산 (0단계 누수 제거) |
+| `code/plots.py` | 제안서용 그래프 → `figures/*.png` |
+| `code/sequences.py` | 시퀀스 모델용 고정 길이 입력 → `sequences/*.npz` (git 제외) |
 | `code/features_ow.py` | open-world용 피처: 앞 K셀을 버리고 다시 계산 |
 | `code/openworld.py` | **open-world 실험 도구** (팀 공용, 피처 지정은 `experiment.py`와 같음) |
 | `code/run_ow_stages.py` | open-world 단계별 실험 재현 배치 |
@@ -264,6 +268,8 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | 10/15 | RF 중요도 분석, inst 19 문제 발견, 실험 도구 제작, 1~3b단계 피처 실험, 추가 피처로 95.5%, 4단계 실험(@dir50 채택) |
 | 10/15 | 4b단계: 개별 피처 점검으로 준상수 13개 제거(131 → 118개), 시드 반복으로 피처 개수가 확정적이지 않음을 확인, `@qconst` 신설 |
 | 10/16 | open-world: 앞 14셀 수집 환경 흔적 발견·제거, 이진 vs 96클래스 비교, 단계별 피처 실험(후보 134개) |
+| 10/16 | 6단계(김민주): 피처셋 × 모델 후보군 비교 → closed-world 후보를 118 → 131개(`@cumulabs` 추가)로 변경 |
+| 10/16 | 튜닝 전 마무리: 그래프 7개, open-world 곡선·임계값 표, 시퀀스 입력, 비트리 모델 전처리(그룹 가중치), train 내부 중요도 |
 
 ---
 
@@ -273,8 +279,8 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 ```
 pip install -r requirements.txt
 python -I -X utf8 code/experiment.py --list                                   # 피처·그룹·모델 목록
-python -I -X utf8 code/experiment.py @all -@const @early @bseq @dir50 -m rf    # 후보 피처셋 118개
-python -I -X utf8 code/experiment.py @all -@const @early @bseq @dir50 -m svm -p C=100 -p gamma=0.01
+python -I -X utf8 code/experiment.py @all -@const @early @bseq @cumulabs @dir50 -m rf    # 후보 피처셋 131개
+python -I -X utf8 code/experiment.py @all -@const @early @bseq @cumulabs @dir50 -m svm -p C=100 -p gamma=0.01
 ```
 - PowerShell에서는 `@`가 splat 연산자라 따옴표가 필요하다: `'@all' '-@const' '@early' ...`
 - 4b단계 이후 그룹 정의가 바뀌었다. `logs/stage*.log`의 피처 수(131 등)를 재현하려면 맨 뒤에 `@qconst`를 붙인다.
@@ -282,23 +288,26 @@ python -I -X utf8 code/experiment.py @all -@const @early @bseq @dir50 -m svm -p 
 ```python
 import sys; sys.path.insert(0, 'code')
 from experiment import run
-r = run(['@all', '-@const', '@early', '@bseq', '@dir50'], model='rf', n_estimators=500)
+r = run(['@all', '-@const', '@early', '@bseq', '@cumulabs', '@dir50'], model='rf', n_estimators=500)
 ```
 - 기본은 train 내부 5-fold CV다. `--test`는 최종 1회만 쓴다.
 - 결과는 `logs/experiments.csv`에 쌓인다(개인 기록, git 제외).
 
 ### 6.2 지켜야 할 것
 1. **test(inst 18~19)는 마지막에 한 번만** 쓴다. 튜닝과 모델 비교는 CV로 한다.
-2. 모델별 전처리가 다르다. 트리 모델은 원본 값, SVM·k-NN·LR은 log 변환 후 표준화(`experiment.py`가 자동으로 처리).
+2. 모델별 전처리가 다르다. 트리 모델은 원본 값, SVM·k-NN·LR은 log 변환 후 표준화(`experiment.py`가 자동으로 처리). **SVM·k-NN은 `--gw`(그룹 가중치)를 켜는 것을 제안한다**: 후보 131개에서 k-NN 90.4 → 91.9%, SVM 94.9 → 95.3%. LR은 gw를 켜면 90.0 → 88.1%로 떨어지므로 켜지 않는다 (EXPERIMENTS.md 6c단계)
 3. 지금의 모델별 점수는 **기본 하이퍼파라미터 결과**라 모델 순위가 아니다.
 4. CV 점수와 test 점수를 직접 비교하지 않는다(inst 19 문제).
 
 ### 6.3 모델 담당이 할 일 (제안)
-- 후보 피처셋(118개)으로 RF, ET, SVM 등 하이퍼파라미터 튜닝 (train 내부 CV)
+- 후보 피처셋(131개)으로 RF, ET, SVM 등 하이퍼파라미터 튜닝 (train 내부 CV). 그리드 제안은 EXPERIMENTS.md 6단계
 - 모델 선택과 근거 정리 (제안서 "쓸 모델과 이유")
 - **모델별로 피처셋을 다르게 두는 것을 기본으로 한다** (4b단계). 단일 공통 피처셋이 하나로 존재한다는 전제는 데이터가 지지하지 않는다
   - RF·ET: `@dir50` 없이 82개로도 같은 수준. `@cumulabs`를 더하면 시드 3개 모두에서 0.3%p 높다
   - SVM·k-NN·LR: `@dir50`이 +1.7~5.8%p로 필요하다. LR은 `@cumulabs` 추가 시 +1.6%p
+- SVM·k-NN 튜닝 그리드에 `gw` 켬/끔을 함께 넣는다(기본값에서는 5개 fold 전부 켠 쪽이 높았다)
+- open-world 모델을 튜닝하면 `plots.py ow`로 곡선·임계값 표를 다시 만든다(`logs/ow_cv_scores.npz`를 지우고 실행)
+- 시퀀스 모델(DF 등)을 쓰면 `sequences/seq_L5000_skip*.npz`를 입력으로 쓴다(PREPROCESSING.md "시퀀스 입력" 절)
 - 피처셋 비교는 **시드를 2~3개 돌려서** 본다. 시드 변동폭이 최대 0.09%p로 작아 0.3%p 차이도 구분된다. fold 간 표준편차(0.4%p) 기준의 1%p 규칙은 짝지은 비교에는 둔하다
 
 ---
@@ -308,9 +317,9 @@ r = run(['@all', '-@const', '@early', '@bseq', '@dir50'], model='rf', n_estimato
 | 안건 | 선택지 | 비고 |
 |---|---|---|
 | **test 분할** | (a) inst 18~19 유지: 환경 변화에 대한 강건성까지 평가, 점수는 낮게 나옴 (b) 방문마다 골고루 뽑도록 변경: 일반 성능 평가 | 정한 이유를 보고서에 써야 한다 |
-| **open-world 임계값** | unmon을 잘못 잡는 비율(FPR)을 얼마까지 허용할지 (예: 1%) | 보고할 TPR·precision이 이것으로 정해진다 ([OPENWORLD.md](OPENWORLD.md)) |
-| **시퀀스 모델(DF 등) 사용 여부** | 가산점(TrafficSliver) 과제에 필요할 가능성 | 입력 길이 결정 필요 |
-| **closed-world 후보를 131개로 바꿀지** | (a) 바꾼다 — 5개 모델 전부 개선(+0.12~0.98%p), 시드 3개 재현 (b) 118개 유지 — 여러 문서에 반영돼 있어 바꾸는 비용 | 6단계. 바꾸면 EXPERIMENTS.md·WORK_SUMMARY.md·README.md를 함께 고쳐야 한다 |
+| **open-world 임계값** | unmon을 잘못 잡는 비율(FPR)을 얼마까지 허용할지. 예: 1% → TPR 91.4%, 0.1% → TPR 79.8% | FPR 목표별 표는 [OPENWORLD.md](OPENWORLD.md) 3.9. 현실 비율(unmon 100배)이면 FPR 1%의 precision이 48%라 0.1%도 고려할 만하다 |
+| **시퀀스 모델(DF 등) 사용 여부** | 가산점(TrafficSliver) 과제에 필요할 가능성 | 입력은 L = 5,000으로 만들어 뒀다(mon 33% 잘림). 10,000이면 잘림 0%, 입력 2배 |
+| ~~closed-world 후보를 131개로 바꿀지~~ | **결정 (10/16): 바꾼다** — 5개 모델 전부 개선(+0.12~0.98%p), 시드 3개 재현 | 6단계. 문서 반영 완료 |
 | **181개(트리 전용)를 후보에 넣을지** | 트리에서만 +0.10%p(시드 변동폭과 겹침), 나머지 3개 모델은 0.7~2.1%p 하락 | 최종 모델이 RF·ET로 확정된 뒤 결정해도 된다 |
 
 ---
@@ -318,11 +327,14 @@ r = run(['@all', '-@const', '@early', '@bseq', '@dir50'], model='rf', n_estimato
 ## 8. 전처리 담당으로 남은 일
 
 - [x] open-world 데이터 준비: unmon 라벨, train/test 분할, 앞 14셀 흔적 제거, 피처 실험 ([OPENWORLD.md](OPENWORLD.md))
-- [ ] open-world PR·ROC 그래프 (제안서용)
-- [ ] inst 19 문제: 팀 결정용 선택지와 근거 자료
-- [ ] 시퀀스 모델용 입력: 고정 길이 자르기/채우기, 잘리는 기록 비율 확인
-- [ ] 제안서용 그래프: 길이·지속 시간 분포, 피처 실험 결과
-- [ ] 0단계 중요도를 train 내부에서 다시 계산 (누수 제거)
+- [x] open-world PR·ROC 그래프, 임계값 표, mon:unmon 비율별 precision 표 ([OPENWORLD.md](OPENWORLD.md) 3.9)
+- [x] inst 19 문제: 근거 그래프 `figures/data_by_inst.png` (선택지는 7절. 결정은 팀)
+- [x] 시퀀스 모델용 입력: L = 5,000, 잘리는 비율 확인 (PREPROCESSING.md ⑯)
+- [x] 제안서용 그래프 7개 → `figures/` (PREPROCESSING.md "그래프" 절)
+- [x] 0단계 중요도를 train 내부에서 다시 계산 (EXPERIMENTS.md 0단계 재확인)
+- [x] k-NN·SVM·LR용 전처리 점검 → k-NN·SVM은 그룹 가중치 `--gw`, LR은 지금 방식 유지 (EXPERIMENTS.md 6c단계)
+
+튜닝 전 전처리 작업은 여기까지다. 남은 것은 팀 결정(7절)과 모델 담당의 튜닝·test 평가다.
 
 ## 9. 한계
 

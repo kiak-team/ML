@@ -31,7 +31,14 @@ wf_project/
 │  ├─ run_stages.py           ⑨ EXPERIMENTS.md의 단계별 실험 배치
 │  ├─ features_ow.py          ⑩ open-world용 피처: 앞 K셀을 버리고 다시 계산
 │  ├─ openworld.py            ⑪ open-world 실험 도구 (sklearn 필요)
-│  └─ run_ow_stages.py        ⑫ OPENWORLD.md의 단계별 실험 배치
+│  ├─ run_ow_stages.py        ⑫ OPENWORLD.md의 단계별 실험 배치
+│  ├─ run_model_stages.py     EXPERIMENTS.md 6단계 배치 (피처셋 × 모델), run_ow_model_stages.py는 OPENWORLD.md 3.8
+│  ├─ run_scaling_stages.py   ⑬ k-NN·SVM·LR용 전처리 점검 (EXPERIMENTS.md 6c단계)
+│  ├─ feature_importance_cv.py ⑭ 피처 중요도를 train 내부에서만 다시 계산 (⑥의 누수 없는 버전)
+│  ├─ plots.py                ⑮ 제안서용 그래프 → figures/
+│  └─ sequences.py            ⑯ 시퀀스 모델(DF 등)용 고정 길이 입력 → sequences/
+├─ figures/                   ⑮가 만든 그래프 (PNG)
+├─ sequences/                 ⑯이 만든 npz (용량이 커서 git에 올리지 않음)
 ├─ features/
 │  ├─ features_mon.csv        ④가 저장한 mon 피처 (19,000행 × site,url,inst + 55열)
 │  ├─ features_unmon.csv      ④가 저장한 unmon 피처 (10,000행 × 55열)
@@ -143,6 +150,28 @@ python -I -X utf8 code/openworld.py @all @early @bseq @dir50 @qconst --skip 14 -
 python -I -X utf8 code/run_ow_stages.py 3c nosvm | tee logs/ow_stage3c_main.log
 ```
 
+### ⑬ `code/run_scaling_stages.py`: k-NN·SVM·LR용 전처리 점검
+후보 131개로 전처리만 바꿔 비교한다([EXPERIMENTS.md](EXPERIMENTS.md) 6c단계). 결과: k-NN·SVM에서 **그룹 가중치(gw)**가 가장 좋아서 `experiment.py`에 `--gw` 옵션으로 넣었다(LR은 손해라 쓰지 않는다). 표준화 뒤 그룹마다 1/√(그룹 크기)를 곱해, `@dir50`(36개)처럼 큰 그룹이 거리를 독차지하지 않게 한다.
+
+```
+python -I -W ignore -X utf8 code/experiment.py @all -@const @early @bseq @cumulabs @dir50 -m knn --gw   # 91.9% (gw 없이 90.4%)
+```
+
+### ⑭ `code/feature_importance_cv.py`: 피처 중요도 (train 내부)
+⑥은 permutation 중요도를 test(inst 18~19)에서 쟀다. ⑭는 train 안에서 5-fold로 나눠, fold마다 나머지로 학습하고 빼 둔 fold에서 섞어 잰다. `base`(55개, ⑥과 비교)와 `cand`(후보 131개)를 돌린다. 그룹 단위 permutation도 낸다.
+
+### ⑮ `code/plots.py`: 제안서용 그래프
+`data`(길이·지속 시간·사이트별·방문 순서별), `stages`(피처셋 × 모델), `ow`(open-world ROC·PR + 임계값 표), `importance`(그룹별 중요도). 모두 `figures/*.png`로 저장한다. 아래 "그래프" 절 참고.
+
+### ⑯ `code/sequences.py`: 시퀀스 모델용 입력
+기록을 방향 시퀀스(+1 송신, −1 수신)로 바꾸고 길이 L로 맞춘다(길면 뒤를 자르고, 짧으면 0으로 채운다). DF 논문과 같은 형식이다. 아래 "시퀀스 입력" 절 참고.
+
+```
+python -I -X utf8 code/sequences.py <pkl 폴더> --stats --skip 14          # 길이 분포·잘리는 비율만 (약 1분)
+python -I -X utf8 code/sequences.py <pkl 폴더> --length 5000              # → sequences/seq_L5000_skip0.npz (closed-world)
+python -I -X utf8 code/sequences.py <pkl 폴더> --length 5000 --skip 14    # → open-world용
+```
+
 ## 실행 방법
 
 ①~⑤는 Python 3 표준 라이브러리만 사용한다(numpy·sklearn 불필요). `<pkl 폴더>`는 pkl 3개를 둔 폴더다. 아래 명령은 **프로젝트 최상위 폴더(`wf_project/`)에서** 실행한다.
@@ -214,6 +243,47 @@ python -I -X utf8 code/feature_importance.py .                  # 약 10~15분
 
 **mon vs unmon**: AUC 0.968. 1위는 `first30_out`이고, `duration`, `t_25pct` 같은 시간 피처가 상위권이다. mon과 unmon의 수집 환경 차이를 배운 것일 수 있으므로 주의한다.
 
+## 그래프 (⑮, `figures/`)
+
+| 파일 | 내용 | 제안서에서 쓸 곳 |
+|---|---|---|
+| `data_length_mon_unmon.png` | mon/unmon 기록 길이 분포 | 데이터 개요 |
+| `data_duration_mon_unmon.png` | mon/unmon 지속 시간 분포 (mon 중앙값 26.0초, unmon 18.9초) | 데이터 개요 |
+| `data_length_by_site.png` | 사이트별 길이 중앙값과 25~75% 범위 | 데이터 개요, "길이만으로는 사이트가 갈리지 않는다" |
+| `data_by_inst.png` | 방문 순서별 길이·지속 시간 (inst 19 문제) | 분할 설명 |
+| `stages_featureset_model.png` | 피처셋 × 모델 5개 CV 정확도 (6단계) | 피처와 이유 |
+| `importance_groups.png` | 후보 131개의 그룹별 중요도 (⑭) | 피처와 이유 |
+| `ow_roc_pr.png` | open-world ROC·PR 곡선 (96클래스 vs 이진) | 평가 지표 / 예비 결과 |
+
+- 기록 길이는 **최대 약 10,000셀에서 잘려 있다**(mon 최대 9,993, unmon 9,992). 그래서 길이 분포 오른쪽 끝에 몰려 있다. 수집 때 상한을 둔 것으로 보인다.
+- 사이트마다 길이가 크게 다르지만(중앙값 144 ~ 9,980셀) 같은 사이트 안에서도 폭이 넓다. 길이 피처만으로는 부족하고, 앞부분 방향 패턴이 필요한 이유다.
+
+## 시퀀스 입력 (⑯)
+
+기록 길이 분포 (`logs/sequences_stats.log`)
+
+| | 평균 | 중앙값 | 95% | 최대 |
+|---|---|---|---|---|
+| mon | 4,189 | 3,309 | 9,963 | 9,993 |
+| unmon | 4,756 | 4,193 | 9,973 | 9,992 |
+
+길이 L로 자르면 (mon / unmon)
+
+| L | 잘리는 기록 | 보존되는 셀 | 평균 0 채움 비율 |
+|---|---|---|---|
+| 2,000 | 67.8% / 69.9% | 39.7% / 34.0% | 16.8% / 19.1% |
+| 3,000 | 55.4% / 60.1% | 54.5% / 47.7% | 24.0% / 24.4% |
+| **5,000** (DF 논문) | **33.2% / 43.9%** | **74.9% / 69.4%** | 37.3% / 34.0% |
+| 7,000 | 22.2% / 30.8% | 87.8% / 84.9% | 47.4% / 42.3% |
+| 10,000 | 0% / 0% | 100% / 100% | 58.1% / 52.4% |
+
+- **L = 5,000을 기본으로 만들었다**(DF 논문 값). mon의 1/3이 잘리지만, 피처 실험에서 사이트 정보는 앞부분에 몰려 있었으므로(처음 50셀 방향, 앞쪽 버스트 순서) 뒷부분을 잘라도 손해가 작을 것으로 본다. 확인은 시퀀스 모델로 해야 한다.
+- 10,000이면 하나도 잘리지 않는다. 대신 입력이 2배라 학습이 느리다. 모델 담당이 5,000과 10,000을 비교해 볼 수 있다.
+- unmon이 더 많이 잘린다(43.9%). open-world에서 "길이가 L을 넘는다"는 사실 자체가 mon/unmon 차이가 되지 않도록 주의한다.
+- open-world에는 `--skip 14`로 만든 파일을 쓴다(앞 14셀 흔적 제거, [OPENWORLD.md](OPENWORLD.md) 2절). closed-world는 skip 0이면 된다.
+- 만들어 둔 파일: `sequences/seq_L5000_skip0.npz`, `seq_L5000_skip14.npz` (각 약 6MB, git 제외 — 각자 위 명령으로 만든다). 들어 있는 배열은 `sequences.py` 맨 위 설명 참고.
+- 가산점 과제(TrafficSliver)는 트래픽을 여러 경로로 나누는 방어라서, 그 데이터를 받으면 같은 방식으로 다시 만들면 된다.
+
 ## 마지막 방문(inst 19)은 수집 상태가 다르다
 
 RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test로 빼면, **어느 2개를 빼도 87~90%인데 18~19만 73%** 다.
@@ -244,16 +314,20 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - **2026-10-15**: 직접 실험용 `experiment.py`(⑦) 추가. 마지막 방문(inst 19)의 수집 상태가 다르다는 것을 확인했다.
 - **2026-10-15**: 단계별 피처 실험(⑧⑨, [EXPERIMENTS.md](EXPERIMENTS.md)) 추가. 2단계 결과로 상수 피처 3개 제거를 채택했다.
 - **2026-10-15**: 4단계 실험(⑧-2) 추가. 처음 50셀의 방향값(@dir50)을 채택해 후보 피처셋을 131개로 바꿨다. 31~100번째 버스트 길이(@bseqlong)는 기각했다.
+- **2026-10-16**: closed-world 후보 피처셋을 131개(`@all -@const @early @bseq @cumulabs @dir50`)로 변경([EXPERIMENTS.md](EXPERIMENTS.md) 6단계). 4단계의 131개와 개수만 같고 구성이 다르다.
 - **2026-10-16**: open-world 실험 추가(⑩⑪⑫, [OPENWORLD.md](OPENWORLD.md)). mon과 unmon은 처음 14셀이 수집 환경 차이로 달라서, open-world 피처는 앞 14셀을 버리고 다시 계산한다. open-world 후보 피처셋 134개.
+- **2026-10-16**: 튜닝 전 남은 전처리 작업. ⑬ k-NN·SVM·LR 전처리 점검(그룹 가중치 `--gw` 추가), ⑭ train 내부 중요도, ⑮ 그래프 7개, ⑯ 시퀀스 입력(L = 5,000). open-world ROC·PR 곡선과 임계값 표([OPENWORLD.md](OPENWORLD.md) 3.9).
 
 ## 다음에 할 일 (전처리 담당)
 
-- [ ] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포
-- [ ] 시퀀스 모델(DF 등)용 입력: 고정 길이(예: 5,000)로 자르기/0 채우기. 잘리는 기록 비율도 확인
+- [x] 그래프: mon/unmon 길이 분포, 지속 시간 분포, 사이트별 길이 분포, 방문 순서별, 피처 실험, open-world ROC·PR → ⑮, `figures/`
+- [x] 시퀀스 모델(DF 등)용 입력: L = 5,000, 잘리는 비율 확인 → ⑯, "시퀀스 입력" 절
+- [x] k-NN·SVM·LR용 전처리 점검 → ⑬, k-NN·SVM에 그룹 가중치 `--gw` 제안 (LR은 유지)
+- [x] ⑥ 중요도를 train 내부에서 다시 계산 → ⑭
 - [x] open-world용 데이터: unmon 라벨 −1, 무작위 분할(test 1,000개), 앞 14셀 흔적 제거, 피처 실험 ([OPENWORLD.md](OPENWORLD.md))
 - [x] 피처 정리: 상수 피처(`in_burst_1~3`) 제거 채택. 길이 계열 축소와 시간 그룹 제거는 모델에 따라 손해라 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 2단계)
 - [x] 앞부분 피처 추가 → `features_extra.py`. 후보 피처셋은 기존 52개 + @early + @bseq (86개), CV RF 95.5% ([EXPERIMENTS.md](EXPERIMENTS.md) 3단계)
 - [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
-- [x] 앞부분 패턴 확장 → `features_extra2.py`. @dir50 채택, @bseqlong 기각. 후보 피처셋 131개 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계)
-- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 6단계, 모델 선정 담당)
+- [x] 앞부분 패턴 확장 → `features_extra2.py`. @dir50 채택, @bseqlong 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계). 이후 4b단계에서 준상수 13개를 빼 118개, 6단계에서 `@cumulabs`를 더해 **현재 후보 131개**
+- [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 7단계, 모델 선정 담당)
 - [ ] test 분할 유지 여부 결정 (inst 19 문제)

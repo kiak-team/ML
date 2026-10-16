@@ -1,0 +1,85 @@
+fold 0: acc 0.8787  (280s)
+fold 1: acc 0.8697  (491s)
+fold 2: acc 0.8832  (1525s)
+fold 3: acc 0.8902  (1684s)
+fold 4: acc 0.8796  (1836s)
+
+[base] features=55  RF(300) CV acc = 0.8803 ± 0.0066
+
+== RF 불순도 중요도 상위 20 (fold 평균) ==
+  first100_out     0.0422
+  cumul_at_500     0.0409
+  frac_out         0.0367
+  n_out            0.0340
+  in_burst_mean    0.0332
+  first30_out      0.0328
+  out_order_mean   0.0285
+  out_burst_std    0.0265
+  out_burst_mean   0.0263
+  n_bursts         0.0257
+  out_order_std    0.0253
+  cumul_10pct      0.0244
+  n_total          0.0234
+  conc_std         0.0229
+  in_order_std     0.0226
+  cumul_20pct      0.0223
+  in_order_mean    0.0222
+  iat_in_std       0.0222
+  out_burst_max    0.0210
+  iat_max          0.0205
+
+== permutation 중요도 상위 20 (빼 둔 fold에서 섞었을 때 정확도 하락, fold 평균 ± 표준편차) ==
+  first30_out      +0.0538 ± 0.0031
+  cumul_at_500     +0.0356 ± 0.0028
+  first100_out     +0.0328 ± 0.0029
+  in_burst_mean    +0.0083 ± 0.0014
+  frac_out         +0.0078 ± 0.0017
+  n_out            +0.0064 ± 0.0016
+  last30_out       +0.0063 ± 0.0008
+  cumul_10pct      +0.0058 ± 0.0019
+  cumul_20pct      +0.0039 ± 0.0012
+  out_order_std    +0.0038 ± 0.0016
+  out_burst_mean   +0.0037 ± 0.0021
+  out_burst_max    +0.0034 ± 0.0013
+  n_total          +0.0034 ± 0.0013
+  out_burst_std    +0.0033 ± 0.0013
+  out_order_mean   +0.0032 ± 0.0023
+  n_bursts         +0.0025 ± 0.0011
+  conc_std         +0.0019 ± 0.0019
+  in_order_mean    +0.0018 ± 0.0005
+  iat_in_std       +0.0018 ± 0.0014
+  cumul_30pct      +0.0017 ± 0.0017
+  ... 하락이 0 이하인 피처: 8개
+
+== 그룹 permutation (그룹 전체를 함께 섞음, fold 평균) ==
+  @cumul     (12개)  +0.3646 ± 0.0106
+  @order     (10개)  +0.2224 ± 0.0069
+  @timing    (18개)  +0.1957 ± 0.0016
+  @burst     (11개)  +0.0700 ± 0.0029
+  @count     ( 4개)  +0.0354 ± 0.0047
+  @const     ( 3개)  +0.0000 ± 0.0000
+
+== 상관 묶음 permutation 상위 15 (31개 묶음) ==
+  +0.6031  (17) n_total, n_in, out_order_std, in_order_mean, in_order_std, in_burst_ge10, cumul_min, cumul_10pct ...
+  +0.0530  ( 1) first30_out
+  +0.0351  ( 1) cumul_at_500
+  +0.0334  ( 1) first100_out
+  +0.0115  ( 2) conc_std, out_burst_mean
+  +0.0087  ( 1) in_burst_mean
+  +0.0079  ( 1) frac_out
+  +0.0079  ( 4) cells_per_sec, iat_mean, iat_in_mean, pps_mean
+  +0.0079  ( 2) out_order_mean, n_bursts
+  +0.0075  ( 2) iat_std, iat_in_std
+  +0.0068  ( 1) last30_out
+  +0.0061  ( 1) n_out
+  +0.0048  ( 2) conc_max, out_burst_max
+  +0.0038  ( 1) out_burst_std
+  +0.0017  ( 1) iat_max
+
+== 0단계(test 기준)와 비교 ==
+  상위 15개 겹침: 12/15
+  0단계 상위 15개의 순위 상관(spearman): 0.864
+  0단계에만 있음: conc_std, in_order_mean, cumul_80pct
+  여기에만 있음:  last30_out, out_burst_max, out_order_mean
+  상위 5 (0단계 → 지금): first30_out first100_out cumul_at_500 frac_out in_burst_mean  →  first30_out cumul_at_500 first100_out in_burst_mean frac_out
+DONE
