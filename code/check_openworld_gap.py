@@ -1,6 +1,8 @@
 """open-world 점수의 출처 분해: ROC-AUC 0.993 중 얼마가 사이트 지문인가.
 
-사용법: python -I -X utf8 code/check_openworld_gap.py > logs/check_openworld_gap.log   (약 10분)
+사용법: python -I -X utf8 code/check_openworld_gap.py > logs/check_openworld_gap.log        (약 10분)
+      python -I -X utf8 code/check_openworld_gap.py full > logs/check_openworld_gap_full.log  (약 20분)
+        full: [3]을 사이트 95개 전체 교차검증으로 확장한다(사이트마다 정확히 한 번 평가).
 pkl 없이 features/ow_skip14_*.csv만으로 돌아간다. 결과 해석은 docs/OPENWORLD.md 3.10에 있다.
 
 왜 보나: open-world는 "감시 대상인가"를 맞히는 과제다. 그런데 mon과 unmon은 서로 다른 파일이고
@@ -13,6 +15,7 @@ pkl 없이 features/ow_skip14_*.csv만으로 돌아간다. 결과 해석은 docs
   [3] 사이트 홀드아웃: 사이트를 통째로 빼고 학습해도 갈리는가
       -> 유지되면 사이트 지문과 무관한 모집단 차이, 급락하면 95개 사이트를 외운 효과
       평가 사이트가 19개뿐이라 조합을 5번 바꿔 흔들림을 함께 본다
+      ('full' 인자를 주면 95개를 5겹으로 나눠 사이트마다 정확히 한 번 평가한다)
   [4] 절차 점검: unmon을 무작위로 반 갈라 구분시킨다. 0.5가 나와야 파이프라인이 정상이다
 
 주의: [3]의 수치는 성능 추정치가 아니다. 실제 공격자는 감시 대상을 알고 학습하므로
@@ -49,6 +52,41 @@ def auc_binary(tr_pos, tr_neg, te_pos, te_neg, feats):
     yte = np.r_[np.ones(len(te_pos)), np.zeros(len(te_neg))]
     m = RandomForestClassifier(**RF).fit(Xtr, ytr)
     return roc_auc_score(yte, m.predict_proba(Xte)[:, 1])
+
+
+def site_cv(mon, u, feats, nm, n_folds=5):
+    """사이트 95개를 n_folds겹으로 나눠, 사이트마다 정확히 한 번 평가한다.
+
+    [3]의 무작위 조합 5개는 사이트가 겹치거나 아예 안 뽑힐 수 있다. 여기서는 각 사이트가
+    정확히 한 번만 평가셋에 들어가고 unmon도 전부 한 번씩 평가된다. 겹별 AUC와, 모든
+    out-of-fold 점수를 모아 계산한 AUC(pooled)를 함께 본다.
+    """
+    rng = np.random.default_rng(0)
+    site_folds = np.array_split(rng.permutation(95), n_folds)
+    u_folds = np.array_split(rng.permutation(len(u)), n_folds)
+    per_fold, pooled_s, pooled_y = [], [], []
+    for k in range(n_folds):
+        s_te = set(site_folds[k])
+        m_tr, m_te = mon[~mon.site.isin(s_te)], mon[mon.site.isin(s_te)]
+        u_te = u.iloc[u_folds[k]]
+        u_tr = u.iloc[np.concatenate([u_folds[j] for j in range(n_folds) if j != k])]
+        Xtr = np.vstack([m_tr[feats].values, u_tr[feats].values]).astype(float)
+        ytr = np.r_[np.ones(len(m_tr)), np.zeros(len(u_tr))]
+        Xte = np.vstack([m_te[feats].values, u_te[feats].values]).astype(float)
+        yte = np.r_[np.ones(len(m_te)), np.zeros(len(u_te))]
+        sc = RandomForestClassifier(**RF).fit(Xtr, ytr).predict_proba(Xte)[:, 1]
+        per_fold.append(roc_auc_score(yte, sc))
+        pooled_s.append(sc)
+        pooled_y.append(yte)
+        print(f'    겹 {k + 1}: 사이트 {len(s_te)}개 / mon {len(m_te)}개 / unmon {len(u_te)}개'
+              f'  → AUC {per_fold[-1]:.4f}', flush=True)
+    pooled = roc_auc_score(np.concatenate(pooled_y), np.concatenate(pooled_s))
+    print(f'  {nm}: 겹별 평균 {np.mean(per_fold):.4f} ± {np.std(per_fold):.4f} '
+          f'(최소 {min(per_fold):.3f}, 최대 {max(per_fold):.3f})')
+    print(f'  {nm}: 전체 out-of-fold 점수를 모아 계산 (pooled) AUC {pooled:.4f}')
+    print('  → 사이트 95개 전부가 정확히 한 번 평가됐다')
+    print()
+    return per_fold, pooled
 
 
 def main():
@@ -119,6 +157,15 @@ def main():
     half = 3500
     print(f'  AUC {auc_binary(A.iloc[:half], B.iloc[:half], A.iloc[half:], B.iloc[half:], F_NOSITE):.4f}')
     print('  0.5 근처면 파이프라인에 가짜 신호가 없다.')
+
+    if 'full' in sys.argv[1:]:
+        print()
+        print('=' * 78)
+        print('[3-full] 사이트 95개 전체 교차검증 (5겹, 사이트마다 정확히 한 번 평가)')
+        print('=' * 78)
+        for nm, feats in (('개수+시간 22개', F_NOSITE), ('후보 134개', F_CAND)):
+            print(f'  {nm} ({len(feats)}개)')
+            site_cv(mon, u, feats, nm)
 
 
 if __name__ == '__main__':
