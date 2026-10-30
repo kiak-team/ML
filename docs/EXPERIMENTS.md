@@ -431,3 +431,127 @@ A를 추천하는 이유는 **모델이 정해지지 않은 지금은 어느 모
 - [x] open-world: unmon 라벨·분할, 피처 실험 → [OPENWORLD.md](OPENWORLD.md). 남은 것: 임계값, PR·ROC 그래프, 모델 튜닝, test
 - [x] 0단계 중요도를 train 내부에서 다시 계산 → 0단계 재확인. 결론 그대로(상위 3개 동일, 상위 15개 중 12개 겹침)
 - [ ] 피처 선택과 평가를 같은 CV로 했다. 여러 조합 중 가장 좋은 것을 골랐으므로 후보 피처셋의 CV 점수는 약간 낙관적이다. 8단계 test로 확인한다
+
+
+
+## 추가 실험: Timestamp Cluster Feature 검증 (10/17)
+
+### 질문
+
+기존 closed-world 후보 feature set 131개에 Timestamp Cluster 기반 feature를 추가하면 RF 분류 정확도가 개선되는가?
+
+### 가설과 근거
+
+기존 feature는 pkt 수, 통신 시간, 송수신 방향, Burst 길이 및 순서 등을 활용한다.
+
+이번에는 **동일한 Timestamp를 가진 연속 pkt을 하나의 Cluster로 정의**하고, Cluster의 크기와 송수신 구성 등을 새로운 feature로 추출했다.
+
+Timestamp Cluster의 통계와 초기 발생 순서가 기존 feature와 다른 트래픽 특성을 포착해 사이트 분류에 도움이 될 수 있다고 가정했다.
+
+### 방법
+
+- 데이터: `mon_standard.pkl` (95개 사이트, 총 19,000개 Trace)
+- 분할: train = 방문 0~17 (17,100개), test = 방문 18~19 (미사용)
+- 평가: train 내부 5-fold CV (`inst % 5`)
+- 모델: Random Forest (`random_state=42`, `n_estimators=100`, 기본 설정)
+- 기준 feature set: 팀에서 채택한 131개 (`@all -@const @early @bseq @cumulabs @dir50`)
+- 신규 feature: Timestamp Cluster 기반 총 128개
+
+추가 feature 그룹:
+
+| 그룹 | # of feature | 내용 |
+| --- | --- | --- |
+| Cluster Statistics | 8 | Cluster 크기, 혼합 비율, 초기 Cluster 및 시간 간격 통계 |
+| Cluster Sequence | 60 | 초기 30개 Cluster의 크기 및 송신 패킷 수 |
+| Normalized Cluster | 60 | Cluster별 송신 비율 및 전체 패킷 대비 상대 크기 |
+
+기존 Feature CSV 3개와 신규 Feature를 `site`, `url`, `inst` 기준으로 결합한 뒤, 기준 feature set과 신규 feature set을 비교했다.
+
+### 결과 ①: 신규 feature 그룹 별 정확도 비교
+
+| feature set | feature 수 | RF CV 정확도 (%) | 기준 대비 (%p) |
+| --- | --- | --- | --- |
+| Baseline | 131 | 95.5895 | — |
+| **Baseline + Cluster Statistics** | **139** | **95.7649** | **+0.1754** |
+| Baseline + Cluster Sequence | 191 | 95.5053 | −0.0842 |
+| Baseline + Normalized Cluster | 191 | 95.4333 | −0.1561 |
+| Baseline + All Cluster | 259 | 95.2368 | −0.3526 |
+
+단일 seed에서는 Statistics 8개만 추가했을 때 가장 높은 정확도가 나타났다.
+
+반면 Sequence 및 Normalized Feature는 기존 131개와 결합했을 때 성능을 개선하지 못했고, 128개 전체를 추가한 경우 오히려 정확도가 하락했다.
+
+### 결과 ②: Cluster Statistics Ablation
+
+Statistics 8개를 모두 추가한 상태에서 하나씩 제거해 기여도를 확인했다.
+
+| 조합 | RF CV 정확도 (%) |
+| --- | --- |
+| Statistics 8개 전체 | **95.7649** |
+| `cluster_out_ratio_std` 제거 | 95.7333 |
+| `cluster_size_std` 제거 | 95.6579 |
+| `cluster_gap_std` 제거 | 95.6509 |
+| `early_mixed_rate` 제거 | 95.6123 |
+| `cluster_size_p90` 제거 | 95.6088 |
+| `mixed_cluster_rate` 제거 | 95.5860 |
+| `early_cluster_size_mean` 제거 | 95.5842 |
+| `cluster_size_max` 제거 | 95.5702 |
+
+8개 전체가 가장 높았으나, 각 feature를 제거했을 때의 변화는 0.03~0.19%p 수준이었다. 단일 seed의 결과만으로 개별 feature의 기여도를 확정하기는 어렵다.
+
+### 결과 ③: Random Seed 반복 검증
+
+Statistics 8개의 개선 효과가 재현되는지 확인하기 위해 동일한 CV 분할에서 seed 0, 1, 2를 사용해 다시 평가했다.
+
+| Seed | Baseline 131개 (%) | + Statistics 139개 (%) | 차이 (%p) |
+| --- | --- | --- | --- |
+| 0 | 95.6825 | 95.6509 | −0.0316 |
+| 1 | 95.6281 | 95.5912 | −0.0368 |
+| 2 | 95.6649 | 95.6807 | +0.0158 |
+| **평균** | **95.6585** | **95.6409** | **−0.0175** |
+
+세 번 중 두 번은 정확도가 하락했고, 한 번만 소폭 상승했다.
+
+따라서 seed 42에서 관찰된 +0.175%p 개선은 안정적으로 재현되지 않았다.
+
+### 결과 ④: 기존 RF의 오분류 패턴 탐색
+
+추가 feature 설계 방향을 찾기 위해 기존 131개 RF의 5-fold CV 예측을 분석했다.
+
+- 전체 CV 정확도: 95.5789%
+- 전체 오류: 756 / 17,100개
+- 사이트별 오류 상위: Site 24·45 (각 26회), Site 92 (23회), Site 37 (22회)
+- 가장 자주 혼동된 사이트 쌍: 17↔71, 34↔79 (각 6회)
+- Subpage별 최대 오류: 18개 중 6회
+
+특정 사이트 쌍보다는 여러 사이트와 Subpage에 오류가 분산되어 있었다.
+
+정답 Trace와 오분류 Trace를 비교하고, 사이트 내부 표준화로 사이트 간 평균 차이를 보정한 결과는 다음과 같다.
+
+| feature | 오분류 − 정답 (사이트 내부 표준편차 단위) |
+| --- | --- |
+| `n_total` | −0.8121 |
+| `duration` | +0.4598 |
+| `frac_out` | +0.6688 |
+| `n_bursts` | −0.9202 |
+| `cluster_size_std` | −0.6525 |
+| `mixed_cluster_rate` | −0.9625 |
+
+오분류 Trace는 같은 사이트의 다른 Trace에 비해 pkt 수와 Burst 수가 적고, 통신 시간이 긴 경향이 있었다.
+
+이는 희소한 트래픽 패턴이 분류 난이도와 관련될 가능성을 시사하지만, 인과관계를 확인한 결과는 아니다.
+
+### 결정
+
+- **Timestamp Cluster Feature는 현재 기준 피처셋에 추가하지 않는다.**
+- Cluster Statistics는 단일 seed에서 소폭 개선되었으나 seed 반복 검증에서 일관된 성능 향상이 나타나지 않았다.
+- Sequence 및 Normalized Cluster Feature도 기존 131개에 추가했을 때 개선 효과가 없었다.
+- 오분류 분석에서는 pkt 수가 적고 통신 시간이 긴 Trace가 상대적으로 어려운 경향을 확인했다. 이를 바탕으로 시간적 밀도나 비활성 구간 관련 피처를 추가 탐색할 수 있다.
+
+### 한계
+
+- 기준 `experiment.py`는 RF 트리 200개를 사용하지만, 이번 직접 비교 실험은 scikit-learn 기본값인 100개를 사용했다. 따라서 기존 로그의 정확도와 직접 비교하지 않고, 이번 실험 내 동일 조건의 Baseline을 기준으로 비교했다.
+- CV 분할은 고정하고 Random Seed만 변경했다.
+- 여러 feature 조합을 같은 CV에서 탐색했으므로 가장 높은 점수에는 선택 편향이 있을 수 있다.
+- 오분류 분석은 탐색적인 결과이며, 해당 패턴을 활용한 신규 피처의 성능 개선은 아직 검증하지 않았다.
+- 최종 test 방문 18~19는 사용하지 않았다.
