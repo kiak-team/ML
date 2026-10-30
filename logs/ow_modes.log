@@ -1,0 +1,71 @@
+mode=binary skip=14 model=rf  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9890 (fold std 0.0008)   PR-AUC 0.9937
+  t=0.5    TPR 0.9903  FPR 0.1413  precision 0.9301
+  FPR≤5%   TPR 0.9401  FPR 0.0498  precision 0.9729
+  FPR≤1%   TPR 0.7862  FPR 0.0093  precision 0.9938
+  10.8s
+RESULT	OWm binary	rf		134	0.9890	0.0008	0.9937	0.7862	nan	0.9938	0.9401
+mode=multi skip=14 model=rf  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9932 (fold std 0.0008)   PR-AUC 0.9964
+  t=0.5    TPR 0.7157  FPR 0.0001  precision 0.9999  | TPR_site 0.7151  precision_site 0.9991
+  FPR≤5%   TPR 0.9584  FPR 0.0442  precision 0.9763  | TPR_site 0.9399  precision_site 0.9574
+  FPR≤1%   TPR 0.9115  FPR 0.0096  precision 0.9945  | TPR_site 0.9034  precision_site 0.9856
+  23.7s
+RESULT	OWm multi	rf		134	0.9932	0.0008	0.9964	0.9115	0.9034	0.9945	0.9584
+mode=binary skip=14 model=et  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9913 (fold std 0.0004)   PR-AUC 0.9952
+  t=0.5    TPR 0.9883  FPR 0.1214  precision 0.9393
+  FPR≤5%   TPR 0.9523  FPR 0.0496  precision 0.9733
+  FPR≤1%   TPR 0.8360  FPR 0.0093  precision 0.9942
+  4.7s
+RESULT	OWm binary	et		134	0.9913	0.0004	0.9952	0.8360	nan	0.9942	0.9523
+mode=multi skip=14 model=et  log=False scale=False features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9922 (fold std 0.0007)   PR-AUC 0.9958
+  t=0.5    TPR 0.7690  FPR 0.0019  precision 0.9987  | TPR_site 0.7678  precision_site 0.9972
+  FPR≤5%   TPR 0.9540  FPR 0.0471  precision 0.9747  | TPR_site 0.9318  precision_site 0.9520
+  FPR≤1%   TPR 0.8895  FPR 0.0100  precision 0.9941  | TPR_site 0.8808  precision_site 0.9844
+  7.5s
+RESULT	OWm multi	et		134	0.9922	0.0007	0.9958	0.8895	0.8808	0.9941	0.9540
+mode=binary skip=14 model=knn  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9634 (fold std 0.0037)   PR-AUC 0.9649
+  t=0.5    TPR 0.9911  FPR 0.2354  precision 0.8889
+  FPR≤5%   TPR 0.0000  FPR 0.0000  precision 0.0000
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000
+  1.6s
+RESULT	OWm binary	knn		134	0.9634	0.0037	0.9649	0.0000	nan	0.0000	0.0000
+mode=multi skip=14 model=knn  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9587 (fold std 0.0022)   PR-AUC 0.9680
+  t=0.5    TPR 0.8960  FPR 0.1111  precision 0.9387  | TPR_site 0.8465  precision_site 0.8869
+  FPR≤5%   TPR 0.7898  FPR 0.0444  precision 0.9712  | TPR_site 0.7712  precision_site 0.9484
+  FPR≤1%   TPR 0.0000  FPR 0.0000  precision 0.0000  | TPR_site 0.0000  precision_site 0.0000
+  1.3s
+RESULT	OWm multi	knn		134	0.9587	0.0022	0.9680	0.0000	0.0000	0.0000	0.7898
+mode=binary skip=14 model=lr  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9165 (fold std 0.0038)   PR-AUC 0.9446
+  t=0.5    TPR 0.9186  FPR 0.2460  precision 0.8765
+  FPR≤5%   TPR 0.5589  FPR 0.0500  precision 0.9550
+  FPR≤1%   TPR 0.2281  FPR 0.0100  precision 0.9774
+  1.6s
+RESULT	OWm binary	lr		134	0.9165	0.0038	0.9446	0.2281	nan	0.9774	0.5589
+mode=multi skip=14 model=lr  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9664 (fold std 0.0020)   PR-AUC 0.9802
+  t=0.5    TPR 0.8543  FPR 0.0743  precision 0.9562  | TPR_site 0.7963  precision_site 0.8913
+  FPR≤5%   TPR 0.7929  FPR 0.0500  precision 0.9679  | TPR_site 0.7557  precision_site 0.9224
+  FPR≤1%   TPR 0.5433  FPR 0.0100  precision 0.9904  | TPR_site 0.5380  precision_site 0.9806
+  22.0s
+RESULT	OWm multi	lr		134	0.9664	0.0020	0.9802	0.5433	0.5380	0.9904	0.7929
+mode=binary skip=14 model=svm  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9921 (fold std 0.0009)   PR-AUC 0.9954
+  t=0.5    TPR 0.9321  FPR 0.0250  precision 0.9861
+  FPR≤5%   TPR 0.9712  FPR 0.0500  precision 0.9736
+  FPR≤1%   TPR 0.8368  FPR 0.0100  precision 0.9937
+  91.0s
+RESULT	OWm binary	svm		134	0.9921	0.0009	0.9954	0.8368	nan	0.9937	0.9712
+mode=multi skip=14 model=svm  log=True scale=True features=134  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9683 (fold std 0.0031)   PR-AUC 0.9840
+  t=0.5    TPR 1.0000  FPR 1.0000  precision 0.6552  | TPR_site 0.9381  precision_site 0.6146
+  FPR≤5%   TPR 0.9435  FPR 0.0500  precision 0.9729  | TPR_site 0.9143  precision_site 0.9428
+  FPR≤1%   TPR 0.7461  FPR 0.0100  precision 0.9930  | TPR_site 0.7341  precision_site 0.9770
+  106.1s
+RESULT	OWm multi	svm		134	0.9683	0.0031	0.9840	0.7461	0.7341	0.9930	0.9435
+DONE
