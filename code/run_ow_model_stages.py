@@ -23,14 +23,16 @@ OW = ['@all', '@early', '@bseq', '@dir50', '@qconst']  # 134개, OPENWORLD.md 3.
 SKIP = 14
 
 
-def go(spec, model, note, **params):
+def go(spec, model, note, mode='multi', **params):
     try:
-        r = ow.run(spec, model=model, mode='multi', skip=SKIP, **params)
-        tpr1 = dict(r['rows'])['FPR≤1%']
+        r = ow.run(spec, model=model, mode=mode, skip=SKIP, **params)
+        rows = dict(r['rows'])
+        tpr1, tpr5 = rows['FPR≤1%'], rows['FPR≤5%']
         p = ' '.join(f'{k}={v}' for k, v in params.items())
         print(f'RESULT\t{note}\t{model}\t{p}\t{len(r["features"])}\t'
               f'{r["ROC-AUC"]:.4f}\t{r.get("auc_std", 0):.4f}\t{r["PR-AUC"]:.4f}\t'
-              f'{tpr1["TPR"]:.4f}\t{tpr1["TPR_site"]:.4f}\t{tpr1["precision"]:.4f}', flush=True)
+              f'{tpr1["TPR"]:.4f}\t{tpr1.get("TPR_site", float("nan")):.4f}\t{tpr1["precision"]:.4f}\t'
+              f'{tpr5["TPR"]:.4f}', flush=True)
     except Exception as e:
         print(f'FAIL\t{note}\t{model}\t{e!r}', flush=True)
 
@@ -48,6 +50,18 @@ def feat():
         go(spec, 'rf', f'OWf {name}')
 
 
+def modes(models=('rf', 'et', 'knn', 'lr', 'svm')):
+    # 이진 vs 96클래스를 후보 134개, 모델 5개(기본값)로 비교한다. 3.2는 RF와 4b 이전 131개로만 비교했다
+    for model in models:
+        for mode in ('binary', 'multi'):
+            go(OW, model, f'OWm {mode}', mode=mode)
+
+
 if __name__ == '__main__':
-    {'feat': feat}[sys.argv[1]]()
+    # 사용법: ... modes [모델 ...]  (기본 rf et knn lr svm, 약 1시간) > logs/ow_modes.log
+    stage = sys.argv[1]
+    if stage == 'modes' and len(sys.argv) > 2:
+        modes(sys.argv[2:])
+    else:
+        {'feat': feat, 'modes': modes}[stage]()
     print('DONE', flush=True)
