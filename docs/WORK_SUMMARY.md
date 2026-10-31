@@ -19,7 +19,9 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | 하지 않은 일 | 모델 선택, 하이퍼파라미터 튜닝, test 최종 평가 → 모델 담당. open-world 임계값 → 팀 결정(표는 준비됨) |
 | 핵심 결과 | 기록 **앞부분의 방향 패턴**(처음 N셀 중 송신 수, 앞쪽 버스트 길이 순서)을 피처로 추가해 정확도가 크게 올랐다. RF 기준 87.9% → **95.5%** (train 내부 교차검증, 기본 하이퍼파라미터) |
 | 후보 피처셋 | **131개** = 기존 55개 − 상수 3개 + `@early` 6개 + `@bseq` 24개 + `@cumulabs` 13개 + `@dir50` 36개 (`@all -@const @early @bseq @cumulabs @dir50`). 6단계(10/16)에서 이전 후보 118개에 `@cumulabs`를 더했다. 5개 모델 전부에서 118개보다 높고 시드 3개로 재현했다.<br>⚠ 4단계(10/15)의 "131개"와 개수만 같고 구성이 다르다. 그때는 준상수 13개가 들어 있었다(4b단계에서 제거) |
+| closed-world 최고 (10/31) | 고도화 실험에서 **SoftVote(ET+RF+LightGBM) 0.9716**, LightGBM 단독 0.9647로 6단계까지의 최고(RF 0.9571)보다 높다. 노트북의 피처 버그(131개가 아니라 452개로 학습)·부스팅 발산·KMeans 누수를 고친 뒤 값이다 → EXPERIMENTS.md 고도화 실험. **LightGBM이 수업 모델 목록에 없어 사용 가능 여부는 팀 확인 필요** |
 | open-world | mon과 unmon은 **처음 14셀이 수집 환경 차이로 다르다**(그대로 쓰면 ROC-AUC 1.0000). open-world 피처는 앞 14셀을 버리고 다시 계산한다. 후보 134개, RF ROC-AUC 0.993, unmon 오판 1%일 때 mon의 91.4%를 잡는다 → [OPENWORLD.md](OPENWORLD.md) |
+| open-world 점수 해석 | ROC-AUC 0.993을 그대로 공격 성능으로 쓰면 **과대평가다.** 사이트 식별 정보가 없는 요약 피처 22개만으로 0.90, 감시 대상 사이트를 통째로 빼고 학습해도 0.935다(기존 방식 0.989). mon/unmon의 **모집단 차이**가 대부분을 설명한다 → OPENWORLD.md 3.10 |
 | 발견한 문제 | 마지막 방문(inst 19)의 기록이 다른 방문보다 짧고 느리다. 현재 test 분할(inst 18~19)은 정확도가 낮게 나온다 → **팀 결정 필요** |
 
 **"모델 선택"이 아니라 "모델을 도구로 쓴 피처 검증"이다.** 모든 모델을 기본 하이퍼파라미터로 고정하고 피처만 바꿨다. 그래서 아래 표의 모델별 점수는 모델 순위로 해석하면 안 된다.
@@ -244,7 +246,10 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | `code/experiment.py` | **피처·모델을 골라 CV로 실험하는 도구** (팀 공용) |
 | `code/check_features.py` | 개별 피처 점검 (4b단계): 준상수 탐색, 제거 전후 비교, 시드 반복, unmon 영향 |
 | `code/run_model_stages.py` | 피처셋 × 모델 후보군 비교 (6단계). `a` = 피처셋 6개 × 모델 5개, `b` = 시드 3개 반복 |
-| `code/run_ow_model_stages.py` | open-world 피처셋 교차 확인 (OPENWORLD.md 3.8) |
+| `code/run_ow_model_stages.py` | open-world 피처셋 교차 확인 (OPENWORLD.md 3.8), 이진 vs 96클래스 비교 (3.11) |
+| `code/check_openworld_gap.py` | open-world 점수의 출처 분해 (OPENWORLD.md 3.10) |
+| `code/closed_world_experiments.ipynb` | closed-world 부스팅·앙상블·군집·계층 분류 실험 노트북 (leejiwon) |
+| `code/rerun_cw_experiments.py` | 위 노트북 셀 8·10의 피처 버그·부스팅 설정·누수를 고쳐 재실험 (yeju321qaz) → EXPERIMENTS.md 고도화 실험 |
 | `code/run_stages.py` | 1~4단계 실험 재현 배치 |
 | `code/run_scaling_stages.py` | k-NN·SVM·LR 전처리 점검 (6c단계) |
 | `code/feature_importance_cv.py` | 피처 중요도를 train 내부 CV로 다시 계산 (0단계 누수 제거) |
@@ -303,7 +308,8 @@ r = run(['@all', '-@const', '@early', '@bseq', '@cumulabs', '@dir50'], model='rf
 - 후보 피처셋(131개)으로 RF, ET, SVM 등 하이퍼파라미터 튜닝 (train 내부 CV). 그리드 제안은 EXPERIMENTS.md 6단계
 - 모델 선택과 근거 정리 (제안서 "쓸 모델과 이유")
 - **모델별로 피처셋을 다르게 두는 것을 기본으로 한다** (4b단계). 단일 공통 피처셋이 하나로 존재한다는 전제는 데이터가 지지하지 않는다
-  - RF·ET: `@dir50` 없이 82개로도 같은 수준. `@cumulabs`를 더하면 시드 3개 모두에서 0.3%p 높다
+  - RF: `@dir50` 없이도 같은 수준(131개 0.9571 vs `@dir50` 제거 95개 0.9572). `@cumulabs`를 더하면 시드 3개 모두에서 0.3%p 높다
+  - **ET는 `@dir50`이 필요하다** — 4b단계의 "RF·ET 둘 다 없어도 된다"는 `@cumulabs`가 들어가기 전 기준이었다. 최종 131개에서는 빼면 손해다: 6단계 기본값 0.9580 → 0.9517(−0.63%p), 재실험(ET 300그루, mf=0.1) 0.9583 → 0.9527(−0.56%p). **두 측정이 일치한다**
   - SVM·k-NN·LR: `@dir50`이 +1.7~5.8%p로 필요하다. LR은 `@cumulabs` 추가 시 +1.6%p
 - SVM·k-NN 튜닝 그리드에 `gw` 켬/끔을 함께 넣는다(기본값에서는 5개 fold 전부 켠 쪽이 높았다)
 - open-world 모델을 튜닝하면 `plots.py ow`로 곡선·임계값 표를 다시 만든다(`logs/ow_cv_scores.npz`를 지우고 실행)
