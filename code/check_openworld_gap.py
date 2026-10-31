@@ -54,6 +54,47 @@ def auc_binary(tr_pos, tr_neg, te_pos, te_neg, feats):
     return roc_auc_score(yte, m.predict_proba(Xte)[:, 1])
 
 
+def per_site(mon, u, feats, nm, n_folds=5):
+    """사이트마다 "그 사이트 vs unmon" AUC를 따로 계산한다. 원인 (a)/(b) 구분용.
+
+    (a) 감시 대상 95개가 일반 웹과 사이트 성질이 다르다
+        → 분리도가 사이트에 따라 결정되므로 사이트마다 크게 다르고,
+          unmon과 구별되지 않는(AUC ~0.5) 사이트도 있어야 한다
+    (b) mon 파일 전체에 균일한 수집 흔적이 있다
+        → 모든 mon 기록에 그 흔적이 있으므로 사이트와 무관하게 전부 높아야 한다
+
+    사이트는 site_cv와 같은 5겹으로 나눠, 학습에서 빠진 사이트만 평가한다.
+    """
+    rng = np.random.default_rng(0)
+    site_folds = np.array_split(rng.permutation(95), n_folds)
+    u_folds = np.array_split(rng.permutation(len(u)), n_folds)
+    aucs = {}
+    for k in range(n_folds):
+        s_te = set(site_folds[k])
+        m_tr = mon[~mon.site.isin(s_te)]
+        u_te = u.iloc[u_folds[k]]
+        u_tr = u.iloc[np.concatenate([u_folds[j] for j in range(n_folds) if j != k])]
+        X = np.vstack([m_tr[feats].values, u_tr[feats].values]).astype(float)
+        y = np.r_[np.ones(len(m_tr)), np.zeros(len(u_tr))]
+        clf = RandomForestClassifier(**RF).fit(X, y)
+        s_un = clf.predict_proba(u_te[feats].values.astype(float))[:, 1]
+        for site in s_te:
+            rows = mon[mon.site == site]
+            s_mon = clf.predict_proba(rows[feats].values.astype(float))[:, 1]
+            yy = np.r_[np.ones(len(s_mon)), np.zeros(len(s_un))]
+            aucs[int(site)] = roc_auc_score(yy, np.r_[s_mon, s_un])
+    a = np.array(sorted(aucs.values()))
+    print(f'  {nm}: 중앙값 {np.median(a):.3f}  평균 {a.mean():.3f}  표준편차 {a.std():.3f}')
+    print(f'  {nm}: 최소 {a.min():.3f}  10% {np.percentile(a, 10):.3f}  '
+          f'90% {np.percentile(a, 90):.3f}  최대 {a.max():.3f}')
+    for th in (0.6, 0.7, 0.8, 0.9):
+        print(f'    AUC < {th}: {int((a < th).sum()):2d}개 사이트 ({(a < th).mean() * 100:4.1f}%)')
+    print(f'    가장 낮은 5개: ' + ' '.join(f'{v:.3f}' for v in a[:5]))
+    print('  → 사이트마다 크게 다르고 우연 수준인 사이트가 있으면 (a), 균일하게 높으면 (b)')
+    print()
+    return a
+
+
 def site_cv(mon, u, feats, nm, n_folds=5):
     """사이트 95개를 n_folds겹으로 나눠, 사이트마다 정확히 한 번 평가한다.
 
@@ -166,6 +207,12 @@ def main():
         for nm, feats in (('개수+시간 22개', F_NOSITE), ('후보 134개', F_CAND)):
             print(f'  {nm} ({len(feats)}개)')
             site_cv(mon, u, feats, nm)
+
+        print('=' * 78)
+        print('[5] 사이트별 분리도: 원인이 (a) 사이트 성질인가 (b) 균일한 수집 흔적인가')
+        print('=' * 78)
+        for nm, feats in (('개수+시간 22개', F_NOSITE), ('후보 134개', F_CAND)):
+            per_site(mon, u, feats, nm)
 
 
 if __name__ == '__main__':
