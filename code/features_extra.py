@@ -30,8 +30,8 @@ N_CUMUL = 100
 
 
 def feats_extra(t):
-    n = len(t)
-    d = [ld.direction(c) for c in t]  # 방향 규칙은 load_data.py(교수님 노트북)와 동일
+    d = [1 if s > 0 else -1 for s in ld.as_seq(t)[1]]  # 방향 규칙은 load_data.py(교수님 노트북)와 동일
+    n = len(d)
     f = {}
     # --- @early ---
     for k in EARLY:

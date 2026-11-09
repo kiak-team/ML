@@ -21,8 +21,8 @@ def q(sorted_a, p):
 
 
 def feats(t):
-    n = len(t)
-    ts, sizes = ld.convert(t)  # 방향·시간 규칙은 load_data.py(교수님 노트북)와 동일
+    ts, sizes = ld.as_seq(t)  # 방향·시간 규칙은 load_data.py(교수님 노트북)와 동일
+    n = len(ts)
     d = [1 if s > 0 else -1 for s in sizes]
     out_idx = [i for i, x in enumerate(d) if x == 1]
     in_idx = [i for i, x in enumerate(d) if x == -1]
