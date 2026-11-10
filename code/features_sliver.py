@@ -2,7 +2,7 @@
 
 사용법: python -I -X utf8 code/features_sliver.py <npz> <out.csv>
         (mon, unmon을 따로 한 번씩 실행한다. 둘을 동시에 메모리에 올리지 않기 위해서다)
-출력: label, group, part + features.py / features_extra.py / features_extra2.py 피처 (이름도 같다)
+출력: label, group, part + features.py / features_extra.py / features_extra2.py 피처 (이름도 같다) + features_time.py 시간 피처
       part 0~4 = split, 5 = join. train/test는 반드시 group 단위로 나눈다 (docs/EXTRA_JOIN.md).
 
 open-world처럼 앞 14셀을 버리지 않는다: split은 셀이 경로 5개로 흩어져서 그 고정 구간이 없다.
@@ -17,10 +17,11 @@ from features import feats
 from features_extra import feats_extra
 from features_extra2 import feats_extra2
 from features_ow import fmt
+from features_time import feats_time
 
 
 def all_feats(t):
-    return {**feats(t), **feats_extra(t), **feats_extra2(t)}
+    return {**feats(t), **feats_extra(t), **feats_extra2(t), **feats_time(t)}
 
 
 CHUNK = 5000  # 이만큼씩 계산해서 바로 쓴다 (전부 모으면 10만 행 × 330 피처 dict가 GB 단위)
