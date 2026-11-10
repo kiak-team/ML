@@ -28,3 +28,6 @@ sequences/
 
 # open-world CV 점수 캐시 (plots.py ow가 만든다)
 logs/ow_cv_scores.npz
+
+# extra credit (TrafficSliver) 피처 CSV: 각 170MB 안팎. load_data.py → features_sliver.py로 다시 만든다
+features/sliver_*.csv

@@ -1,0 +1,24 @@
+closed-world: train 62560행 / 검증 15771행 (split만, 95-class)
+
+== 1. 피처 세트별 RF(200) 정확도 ==
+  기존 전체 (375)                                (375개)  0.0758  (206s)
+  @timing                                    ( 18개)  0.1042  (306s)
+  @timing @cumul100                          (118개)  0.0791  (539s)
+  새 시간 피처 (124)                              (124개)  0.1458  (667s)
+  @timing + 새 시간                             (142개)  0.1548  (771s)
+  @timing @cumul100 + 새 시간                   (242개)  0.1434  (902s)
+  @timing @cumul100 @count @burst + 새 시간     (257개)  0.1456  (1066s)
+  전체 (500)                                   (499개)  0.1378  (1335s)
+     상위 15: iat_max=0.0091, gap_top_01=0.0089, iat_zero_frac=0.0088, duration=0.0086, gap_top_02=0.0085, gap_top_03=0.0081, gap_top_04=0.0079, iat_std=0.0077, t_75pct=0.0076, gap_top_05=0.0075, iat_p90=0.0073, gap_top_06=0.0073, gap_top_07=0.0072, t_50pct=0.0072, gap_top_10=0.0072
+  @timing + 새 tcum만                          ( 56개)  0.1131  (1415s)
+  @timing + 새 tbin만                          ( 58개)  0.1185  (1502s)
+  @timing + 새 tnorm만                         ( 38개)  0.1404  (1599s)
+  @timing + 새 gap만                           ( 44개)  0.1254  (1690s)
+
+== 2. open-world mon vs unmon (split만): train 123765 / 검증 31112 ==
+  전체 (500): AUC 0.8045
+     상위 10: tcum_in_2=0.017, tcum_out_2=0.015, tcum_in_3=0.014, tcum_in_1.5=0.014, gap_at_02=0.013, gap_at_04=0.011, gap_at_03=0.010, tcum_out_1.5=0.010, duration=0.010, iat_zero_frac=0.009
+  @timing + 새 시간: AUC 0.8160
+     상위 10: tcum_in_2=0.027, tcum_in_1.5=0.020, tcum_out_2=0.019, gap_at_02=0.019, tcum_in_3=0.019, tcum_out_1.5=0.016, gap_at_03=0.014, gap_at_04=0.014, duration=0.014, iat_zero_frac=0.013
+  피처 하나만으로 AUC 상위 10: tnorm_in_035=0.555, tnorm_in_040=0.555, tnorm_in_030=0.555, tnorm_in_045=0.555, tnorm_in_050=0.554, tnorm_in_025=0.553, tnorm_in_055=0.553, tnorm_in_020=0.551, tnorm_in_060=0.551, tnorm_in_065=0.549
+DONE
