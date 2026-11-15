@@ -19,7 +19,8 @@ open-world: 감시 대상(mon) 95개 사이트 + 감시 대상이 아닌 사이�
   점수가 임계값 이상이면 mon으로 판정한다. 임계값을 바꾸면 TPR과 FPR이 함께 바뀐다(ROC, PR 곡선).
 
 라벨·분할:
-  mon   라벨 = 사이트 번호 0~94. train = inst 0~17 (17,100개), test = inst 18~19 (1,900개). experiment.py와 같다
+  mon   라벨 = 사이트 번호 0~94. test = URL마다 방문 2개(load_data.mon_is_test, 1,900개), train 17,100개. experiment.py와 같다
+        (11/15 변경. 이전에는 test = inst 18~19. docs/TEST_SPLIT.md)
   unmon 라벨 = -1. 기록마다 다른 사이트라 무작위로 나눈다(시드 0): test 1,000개, train 9,000개
         → test의 unmon은 학습 때 보지 못한 사이트다
   CV fold: mon = inst % 5, unmon = train 안 순번 % 5. 기본은 train 내부 CV의 예측(out-of-fold)으로 평가한다
@@ -41,6 +42,7 @@ from sklearn.model_selection import PredefinedSplit, cross_val_predict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import experiment as ex
+import load_data as ld
 
 warnings.filterwarnings('ignore', message='`sklearn.utils.parallel.delayed`')  # sklearn 1.9 + Python 3.14 경고. 결과와 무관
 
@@ -89,8 +91,9 @@ def split(skip=0):
     for x in (u_te, u_tr):
         x['label'] = -1
     m = df.copy(); m['label'] = m.site; m['fold'] = m.inst % 5
-    tr = pd.concat([m[m.inst <= 17], u_tr], ignore_index=True)
-    te = pd.concat([m[m.inst >= 18], u_te], ignore_index=True)
+    is_te = ld.mon_is_test(m.url.values, m.inst.values)
+    tr = pd.concat([m[~is_te], u_tr], ignore_index=True)
+    te = pd.concat([m[is_te], u_te], ignore_index=True)
     return tr, te
 
 

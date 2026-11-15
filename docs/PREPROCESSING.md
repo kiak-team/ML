@@ -88,7 +88,7 @@ X1, X2, y = ld.load_mon('C:/Users/user/Downloads')
 ### ⑤ `code/eval_nearest_centroid.py`: 피처 유효성 평가
 ④가 저장한 CSV를 읽어 아주 단순한 분류기로 정확도를 잰다. **최종 모델이 아니라** "이 피처들로 사이트를 구분할 수 있는가"를 빠르게 확인하는 용도다.
 - **분류기 (nearest centroid)**: train 데이터로 사이트별 피처 평균점을 구하고, test 기록을 가장 가까운 평균점의 사이트로 예측한다.
-- **분할**: URL마다 방문 20회 중 0~17번째는 train(17,100개), 18~19번째는 test(1,900개). 무작위 요소가 없다.
+- **분할**: URL마다 방문 20회 중 0~17번째는 train(17,100개), 18~19번째는 test(1,900개). 무작위 요소가 없다. (11/15부터 `experiment.py`·`openworld.py`의 test는 URL마다 방문 2개다 ([TEST_SPLIT.md](TEST_SPLIT.md)). 이 절의 ①~⑯은 옛 분할로 했다.)
 - **전처리**: `sign(x)·log(1+|x|)`로 값의 크기를 줄인 뒤 train의 평균과 표준편차로 표준화한다.
 - ④와의 차이: 피처 선택용 η²를 **train으로만** 계산한다. ④는 test까지 포함해 계산하므로 데이터 누수가 있다.
 
@@ -298,7 +298,7 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - inst 19는 더 느리고 짧다. 네트워크가 느렸거나 페이지 로딩이 덜 끝난 기록이 많은 것으로 보인다. 수집 코드가 없어 원인을 확정할 수는 없다.
 - `first30_out`, `cumul_at_500` 같은 앞부분 피처는 inst 19에서도 값이 같다. 기록이 덜 끝나도 앞부분은 영향을 받지 않기 때문이다. 길이 계열 피처는 영향을 크게 받는다.
 - 따라서 **현재 test(inst 18~19)는 일반적인 방문보다 어려운 세트**다. ⑤⑥의 test 정확도는 낮게 나온 값이고, ⑦의 CV(약 88%)와 직접 비교하면 안 된다.
-- **팀 결정 필요**: test 분할을 유지할지(보수적, 환경 변화에 대한 강건성까지 평가), 바꿀지(예: 방문마다 골고루 뽑기).
+- **결정 (11/15)**: 방문마다 골고루 뽑도록 바꿨다. 실험과 근거는 ([TEST_SPLIT.md](TEST_SPLIT.md)). 후보 131개에서 옛 분할은 CV − test가 −8.6%p, 새 분할은 +1.0%p다.
 
 **주의**: 분할 1개, 시드 1개 결과다. test 1,900개 기준 ±1%p는 오차 범위이므로 비슷한 순위끼리의 차이는 의미가 없다.
 
@@ -317,6 +317,7 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - **2026-10-16**: closed-world 후보 피처셋을 131개(`@all -@const @early @bseq @cumulabs @dir50`)로 변경([EXPERIMENTS.md](EXPERIMENTS.md) 6단계). 4단계의 131개와 개수만 같고 구성이 다르다.
 - **2026-10-16**: open-world 실험 추가(⑩⑪⑫, [OPENWORLD.md](OPENWORLD.md)). mon과 unmon은 처음 14셀이 수집 환경 차이로 달라서, open-world 피처는 앞 14셀을 버리고 다시 계산한다. open-world 후보 피처셋 134개.
 - **2026-10-16**: 튜닝 전 남은 전처리 작업. ⑬ k-NN·SVM·LR 전처리 점검(그룹 가중치 `--gw` 추가), ⑭ train 내부 중요도, ⑮ 그래프 7개, ⑯ 시퀀스 입력(L = 5,000). open-world ROC·PR 곡선과 임계값 표([OPENWORLD.md](OPENWORLD.md) 3.9).
+- **2026-11-15**: test 분할을 URL마다 방문 2개로 변경(`load_data.mon_is_test`) ([TEST_SPLIT.md](TEST_SPLIT.md)).
 
 ## 다음에 할 일 (전처리 담당)
 
@@ -330,4 +331,4 @@ RF(트리 100개)를 학습할 때마다 방문 2개(2,000 → 1,900개)를 test
 - [x] train 내부 교차검증으로 피처 선택 (test는 마지막 1회만) → `experiment.py`, `run_stages.py`
 - [x] 앞부분 패턴 확장 → `features_extra2.py`. @dir50 채택, @bseqlong 기각 ([EXPERIMENTS.md](EXPERIMENTS.md) 4단계). 이후 4b단계에서 준상수 13개를 빼 118개, 6단계에서 `@cumulabs`를 더해 **현재 후보 131개**
 - [ ] 후보 피처셋으로 모델 튜닝 ([EXPERIMENTS.md](EXPERIMENTS.md) 7단계, 모델 선정 담당)
-- [ ] test 분할 유지 여부 결정 (inst 19 문제)
+- [x] test 분할 유지 여부 결정 (inst 19 문제) → URL마다 방문 2개로 변경 ([TEST_SPLIT.md](TEST_SPLIT.md))

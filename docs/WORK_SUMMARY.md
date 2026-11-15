@@ -20,7 +20,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | 핵심 결과 | 기록 **앞부분의 방향 패턴**(처음 N셀 중 송신 수, 앞쪽 버스트 길이 순서)을 피처로 추가해 정확도가 크게 올랐다. RF 기준 87.9% → **95.5%** (train 내부 교차검증, 기본 하이퍼파라미터) |
 | 후보 피처셋 | **131개** = 기존 55개 − 상수 3개 + `@early` 6개 + `@bseq` 24개 + `@cumulabs` 13개 + `@dir50` 36개 (`@all -@const @early @bseq @cumulabs @dir50`). 6단계(10/16)에서 이전 후보 118개에 `@cumulabs`를 더했다. 5개 모델 전부에서 118개보다 높고 시드 3개로 재현했다.<br>⚠ 4단계(10/15)의 "131개"와 개수만 같고 구성이 다르다. 그때는 준상수 13개가 들어 있었다(4b단계에서 제거) |
 | open-world | mon과 unmon은 **처음 14셀이 수집 환경 차이로 다르다**(그대로 쓰면 ROC-AUC 1.0000). open-world 피처는 앞 14셀을 버리고 다시 계산한다. 후보 134개, RF ROC-AUC 0.993, unmon 오판 1%일 때 mon의 91.4%를 잡는다 → [OPENWORLD.md](OPENWORLD.md) |
-| 발견한 문제 | 마지막 방문(inst 19)의 기록이 다른 방문보다 짧고 느리다. 현재 test 분할(inst 18~19)은 정확도가 낮게 나온다 → **팀 결정 필요** |
+| 발견한 문제 | 마지막 방문(inst 19)의 기록이 다른 방문보다 짧고 느리다. inst 18~19를 test로 두면 test가 CV보다 8.6%p 낮다 → **11/15에 test를 URL마다 방문 2개로 바꿨다**(CV와 test 차이 +1.0%p, 팀 확인 필요) ([TEST_SPLIT.md](TEST_SPLIT.md)) |
 
 **"모델 선택"이 아니라 "모델을 도구로 쓴 피처 검증"이다.** 모든 모델을 기본 하이퍼파라미터로 고정하고 피처만 바꿨다. 그래서 아래 표의 모델별 점수는 모델 순위로 해석하면 안 된다.
 
@@ -133,7 +133,7 @@ Tor 웹사이트 핑거프린팅(WF) 프로젝트에서 데이터 전처리 담�
 | RF 정확도 | - | 82.2% | **63.7%** |
 
 - inst 19는 네트워크가 느렸거나 로딩이 덜 끝난 기록이 많은 것으로 보인다(수집 코드가 없어 확정 불가).
-- 현재 test(inst 18~19)는 **일반 방문보다 어려운 세트**다. 초기 보고값(RF test 73%)은 낮게 나온 값이다.
+- 옛 test(inst 18~19)는 **일반 방문보다 어려운 세트**였다. 초기 보고값(RF test 73%)은 낮게 나온 값이다. 11/15에 분할을 바꿨다 ([TEST_SPLIT.md](TEST_SPLIT.md)).
 - 앞부분 피처(`first30_out` 등)는 inst 19에서도 값이 같다. 기록이 덜 끝나도 앞부분은 영향을 받지 않는다.
 
 ---
@@ -294,10 +294,10 @@ r = run(['@all', '-@const', '@early', '@bseq', '@cumulabs', '@dir50'], model='rf
 - 결과는 `logs/experiments.csv`에 쌓인다(개인 기록, git 제외).
 
 ### 6.2 지켜야 할 것
-1. **test(inst 18~19)는 마지막에 한 번만** 쓴다. 튜닝과 모델 비교는 CV로 한다.
+1. **test는 마지막에 한 번만** 쓴다. 튜닝과 모델 비교는 CV로 한다. test는 11/15부터 URL마다 방문 2개(`ld.mon_is_test`)다. `experiment.py`·`openworld.py`는 자동으로 따른다. 직접 나누는 노트북은 `inst < 18` 대신 이 함수를 쓴다.
 2. 모델별 전처리가 다르다. 트리 모델은 원본 값, SVM·k-NN·LR은 log 변환 후 표준화(`experiment.py`가 자동으로 처리). **SVM·k-NN은 `--gw`(그룹 가중치)를 켜는 것을 제안한다**: 후보 131개에서 k-NN 90.4 → 91.9%, SVM 94.9 → 95.3%. LR은 gw를 켜면 90.0 → 88.1%로 떨어지므로 켜지 않는다 (EXPERIMENTS.md 6c단계)
 3. 지금의 모델별 점수는 **기본 하이퍼파라미터 결과**라 모델 순위가 아니다.
-4. CV 점수와 test 점수를 직접 비교하지 않는다(inst 19 문제).
+4. 보고서에는 test 전체와 그중 inst 19(95개)의 정확도를 함께 쓴다(`--test`가 둘 다 출력한다). 옛 분할의 CV 점수(이 문서의 대부분)와 새 분할의 점수를 섞어 비교하지 않는다.
 
 ### 6.3 모델 담당이 할 일 (제안)
 - 후보 피처셋(131개)으로 RF, ET, SVM 등 하이퍼파라미터 튜닝 (train 내부 CV). 그리드 제안은 EXPERIMENTS.md 6단계
@@ -316,7 +316,7 @@ r = run(['@all', '-@const', '@early', '@bseq', '@cumulabs', '@dir50'], model='rf
 
 | 안건 | 선택지 | 비고 |
 |---|---|---|
-| **test 분할** | (a) inst 18~19 유지: 환경 변화에 대한 강건성까지 평가, 점수는 낮게 나옴 (b) 방문마다 골고루 뽑도록 변경: 일반 성능 평가 | 정한 이유를 보고서에 써야 한다 |
+| ~~test 분할~~ | **결정 (11/15): (b) 방문마다 골고루.** inst 0~17은 정확도 94.7~97.5%로 시간에 따른 변화가 없고, inst 19만 튄다. (b)는 CV와 test가 1%p 안에서 맞는다 | 근거·보고서 문장: ([TEST_SPLIT.md](TEST_SPLIT.md)). 팀 확인 필요 |
 | **open-world 임계값** | unmon을 잘못 잡는 비율(FPR)을 얼마까지 허용할지. 예: 1% → TPR 91.4%, 0.1% → TPR 79.8% | FPR 목표별 표는 [OPENWORLD.md](OPENWORLD.md) 3.9. 현실 비율(unmon 100배)이면 FPR 1%의 precision이 48%라 0.1%도 고려할 만하다 |
 | **시퀀스 모델(DF 등) 사용 여부** | 가산점(TrafficSliver) 과제에 필요할 가능성 | 입력은 L = 5,000으로 만들어 뒀다(mon 33% 잘림). 10,000이면 잘림 0%, 입력 2배 |
 | ~~closed-world 후보를 131개로 바꿀지~~ | **결정 (10/16): 바꾼다** — 5개 모델 전부 개선(+0.12~0.98%p), 시드 3개 재현 | 6단계. 문서 반영 완료 |
@@ -328,11 +328,13 @@ r = run(['@all', '-@const', '@early', '@bseq', '@cumulabs', '@dir50'], model='rf
 
 - [x] open-world 데이터 준비: unmon 라벨, train/test 분할, 앞 14셀 흔적 제거, 피처 실험 ([OPENWORLD.md](OPENWORLD.md))
 - [x] open-world PR·ROC 그래프, 임계값 표, mon:unmon 비율별 precision 표 ([OPENWORLD.md](OPENWORLD.md) 3.9)
-- [x] inst 19 문제: 근거 그래프 `figures/data_by_inst.png` (선택지는 7절. 결정은 팀)
+- [x] inst 19 문제: 근거 그래프 `figures/data_by_inst.png`. 11/15 실험으로 (b) 분할 채택 ([TEST_SPLIT.md](TEST_SPLIT.md))
 - [x] 시퀀스 모델용 입력: L = 5,000, 잘리는 비율 확인 (PREPROCESSING.md ⑯)
 - [x] 제안서용 그래프 7개 → `figures/` (PREPROCESSING.md "그래프" 절)
 - [x] 0단계 중요도를 train 내부에서 다시 계산 (EXPERIMENTS.md 0단계 재확인)
 - [x] k-NN·SVM·LR용 전처리 점검 → k-NN·SVM은 그룹 가중치 `--gw`, LR은 지금 방식 유지 (EXPERIMENTS.md 6c단계)
+- [x] (11/15) test 분할 실험·변경 → [TEST_SPLIT.md](TEST_SPLIT.md)
+- [x] (11/15) 가산점 TrafficSliver: 시간 피처 40등분 채택, 짧은 split 그대로 두기, split 시퀀스(L = 3,000) → [EXTRA_CREDIT.md](EXTRA_CREDIT.md) 5절
 
 튜닝 전 전처리 작업은 여기까지다. 남은 것은 팀 결정(7절)과 모델 담당의 튜닝·test 평가다.
 
