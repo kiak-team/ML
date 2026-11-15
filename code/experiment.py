@@ -27,11 +27,11 @@
   이전 로그(stage3/3b/4)의 피처 수를 재현하려면 맨 뒤에 @qconst를 붙인다.
 
 분할:
-  train = inst 0~17 (17,100개), test = inst 18~19 (1,900개). eval_nearest_centroid.py와 같다.
-  CV fold = inst % 5. URL마다 방문 일부를 빼 두고 검증한다.
-  주의: test(inst 18~19)는 CV보다 정확도가 크게 낮다(RF 기준 CV 약 88%, test 약 73%).
-  inst 19가 다른 방문보다 짧고 느리기 때문이다(PREPROCESSING.md "마지막 방문" 절).
-  피처 비교는 CV로 하고, CV와 test 점수를 직접 비교하지 않는다.
+  test = URL마다 방문 2개 (load_data.mon_is_test, 1,900개), train = 나머지 17,100개. 11/15에 바꿨다.
+  이전(10/12~11/14)에는 test = inst 18~19였다. 마지막 방문(inst 19)이 짧고 느려서 test가 CV보다 8.6%p 낮았고,
+  CV로 고른 설정이 test에 그대로 옮겨 간다고 볼 수 없어서 바꿨다(docs/TEST_SPLIT.md). 이전 로그의 CV 점수는 옛 분할 기준이다.
+  CV fold = inst % 5. URL마다 test 방문 2개는 inst % 5가 같아서, fold 5개의 크기는 모두 3,420개로 같다.
+  --test는 test 중 inst 19(95개)의 정확도를 따로 출력한다. 수집 상태가 다른 방문에서의 성능으로 보고서에 함께 쓴다.
 
 전처리 (모델이 자동으로 정한다. --log/--no-log, --scale/--no-scale로 바꿀 수 있다):
   트리 모델(dt, rf, et): 그대로 쓴다. 트리는 값의 크기에 영향을 받지 않는다.
@@ -57,6 +57,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # python -I 에서도 load_data를 찾도록
+import load_data as ld
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CSV_PATH = os.path.join(ROOT, 'features', 'features_mon.csv')
@@ -218,7 +221,8 @@ def run(features=('@all',), model='rf', test=False, log=None, scale=None, note='
     if gw:
         params = {**params, 'gw': True}  # 출력과 experiments.csv에 남기기 위해
 
-    tr, te = df[df.inst <= 17], df[df.inst >= 18]
+    is_te = ld.mon_is_test(df.url.values, df.inst.values)
+    tr, te = df[~is_te], df[is_te]
     Xtr, ytr = tr[feats].values, tr.site.values
 
     t0 = time.time()
@@ -226,14 +230,16 @@ def run(features=('@all',), model='rf', test=False, log=None, scale=None, note='
     res = {'cv_mean': cv.mean(), 'cv_std': cv.std(), 'test_acc': None}
     if test:
         fitted = clone(pipe).fit(Xtr, ytr)
-        res['test_acc'] = fitted.score(te[feats].values, te.site.values)
+        hit = fitted.predict(te[feats].values) == te.site.values
+        res['test_acc'], res['test_acc_inst19'] = hit.mean(), hit[te.inst.values == 19].mean()
     res['sec'] = time.time() - t0
 
     print(f'model={model} {params or ""} log={log} scale={scale}  features={len(feats)}')
     print(f'  CV 5-fold (train 내부): {res["cv_mean"]:.4f} ± {res["cv_std"]:.4f}   '
           f'[{" ".join(f"{a:.3f}" for a in cv)}]')
     if test:
-        print(f'  TEST (inst 18~19, 1,900개): {res["test_acc"]:.4f}   ← 최종 평가용. 이걸 보고 피처를 다시 고르지 말 것')
+        print(f'  TEST (URL마다 2개, 1,900개): {res["test_acc"]:.4f}   (그중 inst 19, 95개: {res["test_acc_inst19"]:.4f})'
+              '   ← 최종 평가용. 이걸 보고 피처를 다시 고르지 말 것')
     print(f'  {res["sec"]:.1f}s')
 
     if save:
