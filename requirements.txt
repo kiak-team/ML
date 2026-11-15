@@ -4,3 +4,5 @@ numpy>=2.0
 pandas>=2.0
 scipy>=1.11
 scikit-learn>=1.4
+# rerun_cw_experiments.py (부스팅 비교)에 필요하다.
+lightgbm>=4.0

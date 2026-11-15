@@ -6,7 +6,7 @@
   `experiment.py`와 `openworld.py`가 이 함수를 쓴다.
 - 이전 분할 (a) "inst 18~19를 test로"는 CV와 test의 차이가 **−8.6%p**였다. (b)는 **+1.0%p**로 fold 간 표준편차 안이다.
 - 마지막 방문(inst 19)은 test에서 빼지 않았다. 전체 비율(5%, 95개)만큼 test에 남는다. 최종 평가에서 inst 19 95개의 정확도를 따로 보고하면, (a)가 보려던 "수집 상태가 다른 방문에서의 성능"도 함께 볼 수 있다.
-- **팀 확인이 필요하다.** 모델 담당이 이미 옛 분할로 튜닝을 시작했다면, CV를 새 분할로 다시 돌려야 한다. 팀원 노트북 `code/closed_world_experiments.ipynb`는 아직 `inst < 18`로 나눈다.
+- **팀 확인이 필요하다.** 모델 담당이 이미 옛 분할로 튜닝을 시작했다면, CV를 새 분할로 다시 돌려야 한다. 팀원 노트북 `code/closed_world_experiments.ipynb`와 고도화 재실험 스크립트 `code/rerun_cw_experiments.py`(SoftVote 0.9716 등)는 아직 `inst < 18`로 나눈다. 그 점수는 옛 분할 기준이다.
 
 ## 1. 문제
 

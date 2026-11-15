@@ -1,4 +1,4 @@
-﻿mon train 17100개 (사이트 95개), unmon 10000개 (사이트 10000개)
+mon train 17100개 (사이트 95개), unmon 10000개 (사이트 10000개)
 피처: 앞 14셀을 버리고 다시 계산한 것 (features/ow_skip14_*.csv)
 
 ==============================================================================
@@ -38,7 +38,7 @@ mode=binary skip=14 model=rf  log=False scale=False features=22  [CV 5-fold (tra
   t=0.5    TPR 0.9281  FPR 0.3583  precision 0.8311
   FPR≤5%   TPR 0.5718  FPR 0.0473  precision 0.9582
   FPR≤1%   TPR 0.3177  FPR 0.0092  precision 0.9850
-  47.0s
+  44.8s
 >>> 개수 4 + 시간 18 = 22개: ROC-AUC 0.9021
 
 mode=binary skip=14 model=rf  log=False scale=False features=4  [CV 5-fold (train: mon 17100, unmon 9000)]
@@ -46,7 +46,7 @@ mode=binary skip=14 model=rf  log=False scale=False features=4  [CV 5-fold (trai
   t=0.5    TPR 0.8064  FPR 0.5570  precision 0.7334
   FPR≤5%   TPR 0.1871  FPR 0.0470  precision 0.8832
   FPR≤1%   TPR 0.0691  FPR 0.0083  precision 0.9403
-  49.2s
+  47.8s
 >>> 개수만 4개: ROC-AUC 0.6978
 
 mode=binary skip=14 model=rf  log=False scale=False features=18  [CV 5-fold (train: mon 17100, unmon 9000)]
@@ -54,7 +54,7 @@ mode=binary skip=14 model=rf  log=False scale=False features=18  [CV 5-fold (tra
   t=0.5    TPR 0.9185  FPR 0.3787  precision 0.8217
   FPR≤5%   TPR 0.5265  FPR 0.0479  precision 0.9543
   FPR≤1%   TPR 0.2732  FPR 0.0099  precision 0.9813
-  68.0s
+  67.8s
 >>> 시간만 18개: ROC-AUC 0.8888
 
 기록의 전체 요약(길이·시간)만 알려줘도 상당히 갈린다.
@@ -104,4 +104,25 @@ mode=binary skip=14 model=rf  log=False scale=False features=18  [CV 5-fold (tra
   후보 134개: 겹별 평균 0.9354 ± 0.0240 (최소 0.903, 최대 0.969)
   후보 134개: 전체 out-of-fold 점수를 모아 계산 (pooled) AUC 0.9353
   → 사이트 95개 전부가 정확히 한 번 평가됐다
+
+==============================================================================
+[5] 사이트별 분리도: 원인이 (a) 사이트 성질인가 (b) 균일한 수집 흔적인가
+==============================================================================
+  개수+시간 22개: 중앙값 0.830  평균 0.818  표준편차 0.087
+  개수+시간 22개: 최소 0.486  10% 0.704  90% 0.904  최대 0.947
+    AUC < 0.6:  3개 사이트 ( 3.2%)
+    AUC < 0.7:  9개 사이트 ( 9.5%)
+    AUC < 0.8: 34개 사이트 (35.8%)
+    AUC < 0.9: 80개 사이트 (84.2%)
+    가장 낮은 5개: 0.486 0.553 0.570 0.620 0.627
+  → 사이트마다 크게 다르고 우연 수준인 사이트가 있으면 (a), 균일하게 높으면 (b)
+
+  후보 134개: 중앙값 0.963  평균 0.935  표준편차 0.088
+  후보 134개: 최소 0.571  10% 0.853  90% 0.991  최대 0.996
+    AUC < 0.6:  2개 사이트 ( 2.1%)
+    AUC < 0.7:  5개 사이트 ( 5.3%)
+    AUC < 0.8:  7개 사이트 ( 7.4%)
+    AUC < 0.9: 14개 사이트 (14.7%)
+    가장 낮은 5개: 0.571 0.586 0.621 0.642 0.659
+  → 사이트마다 크게 다르고 우연 수준인 사이트가 있으면 (a), 균일하게 높으면 (b)
 
