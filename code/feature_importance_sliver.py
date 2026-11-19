@@ -6,6 +6,15 @@
 - test(ld.sliver_is_test, 방문의 10%)는 쓰지 않는다. 나머지 방문을 group 단위 5-fold로 나눈다.
   같은 방문의 split 5개와 join이 서로 다른 fold에 들어가지 않는다 (docs/EXTRA_JOIN.md).
 - 피처 하나씩 섞는 permutation은 375개 × 9만 행이라 너무 느려서 뺐다. 대신 그룹·상관 묶음 단위로 섞는다.
+- 그룹은 `ex.groups(names, pkl_qconst=False)`로 받는다. 기본값(True)은 pkl에서 구한 준상수 24개를
+  빼는데, 그 목록은 "모든 기록이 같은 핸드셰이크 14셀로 시작한다"는 pkl의 성질에서 나온 것이다.
+  sliver에는 그 성질이 없다(BWR이 조각마다 시작 지점을 바꾼다). train split에서 재 보면
+  dir_001~014는 mode_frac 0.70~0.76, bseq_1은 0.049로 고유값 3,929개다(준상수 기준 0.9998).
+  기본값으로 부르면 @bseq 30→24, @dir 100→86, @dir50 50→36, @early 7→6으로 실재하는 피처가
+  조용히 빠지고, sliver에 없는 @qconst 13개가 유령으로 생긴다.
+  **logs/feature_importance_sliver.log는 이 수정 전에 뽑힌 것이라 그 잘못된 개수로 찍혀 있다.**
+  다시 돌리면(약 2시간) 갱신된다. 그룹 중요도 결론(@timing −5.0%p, @cumul100 −2.6%p, 나머지 0 근처)은
+  바뀌지 않는다 — 영향받는 그룹들이 86개로도 0 근처였고 14개를 더해도 0 근처다.
 - 기준선 (fold 평균 RF 정확도, 95-class closed-world):
     A join→join (방어 없음)   B split→split (공격자가 실제로 얻는 값)   C join→split
 출력: 위 로그 + logs/feature_importance_sliver.csv (피처별 RF 불순도 중요도, train-only η²)
@@ -40,7 +49,7 @@ def main(path):
     Xj, yj, gj = jn[names].values, jn.label.values, jn.group.values
     print(f'train split {len(sp)}행 / join {len(jn)}행, 피처 {len(names)}개, 사이트 {len(set(y))}개', flush=True)
 
-    G = ex.groups(names)
+    G = ex.groups(names, pkl_qconst=False)  # pkl 준상수 제외는 sliver에 맞지 않다 (맨 위 설명)
     named = {k: [names.index(f) for f in v] for k, v in G.items() if k not in ('all', 'extra') and v}
 
     corr = spearmanr(X).correlation

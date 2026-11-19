@@ -96,7 +96,18 @@ def load():
     return _data
 
 
-def groups(names):
+def groups(names, pkl_qconst=True):
+    """피처 이름 → 그룹 딕셔너리.
+
+    pkl_qconst=True(기본)는 pkl 데이터에서 구한 준상수 제외를 적용한다. 그 목록은
+    "모든 기록이 같은 핸드셰이크 14셀로 시작한다"는 pkl의 성질에서 나온 것이다.
+
+    TrafficSliver 데이터에는 그 성질이 없다. BWR이 셀 묶음을 경로 5개에 뿌려서 조각마다
+    시작 지점이 달라, 같은 피처들이 전혀 상수가 아니다(train split에서 mode_frac을 재면
+    dir_001~014는 0.70~0.76, bseq_1은 0.049로 고유값이 3,929개다. 준상수 기준은 0.9998).
+    그래서 sliver 쪽 스크립트는 pkl_qconst=False로 불러, 실재하는 피처 24개가 조용히
+    빠지는 것을 막는다(@bseq 30, @dir 100, @dir50 50, @early 7, @qconst 없음).
+    """
     base = names[:55]  # features_mon.csv의 55개. 추가 피처는 @extra 등으로 따로 고른다
     g = {
         'all': base,
@@ -109,20 +120,24 @@ def groups(names):
     # feature_importance.log에서 서로 상관이 높아 한 묶음으로 나온 "기록 길이" 계열 17개
     g['length'] = ['n_total', 'n_in', 'out_order_std', 'in_order_mean', 'in_order_std', 'in_burst_ge10',
                    'cumul_min'] + [f'cumul_{p}0pct' for p in range(1, 11)]
-    g['const'] = ['in_burst_1', 'in_burst_2', 'in_burst_3']  # 모든 기록에서 (거의) 상수
+    # 모든 기록에서 (거의) 상수 — pkl 기준. sliver에서는 변하므로 비운다
+    g['const'] = ['in_burst_1', 'in_burst_2', 'in_burst_3'] if pkl_qconst else []
     # features_extra.py의 추가 피처 (가설은 그 파일 맨 위 설명 참고)
     extra = names[55:]
     if extra:
-        g['early'] = [f for f in extra if f.startswith('first') and f != 'first10_out']  # first10_out은 준상수
+        lo = 7 if pkl_qconst else 1  # pkl에서는 bseq_1~6, dir_001~014가 준상수다
+        g['early'] = [f for f in extra if f.startswith('first')
+                      and not (pkl_qconst and f == 'first10_out')]  # first10_out은 pkl에서 준상수
         g['cumulabs'] = [f for f in extra if f.startswith('cumul_at_')]
-        g['bseq'] = [f'bseq_{j}' for j in range(7, 31) if f'bseq_{j}' in extra]  # 1~6은 준상수
+        g['bseq'] = [f'bseq_{j}' for j in range(lo, 31) if f'bseq_{j}' in extra]
         g['cumul100'] = [f for f in extra if f.startswith('cumul100_')]
         g['extra'] = g['early'] + g['cumulabs'] + g['bseq'] + g['cumul100']
         # features_extra2.py의 추가 피처
         if 'bseq_31' in extra:
             g['bseqlong'] = [f'bseq_{j}' for j in range(31, 101)]
-            g['dir'] = [f'dir_{j:03d}' for j in range(15, 101)]  # dir_001~014는 준상수
-            g['dir50'] = [f'dir_{j:03d}' for j in range(15, 51)]
+            d0 = 15 if pkl_qconst else 1  # dir_001~014는 pkl에서 준상수
+            g['dir'] = [f'dir_{j:03d}' for j in range(d0, 101)]
+            g['dir50'] = [f'dir_{j:03d}' for j in range(d0, 51)]
         # mon에서 한 값이 99.98% 이상인 준상수 13개. 위 그룹에서 빼 두고 이름만 남긴다.
         # closed-world(95-class)에서는 정보가 없다: train-only η² = 0.0054(우연 수준 0.005),
         # 빼도 k-NN은 소수점 4자리까지 같고 RF는 -0.03%p다. 대신 RF가 1.6배 빨라진다.
@@ -131,7 +146,7 @@ def groups(names):
         #       수집 코드가 없어 확정할 수 없다. open-world에서 쓸지는 따로 판단한다.
         # 이전 로그(stage3/3b/4) 재현: @all -@const @early @bseq @dir50 @qconst → 131개
         g['qconst'] = [f for f in ['first10_out'] + [f'bseq_{j}' for j in range(4, 7)]
-                       + [f'dir_{j:03d}' for j in range(6, 15)] if f in extra]
+                       + [f'dir_{j:03d}' for j in range(6, 15)] if f in extra] if pkl_qconst else []
     return g
 
 
