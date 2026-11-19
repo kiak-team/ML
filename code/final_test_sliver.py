@@ -1,6 +1,10 @@
 """Extra credit ⑤: 끝까지 아껴둔 최종 test로 한 번만 평가한다 (sklearn 필요).
 
-사용법: python -I -W ignore -X utf8 code/final_test_sliver.py > logs/final_test_sliver.log
+사용법: python -I -W ignore -X utf8 code/final_test_sliver.py [v2] > logs/final_test_sliver.log
+
+  인자 없음: 옛 피처(features_time.py의 tnorm 20등분)로 뽑은 CSV 두 개를 합쳐 쓴다. 4.7 세트 202개.
+  v2       : 11/15 정의로 다시 뽑은 sliver_mon_v2.csv 하나를 쓴다. 5.1 세트 202개(최종, 4.13).
+             4.13에서 두 세트가 무승부였으므로 결론은 같고 숫자만 0.1%p 안에서 움직인다.
         (stdout만 로그로. 2>&1 금지: joblib 경고가 로그를 GB로 불린다)
 
 test는 `ld.sliver_is_test(group)`, 방문의 10%다. 피처·세트·모델을 고르는 동안 한 번도 보지 않았다
@@ -26,6 +30,8 @@ import load_data as ld
 
 N_TREES = 200
 SEEDS = (0, 1, 2)
+V2 = 'v2' in sys.argv[1:]
+V2_TIME = ('tcum_', 'tbin_', 'gap_', 'tnorm_')  # 11/15 정의: tnorm이 40등분 수신·송신 80개
 TIME_NEW = ('tcum_', 'tbin_', 'tnorm_', 'gap_')
 FINAL_EXTRA = ('tnout_', 'tnqin_', 'tnqout_')
 EDGES = [0, 10, 25, 50, 100, 200, 400, 800, 1600, 10**9]
@@ -33,10 +39,14 @@ EDGES = [0, 10, 25, 50, 100, 200, 400, 800, 1600, 10**9]
 
 def load():
     """short_splits.load와 달리 test 행과 join 행을 버리지 않는다."""
-    a = pd.read_csv(os.path.join(ex.ROOT, 'features', 'sliver_mon.csv'))
-    b = pd.read_csv(os.path.join(ex.ROOT, 'features', 'sliver_mon_time2.csv')).drop(columns=['label'])
-    df = a.merge(b, on=['group', 'part'], how='inner', validate='one_to_one')
-    assert len(df) == len(a), f'(group, part) 합치기 실패: {len(df)} != {len(a)}'
+    f = os.path.join(ex.ROOT, 'features')
+    if V2:
+        df = pd.read_csv(os.path.join(f, 'sliver_mon_v2.csv'))
+    else:
+        a = pd.read_csv(os.path.join(f, 'sliver_mon.csv'))
+        b = pd.read_csv(os.path.join(f, 'sliver_mon_time2.csv')).drop(columns=['label'])
+        df = a.merge(b, on=['group', 'part'], how='inner', validate='one_to_one')
+        assert len(df) == len(a), f'(group, part) 합치기 실패: {len(df)} != {len(a)}'
     names = [c for c in df.columns if c not in ('label', 'group', 'part', 'n_bursts_total')]
     df[names] = df[names].astype(np.float32)
     return df.reset_index(drop=True), names
@@ -44,9 +54,11 @@ def load():
 
 def main():
     df, names = load()
-    G = ex.groups(names)
-    fs = G['timing'] + [f for f in names if f.startswith(TIME_NEW + FINAL_EXTRA)]
+    G = ex.groups(names, pkl_qconst=False)
+    fs = G['timing'] + [f for f in names
+                        if f.startswith(V2_TIME if V2 else TIME_NEW + FINAL_EXTRA)]
     assert len(fs) == 202, len(fs)
+    print(f'세트: {"11/15 정의 (tnorm 40등분 수신·송신)" if V2 else "11/19 정의 (tnorm 20등분 + 송신 60)"}')
 
     is_test = ld.sliver_is_test(df.group.values)
     is_join = df.part.values == ld.JOIN_PART

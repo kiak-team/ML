@@ -1,0 +1,54 @@
+세트: 11/15 정의 (tnorm 40등분 수신·송신)
+split: mon 87038행 / unmon 85047행
+join : mon 19000행 / unmon 19000행
+피처 202개, 방문 train 34199개 / test 3801개 — 겹치는 방문 0개
+mon 비율 0.506 (현실은 훨씬 낮다. precision 해석에 주의)
+
+########## split → split (방어 있음) — 우리 결과 (train 154869행 / test 17216행) ##########
+--- binary (mon vs unmon) ---
+  시드 0: ROC-AUC 0.8198  PR-AUC 0.8339
+    t=0.5     TPR 0.7548  FPR 0.3284  precision 0.7017
+    FPR≤5%    TPR 0.4246  FPR 0.0472  precision 0.9019
+    FPR≤1%    TPR 0.3196  FPR 0.0098  precision 0.9710
+    (68s)
+  시드 1: ROC-AUC 0.8202  PR-AUC 0.8350
+    t=0.5     TPR 0.7582  FPR 0.3368  precision 0.6973
+    FPR≤5%    TPR 0.4295  FPR 0.0460  precision 0.9053
+    FPR≤1%    TPR 0.3216  FPR 0.0096  precision 0.9715
+    (140s)
+  시드 2: ROC-AUC 0.8209  PR-AUC 0.8347
+    t=0.5     TPR 0.7636  FPR 0.3308  precision 0.7026
+    FPR≤5%    TPR 0.4284  FPR 0.0495  precision 0.8986
+    FPR≤1%    TPR 0.3200  FPR 0.0093  precision 0.9724
+    (215s)
+  ROC-AUC 시드 평균 0.8203, 변동폭 0.0010
+--- multi (96클래스) ---
+  나무당 노드 101,028개 × 클래스 96개 → 78MB/그루
+  예산 8.0GB → 나무 103그루 (200그루는 16GB로 넘친다)
+  시드 0 (103그루): ROC-AUC 0.7365  PR-AUC 0.6958
+    t=0.5     TPR 0.0045  FPR 0.0011  precision 0.8125  TPR_site 0.0042  precision_site 0.7708
+    FPR≤5%    TPR 0.1611  FPR 0.0462  precision 0.7812  TPR_site 0.0693  precision_site 0.3357
+    FPR≤1%    TPR 0.0535  FPR 0.0099  precision 0.8473  TPR_site 0.0361  precision_site 0.5709
+    (357s)
+  주의: 96클래스에서는 최고 확률이 0.5를 넘는 일이 거의 없어 t=0.5 행은 의미가 없다. FPR 기준 행만 쓴다.
+
+########## join → join (방어 없음) — 같은 데이터에서 방어만 끈 비교 (train 34199행 / test 3801행) ##########
+--- binary (mon vs unmon) ---
+  시드 0: ROC-AUC 0.9977  PR-AUC 0.9979
+    t=0.5     TPR 0.9784  FPR 0.0252  precision 0.9748
+    FPR≤5%    TPR 0.9868  FPR 0.0494  precision 0.9523
+    FPR≤1%    TPR 0.9705  FPR 0.0100  precision 0.9898
+    (374s)
+--- multi (96클래스) ---
+  나무당 노드 13,899개 × 클래스 96개 → 11MB/그루
+  예산 8.0GB → 나무 200그루
+  시드 0 (200그루): ROC-AUC 0.9821  PR-AUC 0.9799
+    t=0.5     TPR 0.2074  FPR 0.0000  precision 1.0000  TPR_site 0.2063  precision_site 0.9949
+    FPR≤5%    TPR 0.8663  FPR 0.0458  precision 0.9498  TPR_site 0.6637  precision_site 0.7276
+    FPR≤1%    TPR 0.6453  FPR 0.0095  precision 0.9855  TPR_site 0.5747  precision_site 0.8778
+    (416s)
+  주의: 96클래스에서는 최고 확률이 0.5를 넘는 일이 거의 없어 t=0.5 행은 의미가 없다. FPR 기준 행만 쓴다.
+
+두 시나리오는 같은 데이터·같은 피처·같은 분할이므로 차이는 방어 때문이다.
+본 프로젝트(pkl, 방어 없음)는 binary ROC-AUC 0.9932, FPR≤1%에서 TPR 0.786이었다 (logs/ow_modes.log). 데이터셋이 달라 직접 비교가 아니라 참고용이다.
+DONE

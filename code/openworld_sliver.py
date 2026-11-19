@@ -1,6 +1,8 @@
 """Extra credit ⑦: TrafficSliver 데이터로 open-world 본 실험 (sklearn 필요).
 
-사용법: python -I -W ignore -X utf8 code/openworld_sliver.py > logs/openworld_sliver.log
+사용법: python -I -W ignore -X utf8 code/openworld_sliver.py [v2] > logs/openworld_sliver.log
+
+  인자 없음: 옛 피처 CSV 두 개를 합쳐 쓴다(4.7 세트). v2: 11/15 정의로 다시 뽑은 CSV 하나(최종 세트).
         (stdout만 로그로. 2>&1 금지: joblib 경고가 로그를 GB로 불린다)
 
 과제 18쪽 지표를 본 프로젝트와 같은 정의로 낸다. 지표 함수(scores/at/report)를 openworld.py에서
@@ -39,15 +41,21 @@ N_TREES = 200
 SEEDS_BIN = (0, 1, 2)
 MEM_BUDGET_GB = 8.0  # 이 머신 여유가 12GB 안팎이다 (4.9)
 OFFSET = 10 ** 7     # unmon group 번호를 mon과 분리
+V2 = 'v2' in sys.argv[1:]
+V2_TIME = ('tcum_', 'tbin_', 'gap_', 'tnorm_')  # 11/15 정의: tnorm이 40등분 수신·송신 80개
 TIME_NEW = ('tcum_', 'tbin_', 'tnorm_', 'gap_')
 FINAL_EXTRA = ('tnout_', 'tnqin_', 'tnqout_')
 
 
 def load_side(tag):
-    a = pd.read_csv(os.path.join(ex.ROOT, 'features', f'sliver_{tag}.csv'))
-    b = pd.read_csv(os.path.join(ex.ROOT, 'features', f'sliver_{tag}_time2.csv')).drop(columns=['label'])
-    df = a.merge(b, on=['group', 'part'], how='inner', validate='one_to_one')
-    assert len(df) == len(a), f'{tag} (group, part) 합치기 실패: {len(df)} != {len(a)}'
+    f = os.path.join(ex.ROOT, 'features')
+    if V2:
+        df = pd.read_csv(os.path.join(f, f'sliver_{tag}_v2.csv'))
+    else:
+        a = pd.read_csv(os.path.join(f, f'sliver_{tag}.csv'))
+        b = pd.read_csv(os.path.join(f, f'sliver_{tag}_time2.csv')).drop(columns=['label'])
+        df = a.merge(b, on=['group', 'part'], how='inner', validate='one_to_one')
+        assert len(df) == len(a), f'{tag} (group, part) 합치기 실패: {len(df)} != {len(a)}'
     return df.reset_index(drop=True)  # split과 join 모두 (join은 방어 없음 비교용)
 
 
@@ -56,8 +64,10 @@ def main():
     names = [c for c in m.columns if c not in ('label', 'group', 'part', 'n_bursts_total')]
     assert [c for c in u.columns if c not in ('label', 'group', 'part', 'n_bursts_total')] == names, \
         'mon/unmon 피처 열이 다르다'
-    fs = ex.groups(names)['timing'] + [f for f in names if f.startswith(TIME_NEW + FINAL_EXTRA)]
+    fs = ex.groups(names, pkl_qconst=False)['timing'] + [
+        f for f in names if f.startswith(V2_TIME if V2 else TIME_NEW + FINAL_EXTRA)]
     assert len(fs) == 202, len(fs)
+    print(f'세트: {"11/15 정의 (tnorm 40등분 수신·송신)" if V2 else "11/19 정의"}', flush=True)
 
     u = u.copy()
     u['label'] = -1
