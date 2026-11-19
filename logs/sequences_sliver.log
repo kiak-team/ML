@@ -1,0 +1,16 @@
+C:/Users/user/Downloads/sliver_mon.npz: split 87038개, 길이 분위수 5/25/50/75/95/99%: 37 / 197 / 530 / 1218 / 3153 / 5081
+  L=  500: 잘리는 split  51.6%, 남는 셀  39.3%
+  L= 1000: 잘리는 split  30.7%, 남는 셀  61.2%
+  L= 2000: 잘리는 split  12.7%, 남는 셀  83.3%
+  L= 3000: 잘리는 split   5.6%, 남는 셀  92.8%
+  L= 5000: 잘리는 split   1.1%, 남는 셀  98.9%
+  지속 시간 65.5초 초과(t_ms 상한에 걸림): 0.23%
+저장: C:/Users/user/Downloads/sliver_seq_mon_L3000.npz  dir/t_ms (87038, 3000), 크기 77MB
+C:/Users/user/Downloads/sliver_unmon.npz: split 85047개, 길이 분위수 5/25/50/75/95/99%: 34 / 203 / 612 / 1465 / 3606 / 5396
+  L=  500: 잘리는 split  55.4%, 남는 셀  34.8%
+  L= 1000: 잘리는 split  36.0%, 남는 셀  56.1%
+  L= 2000: 잘리는 split  16.7%, 남는 셀  79.9%
+  L= 3000: 잘리는 split   8.0%, 남는 셀  91.1%
+  L= 5000: 잘리는 split   1.5%, 남는 셀  98.8%
+  지속 시간 65.5초 초과(t_ms 상한에 걸림): 0.00%
+저장: C:/Users/user/Downloads/sliver_seq_unmon_L3000.npz  dir/t_ms (85047, 3000), 크기 78MB

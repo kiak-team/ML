@@ -76,6 +76,16 @@ def load_mon(data_dir, use_sublabel=False):
     return X1, X2, y
 
 
+def mon_is_test(url, inst):
+    """mon(pkl)의 test 방문. URL마다 방문 2개(k, k+10), k = (url*7+3) % 10. 고정 규칙이라 누가 돌려도 같다.
+    방문 번호마다 95개씩 들어가서, 수집 상태가 다른 마지막 방문(inst 19)도 전체 비율(5%)만큼만 test에 있다.
+    한 사이트의 URL 10개는 k가 모두 다르다. 이전 분할은 inst >= 18이었다 (docs/TEST_SPLIT.md, 11/15 변경)."""
+    import numpy as np
+    url, inst = np.asarray(url), np.asarray(inst)
+    k = (url * 7 + 3) % 10
+    return (inst == k) | (inst == k + 10)
+
+
 def load_unmon(data_dir, filename=UNMON_FILE):
     """노트북 2번 셀과 같은 X1(시간), X2(방향*512). 10,000개, 라벨 없음."""
     X1, X2 = [], []

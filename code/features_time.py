@@ -5,7 +5,9 @@
 
 - @tcum  (38개) 고정 시각 T초까지 받은/보낸 셀 수 (누적). 셀 순서가 흩어져도 "언제 로딩되나"는 남는다
 - @tbin  (40개) 처음 10초를 0.5초 칸으로 나눈 칸별 수신/송신 셀 수
-- @tnorm (20개) 기록 길이를 20등분한 시각까지 받은 셀 비율 (시간 축 CUMUL, 길이와 무관한 모양)
+- @tnorm (80개) 기록 길이를 40등분한 시각까지 받은/보낸 셀 비율 (시간 축 CUMUL, 길이와 무관한 모양)
+                 이름 끝 4자리 = 천분율 (tnorm_in_0500 = 길이의 50% 시각). 11/15 20등분 수신만(20개) → 40등분 수신·송신으로
+                 바꿨다: holdout +1.0%p / +1.6%p (시드 0/1, docs/EXTRA_CREDIT.md 5절)
 - @gap   (26개) 셀 사이 빈 시간: 임계값별 개수, 가장 긴 10개, 0.2초 넘는 빈 시간이 처음 10번 시작한 시각
                  BWR은 셀을 50~70개 묶음으로 경로를 고르므로, 한 경로에서는 묶음 사이가 빈 시간으로 보인다
 """
@@ -18,7 +20,7 @@ import load_data as ld
 
 T_CUM = [0.25, 0.5, 1, 1.5, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60]
 BIN, N_BIN = 0.5, 20
-N_NORM = 20
+N_NORM = 40
 GAP_TH = [0.05, 0.1, 0.2, 0.5, 1, 2]
 N_TOPGAP, N_GAPAT, GAPAT_TH = 10, 10, 0.2
 
@@ -37,8 +39,9 @@ def feats_time(t):
         for j, c in enumerate(np.histogram(x, edges)[0]):
             f[f'tbin_{name}_{j + 1:02d}'] = int(c)
     dur = ts[-1]
-    for j in range(1, N_NORM + 1):
-        f[f'tnorm_in_{j * 5:03d}'] = np.searchsorted(ti, dur * j / N_NORM, 'right') / max(len(ti), 1)
+    for name, x in (('in', ti), ('out', to)):
+        for j in range(1, N_NORM + 1):
+            f[f'tnorm_{name}_{j * 1000 // N_NORM:04d}'] = np.searchsorted(x, dur * j / N_NORM, 'right') / max(len(x), 1)
     gaps = np.diff(ts)
     for th in GAP_TH:
         f[f'gap_n_{th:g}'] = int((gaps > th).sum())
@@ -57,5 +60,5 @@ if __name__ == '__main__':
     assert f['tcum_in_0.25'] == 1 and f['tcum_out_0.25'] == 1 and f['tcum_in_1.5'] == 3
     assert f['tbin_in_01'] == 2 and f['tbin_in_03'] == 1 and f['tbin_out_03'] == 1
     assert f['gap_n_0.5'] == 1 and abs(f['gap_top_01'] - 0.9) < 1e-9 and f['gap_at_01'] == 0.3 and f['gap_at_02'] == -1
-    assert f['tnorm_in_100'] == 1.0
+    assert f['tnorm_in_1000'] == 1.0 and f['tnorm_out_0500'] == 0.5 and f['tnorm_in_0250'] == 2 / 3  # 1.25*0.25=0.31초까지 수신 2/3, 송신 1/2(0.625초)
     print(len(f), 'features OK')

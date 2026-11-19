@@ -20,7 +20,7 @@
     mon_time, unmon_time (19000/10000, L) float32   ← --time일 때만
     mon_len, unmon_len   원래 길이 (skip 이후)
 
-분할은 피처 실험과 같게 쓰면 된다: mon train = inst 0~17, test = inst 18~19. CV fold = inst % 5.
+분할은 피처 실험과 같게 쓰면 된다: mon test = load_data.mon_is_test(url, inst) (URL마다 2개, 11/15 변경), CV fold = inst % 5.
 unmon은 openworld.py와 같은 시드 0 무작위 분할(test 1,000개)을 쓰려면 openworld.split()의 순서를 따른다.
 """
 import argparse, os, sys
