@@ -1,6 +1,8 @@
 """Extra credit ⑥: 사이트 수(클래스 수)를 바꿔 가며 최종 test 정확도를 잰다 (sklearn 필요).
 
-사용법: python -I -W ignore -X utf8 code/class_curve_sliver.py > logs/class_curve_sliver.log
+사용법: python -I -W ignore -X utf8 code/class_curve_sliver.py [v2] > logs/class_curve_sliver.log
+
+  v2: 11/15 정의로 다시 뽑은 CSV와 최종 세트 202개를 쓴다 (4.13). 인자가 없으면 옛 세트다.
         (stdout만 로그로. 2>&1 금지: joblib 경고가 로그를 GB로 불린다)
 
 왜 재나
@@ -31,15 +33,20 @@ import load_data as ld
 N_TREES = 200
 SEEDS = (0, 1, 2)
 N_SITES = (25, 50, 75, 95)
+V2 = 'v2' in sys.argv[1:]
+V2_TIME = ('tcum_', 'tbin_', 'gap_', 'tnorm_')
 TIME_NEW = ('tcum_', 'tbin_', 'tnorm_', 'gap_')
 FINAL_EXTRA = ('tnout_', 'tnqin_', 'tnqout_')
 
 
 def main():
-    from final_test_sliver import load  # test 행과 join 행을 버리지 않는 로더
+    import final_test_sliver as ft
+    ft.V2 = V2  # 같은 로더를 쓰되 CSV 선택만 넘긴다
+    load = ft.load
     df, names = load()
-    G = ex.groups(names)
-    fs = G['timing'] + [f for f in names if f.startswith(TIME_NEW + FINAL_EXTRA)]
+    G = ex.groups(names, pkl_qconst=False)
+    fs = G['timing'] + [f for f in names
+                        if f.startswith(V2_TIME if V2 else TIME_NEW + FINAL_EXTRA)]
     assert len(fs) == 202, len(fs)
 
     is_test = ld.sliver_is_test(df.group.values)
@@ -79,7 +86,8 @@ def main():
         print('→ 사이트를 25개로 줄여도 30%를 넘지 못한다. 95개라서 어려운 것이 아니라 방어가 강하다.')
     else:
         print('→ 사이트를 줄이면 크게 오른다. 95-class 16.5%는 클래스 수 탓이 크다.')
-    print('4.10의 95-class 값(16.51%)과 맞는지로 이 스크립트의 자기 검증이 된다.', flush=True)
+    print('95-class 값이 4.10(final_test_sliver.py)의 B split→split와 맞는지로 자기 검증이 된다.'
+          ' 같은 세트·같은 분할·같은 모델이므로 같은 값이 나와야 한다.', flush=True)
     print('DONE', flush=True)
 
 
