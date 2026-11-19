@@ -14,7 +14,7 @@
 - @tnfine (40개) 수신 비율을 2.5% 간격으로. 20등분이 거친지 보기 위한 것 (기존 20개와 겹친다)
 
 지속 시간이 0인 기록(셀이 전부 같은 시각에 찍힌 짧은 split)에서는 비율 자체가 정의되지 않아 -1을 쓴다.
-features_time.py의 gap_at_*와 같은 규칙이다. split의 약 16%가 50셀 미만이라 무시할 양이 아니다.
+features_time.py의 gap_at_*와 같은 규칙이다. 빈 split을 뺀 뒤 약 7%가 50셀 미만이라 무시할 양이 아니다.
 """
 import os, sys
 
@@ -82,9 +82,12 @@ if __name__ == '__main__':
     # 지속 시간 0: 전부 -1
     z = feats_time2(([0.0, 0.0, 0.0], [-512, 512, -512]))
     assert set(z.values()) == {UNDEF}, set(z.values())
-    # 기존 tnorm_in과 겹치는 자리는 값이 같아야 한다 (@tnfine 2.5% 간격의 짝수 번째)
+    # 11/15부터 features_time.py의 tnorm이 40등분 수신·송신이라 겹치는 자리는 값이 같아야 한다:
+    # tnfine(40등분 수신) = tnorm_in 전부, tnout(20등분 송신) = tnorm_out의 짝수 번째
     from features_time import feats_time
     g = feats_time(([0.0, 0.1, 0.3, 1.2, 1.25], [-512, 512, -512, -512, 512]))
+    for j in range(1, N_FINE + 1):
+        assert abs(f[f'tnfine_{j * 25:04d}'] - g[f'tnorm_in_{j * 25:04d}']) < 1e-9, j
     for j in range(1, N_NORM + 1):
-        assert abs(f[f'tnfine_{j * 50:04d}'] - g[f'tnorm_in_{j * 5:03d}']) < 1e-9, j
+        assert abs(f[f'tnout_{j * 5:03d}'] - g[f'tnorm_out_{j * 50:04d}']) < 1e-9, j
     print(len(f), 'features OK')
