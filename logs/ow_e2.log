@@ -1,0 +1,116 @@
+
+## E2-balanced-visit
+    fold 0: fit 20880 (unmon 7200) / val 5220  8s
+    fold 1: fit 20880 (unmon 7200) / val 5220  8s
+    fold 2: fit 20880 (unmon 7200) / val 5220  8s
+    fold 3: fit 20880 (unmon 7200) / val 5220  8s
+    fold 4: fit 20880 (unmon 7200) / val 5220  8s
+  [E2-balanced-visit] TPR 0.9464  FPR 0.4253  precision 0.7746  macro_f1 0.8571  | det_TPR 0.9978  wrong_site 880 (5.15%)  FN 37  FP 3828  | fold std TPR 0.0182 FPR 0.0090
+      -1 행(실제 unmon 9000): -1로 5172, mon으로 3828 (FP가 많은 사이트 [(75, 215), (48, 187), (0, 153), (27, 132), (50, 114)])
+      -1 열(-1로 예측된 mon): 37 = FN
+
+## E2-under1x-visit
+    fold 0: fit 13824 (unmon 144) / val 5220  7s
+    fold 1: fit 13824 (unmon 144) / val 5220  7s
+    fold 2: fit 13824 (unmon 144) / val 5220  6s
+    fold 3: fit 13824 (unmon 144) / val 5220  6s
+    fold 4: fit 13824 (unmon 144) / val 5220  6s
+  [E2-under1x-visit] TPR 0.9457  FPR 0.6954  precision 0.6926  macro_f1 0.8170  | det_TPR 0.9993  wrong_site 917 (5.36%)  FN 12  FP 6259  | fold std TPR 0.0178 FPR 0.0195
+      -1 행(실제 unmon 9000): -1로 2741, mon으로 6259 (FP가 많은 사이트 [(75, 451), (48, 402), (27, 328), (50, 295), (0, 281)])
+      -1 열(-1로 예측된 mon): 12 = FN
+
+## E2-under5x-visit
+    fold 0: fit 14400 (unmon 720) / val 5220  7s
+    fold 1: fit 14400 (unmon 720) / val 5220  8s
+    fold 2: fit 14400 (unmon 720) / val 5220  7s
+    fold 3: fit 14400 (unmon 720) / val 5220  10s
+    fold 4: fit 14400 (unmon 720) / val 5220  8s
+  [E2-under5x-visit] TPR 0.9433  FPR 0.2051  precision 0.8584  macro_f1 0.9001  | det_TPR 0.9909  wrong_site 814 (4.76%)  FN 155  FP 1846  | fold std TPR 0.0179 FPR 0.0102
+      -1 행(실제 unmon 9000): -1로 7154, mon으로 1846 (FP가 많은 사이트 [(75, 78), (0, 69), (47, 65), (71, 61), (37, 51)])
+      -1 열(-1로 예측된 mon): 155 = FN
+
+## E2-under10x-visit
+    fold 0: fit 15120 (unmon 1440) / val 5220  10s
+    fold 1: fit 15120 (unmon 1440) / val 5220  11s
+    fold 2: fit 15120 (unmon 1440) / val 5220  11s
+    fold 3: fit 15120 (unmon 1440) / val 5220  11s
+    fold 4: fit 15120 (unmon 1440) / val 5220  11s
+  [E2-under10x-visit] TPR 0.9385  FPR 0.0999  precision 0.9092  macro_f1 0.9242  | det_TPR 0.9797  wrong_site 704 (4.12%)  FN 347  FP 899  | fold std TPR 0.0198 FPR 0.0062
+      -1 행(실제 unmon 9000): -1로 8101, mon으로 899 (FP가 많은 사이트 [(47, 45), (37, 42), (71, 33), (39, 27), (64, 27)])
+      -1 열(-1로 예측된 mon): 347 = FN
+
+## visit: FPR <= 1% 판정점 (규칙 B, 임계값은 나머지 4개 fold로 결정)
+  [E2-threshold-visit-fpr1] TPR 0.8826  FPR 0.0099  precision 0.9856  macro_f1 0.9296  | det_TPR 0.8903  wrong_site 131 (0.77%)  FN 1876  FP 89  | fold std TPR 0.0232 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(75, 7), (48, 6), (66, 4), (31, 4), (86, 3)])
+      -1 열(-1로 예측된 mon): 1876 = FN
+  [E2-balanced-visit-fpr1] TPR 0.7991  FPR 0.0102  precision 0.9919  macro_f1 0.8806  | det_TPR 0.8003  wrong_site 20 (0.12%)  FN 3415  FP 92  | fold std TPR 0.0211 FPR 0.0034
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(75, 30), (48, 12), (86, 10), (73, 9), (94, 3)])
+      -1 열(-1로 예측된 mon): 3415 = FN
+  [E2-under1x-visit-fpr1] TPR 0.7443  FPR 0.0101  precision 0.9918  macro_f1 0.8425  | det_TPR 0.7451  wrong_site 14 (0.08%)  FN 4358  FP 91  | fold std TPR 0.0202 FPR 0.0027
+      -1 행(실제 unmon 9000): -1로 8909, mon으로 91 (FP가 많은 사이트 [(75, 54), (48, 9), (73, 7), (86, 7), (6, 2)])
+      -1 열(-1로 예측된 mon): 4358 = FN
+  [E2-under5x-visit-fpr1] TPR 0.8103  FPR 0.0100  precision 0.9912  macro_f1 0.8877  | det_TPR 0.8122  wrong_site 33 (0.19%)  FN 3211  FP 90  | fold std TPR 0.0199 FPR 0.0029
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(75, 27), (50, 11), (48, 6), (86, 5), (81, 4)])
+      -1 열(-1로 예측된 mon): 3211 = FN
+  [E2-under10x-visit-fpr1] TPR 0.8391  FPR 0.0098  precision 0.9901  macro_f1 0.9054  | det_TPR 0.8423  wrong_site 56 (0.33%)  FN 2696  FP 88  | fold std TPR 0.0227 FPR 0.0026
+      -1 행(실제 unmon 9000): -1로 8912, mon으로 88 (FP가 많은 사이트 [(75, 13), (48, 8), (50, 7), (86, 5), (73, 4)])
+      -1 열(-1로 예측된 mon): 2696 = FN
+
+## E2-balanced-subpage
+    fold 0: fit 20880 (unmon 7200) / val 5220  14s
+    fold 1: fit 20880 (unmon 7200) / val 5220  12s
+    fold 2: fit 20880 (unmon 7200) / val 5220  14s
+    fold 3: fit 20880 (unmon 7200) / val 5220  11s
+    fold 4: fit 20880 (unmon 7200) / val 5220  11s
+  [E2-balanced-subpage] TPR 0.7329  FPR 0.4159  precision 0.6105  macro_f1 0.6664  | det_TPR 0.9816  wrong_site 4253 (24.87%)  FN 314  FP 3743  | fold std TPR 0.0171 FPR 0.0170
+      -1 행(실제 unmon 9000): -1로 5257, mon으로 3743 (FP가 많은 사이트 [(75, 191), (48, 163), (0, 128), (27, 121), (57, 107)])
+      -1 열(-1로 예측된 mon): 314 = FN
+
+## E2-under1x-subpage
+    fold 0: fit 13824 (unmon 144) / val 5220  11s
+    fold 1: fit 13824 (unmon 144) / val 5220  11s
+    fold 2: fit 13824 (unmon 144) / val 5220  8s
+    fold 3: fit 13824 (unmon 144) / val 5220  9s
+    fold 4: fit 13824 (unmon 144) / val 5220  8s
+  [E2-under1x-subpage] TPR 0.7329  FPR 0.6809  precision 0.5427  macro_f1 0.6326  | det_TPR 0.9920  wrong_site 4431 (25.91%)  FN 137  FP 6128  | fold std TPR 0.0164 FPR 0.0184
+      -1 행(실제 unmon 9000): -1로 2872, mon으로 6128 (FP가 많은 사이트 [(48, 382), (75, 374), (27, 334), (50, 293), (0, 251)])
+      -1 열(-1로 예측된 mon): 137 = FN
+
+## E2-under5x-subpage
+    fold 0: fit 14400 (unmon 720) / val 5220  9s
+    fold 1: fit 14400 (unmon 720) / val 5220  9s
+    fold 2: fit 14400 (unmon 720) / val 5220  10s
+    fold 3: fit 14400 (unmon 720) / val 5220  11s
+    fold 4: fit 14400 (unmon 720) / val 5220  9s
+  [E2-under5x-subpage] TPR 0.7235  FPR 0.1971  precision 0.6913  macro_f1 0.7035  | det_TPR 0.9428  wrong_site 3751 (21.94%)  FN 978  FP 1774  | fold std TPR 0.0212 FPR 0.0101
+      -1 행(실제 unmon 9000): -1로 7226, mon으로 1774 (FP가 많은 사이트 [(75, 71), (47, 67), (0, 62), (37, 53), (71, 51)])
+      -1 열(-1로 예측된 mon): 978 = FN
+
+## E2-under10x-subpage
+    fold 0: fit 15120 (unmon 1440) / val 5220  9s
+    fold 1: fit 15120 (unmon 1440) / val 5220  9s
+    fold 2: fit 15120 (unmon 1440) / val 5220  9s
+    fold 3: fit 15120 (unmon 1440) / val 5220  9s
+    fold 4: fit 15120 (unmon 1440) / val 5220  9s
+  [E2-under10x-subpage] TPR 0.7118  FPR 0.0907  precision 0.7626  macro_f1 0.7289  | det_TPR 0.8856  wrong_site 2973 (17.39%)  FN 1956  FP 816  | fold std TPR 0.0226 FPR 0.0038
+      -1 행(실제 unmon 9000): -1로 8184, mon으로 816 (FP가 많은 사이트 [(37, 31), (47, 30), (71, 26), (39, 26), (15, 25)])
+      -1 열(-1로 예측된 mon): 1956 = FN
+
+## subpage: FPR <= 1% 판정점 (규칙 B, 임계값은 나머지 4개 fold로 결정)
+  [E2-threshold-subpage-fpr1] TPR 0.6069  FPR 0.0100  precision 0.9453  macro_f1 0.7148  | det_TPR 0.6368  wrong_site 511 (2.99%)  FN 6211  FP 90  | fold std TPR 0.0249 FPR 0.0038
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(48, 7), (86, 5), (73, 5), (0, 4), (66, 4)])
+      -1 열(-1로 예측된 mon): 6211 = FN
+  [E2-balanced-subpage-fpr1] TPR 0.4903  FPR 0.0094  precision 0.9825  macro_f1 0.6200  | det_TPR 0.4940  wrong_site 64 (0.37%)  FN 8652  FP 85  | fold std TPR 0.0343 FPR 0.0028
+      -1 행(실제 unmon 9000): -1로 8915, mon으로 85 (FP가 많은 사이트 [(75, 31), (48, 10), (86, 9), (73, 8), (26, 5)])
+      -1 열(-1로 예측된 mon): 8652 = FN
+  [E2-under1x-subpage-fpr1] TPR 0.4509  FPR 0.0099  precision 0.9830  macro_f1 0.5811  | det_TPR 0.4535  wrong_site 44 (0.26%)  FN 9345  FP 89  | fold std TPR 0.0325 FPR 0.0042
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(75, 46), (73, 9), (86, 9), (48, 8), (50, 3)])
+      -1 열(-1로 예측된 mon): 9345 = FN
+  [E2-under5x-subpage-fpr1] TPR 0.5120  FPR 0.0097  precision 0.9796  macro_f1 0.6406  | det_TPR 0.5175  wrong_site 95 (0.56%)  FN 8250  FP 87  | fold std TPR 0.0308 FPR 0.0043
+      -1 행(실제 unmon 9000): -1로 8913, mon으로 87 (FP가 많은 사이트 [(75, 31), (50, 7), (48, 6), (94, 4), (86, 4)])
+      -1 열(-1로 예측된 mon): 8250 = FN
+  [E2-under10x-subpage-fpr1] TPR 0.5535  FPR 0.0100  precision 0.9722  macro_f1 0.6770  | det_TPR 0.5640  wrong_site 181 (1.06%)  FN 7455  FP 90  | fold std TPR 0.0287 FPR 0.0036
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(75, 15), (48, 8), (86, 6), (6, 4), (31, 4)])
+      -1 열(-1로 예측된 mon): 7455 = FN
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e2_imbalance.png

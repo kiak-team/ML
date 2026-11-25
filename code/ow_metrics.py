@@ -73,6 +73,28 @@ def apply_threshold(proba, classes, t, unmon=UNMON):
     return pred
 
 
+def mon_score(proba, classes, unmon=UNMON):
+    """(monitored 클래스 확률의 최댓값, 그 사이트). A팀 openworld.scores(mode='multi')와 같다."""
+    proba, classes = np.asarray(proba), np.asarray(classes)
+    m = classes != unmon
+    p = proba[:, m]
+    return p.max(axis=1), classes[m][p.argmax(axis=1)]
+
+
+def apply_mon_threshold(proba, classes, t, unmon=UNMON):
+    """규칙 B: monitored 확률 최댓값 >= t이면 그 사이트, 아니면 -1.
+    apply_threshold(규칙 A)와 달리 unmon 확률이 더 커도 monitored로 판정할 수 있어서 t를 낮추면 TPR이 argmax보다 올라간다.
+    t >= 0.5에서는 두 규칙이 같다."""
+    s, site = mon_score(proba, classes, unmon)
+    return np.where(s >= t, site, unmon)
+
+
+def fpr_threshold(unmon_scores, target):
+    """unmon 점수에서 FPR <= target이 되는 가장 낮은 임계값 (A팀 openworld.report와 같은 계산)."""
+    u = np.sort(np.asarray(unmon_scores))
+    return float(np.nextafter(u[int(np.ceil(len(u) * (1 - target))) - 1], np.inf))
+
+
 def unmon_confusion(y_true, y_pred, unmon=UNMON):
     """confusion matrix와 -1 클래스의 행/열 요약. labels 순서 = [-1, 사이트 오름차순]."""
     labels = np.union1d(np.unique(y_true), np.unique(y_pred))

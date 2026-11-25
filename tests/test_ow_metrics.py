@@ -5,7 +5,8 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'code'))
-from ow_metrics import apply_threshold, ow_counts, ow_metrics, unmon_confusion  # noqa: E402
+from ow_metrics import (apply_mon_threshold, apply_threshold, fpr_threshold, mon_score,  # noqa: E402
+                        ow_counts, ow_metrics, unmon_confusion)
 
 
 class TestCounts(unittest.TestCase):
@@ -94,6 +95,32 @@ class TestThreshold(unittest.TestCase):
     def test_classes_order_independent(self):
         perm = [2, 0, 1]
         np.testing.assert_array_equal(apply_threshold(self.proba[:, perm], self.classes[perm], 0.45), [0, -1, -1, 0])
+
+
+class TestMonThreshold(unittest.TestCase):
+    classes = TestThreshold.classes
+    proba = TestThreshold.proba
+
+    def test_mon_score(self):
+        s, site = mon_score(self.proba, self.classes)
+        np.testing.assert_allclose(s, [0.8, 0.4, 0.2, 0.45])
+        np.testing.assert_array_equal(site, [0, 1, 0, 0])
+
+    def test_low_threshold_flags_even_if_unmon_is_argmax(self):
+        # 3번째 행은 argmax가 -1(0.6)이지만 monitored 최댓값 0.2 >= 0.15라 사이트 0으로 판정한다
+        np.testing.assert_array_equal(apply_mon_threshold(self.proba, self.classes, 0.15), [0, 1, 0, 0])
+        np.testing.assert_array_equal(apply_threshold(self.proba, self.classes, 0.15), [0, 1, -1, 0])
+
+    def test_rules_agree_at_half_and_above(self):
+        for t in (0.5, 0.7, 0.9):
+            np.testing.assert_array_equal(apply_mon_threshold(self.proba, self.classes, t),
+                                          apply_threshold(self.proba, self.classes, t))
+
+    def test_fpr_threshold(self):
+        u = np.arange(100) / 100          # unmon 점수 0.00 ~ 0.99
+        t = fpr_threshold(u, 0.05)
+        self.assertAlmostEqual(np.mean(u >= t), 0.05)   # 0.95~0.99의 5개 → 정확히 5%, 넘지 않는다
+        self.assertAlmostEqual(np.mean(u >= 0.94), 0.06)  # 그보다 조금이라도 낮추면 넘는다
 
 
 class TestConfusion(unittest.TestCase):
