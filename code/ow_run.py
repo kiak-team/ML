@@ -50,12 +50,24 @@ def _cached_matrix(stem):
     return X, names
 
 
+PKL_SKIP0 = ('features', 'features_extra', 'features_extra2')  # leak 포함 피처 CSV (features/<stem>_mon.csv)
+
+
 def load_pkl(skip=14, subset=False):
     """mon + unmon을 이어 붙인 dict. 행 순서 = [mon 19,000 (CSV 순서), unmon 10,000 (CSV 순서)]."""
-    Xm, names = _cached_matrix(f'ow_skip{skip}_mon')
-    Xu, names_u = _cached_matrix(f'ow_skip{skip}_unmon')
+    if skip == 0:  # leak 포함: A팀 기존 CSV 3개(55 + 150 + 171)를 같은 순서로 이어 붙인다 = ow_skip14와 같은 이름·순서
+        parts_m = [_cached_matrix(f'{s}_mon') for s in PKL_SKIP0]
+        parts_u = [_cached_matrix(f'{s}_unmon') for s in PKL_SKIP0]
+        Xm, names = np.hstack([x for x, _ in parts_m]), sum((n for _, n in parts_m), [])
+        Xu, names_u = np.hstack([x for x, _ in parts_u]), sum((n for _, n in parts_u), [])
+        ids = np.load(os.path.join(CACHE, f'{PKL_SKIP0[0]}_mon.ids.npy'))
+        for st in PKL_SKIP0[1:]:
+            assert (np.load(os.path.join(CACHE, f'{st}_mon.ids.npy')) == ids).all(), f'{st}: 행 순서 불일치'
+    else:
+        Xm, names = _cached_matrix(f'ow_skip{skip}_mon')
+        Xu, names_u = _cached_matrix(f'ow_skip{skip}_unmon')
+        ids = np.load(os.path.join(CACHE, f'ow_skip{skip}_mon.ids.npy'))
     assert names == names_u, 'mon/unmon 피처 열이 다르다'
-    ids = np.load(os.path.join(CACHE, f'ow_skip{skip}_mon.ids.npy'))
     sm = pd.read_csv(os.path.join(ROOT, 'splits', 'pkl_mon.csv'))
     su = pd.read_csv(os.path.join(ROOT, 'splits', 'pkl_unmon.csv'))
     assert (sm[['site', 'url', 'inst']].to_numpy() == ids).all(), 'split 파일과 피처 CSV의 행이 어긋난다'
@@ -210,20 +222,25 @@ def save_oof(exp_id, d, split_mode, proba, classes):
                         y=d['y'][tr], fold=fold[tr], row=d['row'][tr])
 
 
-def e1(subset):
-    """E1 베이스라인: (N+1) 클래스, 전체 피처, RF, 불균형 처리 없음, argmax 판정."""
-    d = load_pkl(14, subset)
+def feature_set_name(d, skip):
+    return f'all{len(d["names"])}_' + ('skip14' if skip == 14 else 'leak(skip0)' if skip == 0 else f'skip{skip}')
+
+
+def e1(subset, skip=14, exp='E1'):
+    """E1 베이스라인: (N+1) 클래스, 전체 피처, RF, 불균형 처리 없음, argmax 판정.
+    E4는 같은 함수를 skip=0(leak 포함 피처), exp='E4-E1'로 부른다."""
+    d = load_pkl(skip, subset)
     n_mon = len(np.unique(d['y'][d['y'] != UNMON]))
-    print(f'E1 dataset={d["dataset"]}: 피처 {len(d["names"])}개, monitored 사이트 {n_mon}개(데이터에서 셈) + unmon -1 '
+    print(f'{exp} dataset={d["dataset"]} ({feature_set_name(d, skip)}): 피처 {len(d["names"])}개, monitored 사이트 {n_mon}개(데이터에서 셈) + unmon -1 '
           f'= {n_mon + 1}클래스, 행 {len(d["y"])} (test {int(d["is_test"].sum())}개는 쓰지 않음)', flush=True)
     tag = '-subset' if subset else ''
     for mode in SPLIT_MODES:
-        exp_id = f'E1{tag}-{mode}'
+        exp_id = f'{exp}{tag}-{mode}'
         print(f'\n## {exp_id}', flush=True)
         proba, classes, secs = cv_oof(d['X'], d['y'], d[f'fold_{mode}'], rf)
         assert len(classes) == n_mon + 1
         save_oof(exp_id, d, mode, proba, classes)
-        evaluate(exp_id, d, mode, apply_threshold(proba, classes, 0.0), classes, '', f'all{len(d["names"])}_skip14',
+        evaluate(exp_id, d, mode, apply_threshold(proba, classes, 0.0), classes, '', feature_set_name(d, skip),
                  'RF(n=200,rs=42)', 'none', f'; fit+predict {sum(secs):.0f}s')
 
 
@@ -334,7 +351,7 @@ RULES = {'A': ('max proba < t -> -1 (rule A)', apply_threshold),
          'B': ('max monitored proba >= t (rule B)', None)}
 
 
-def e3(subset):
+def e3(subset, exp='E3', src='E1', fs='all376_skip14', plot=True):
     """E3 임계값 sweep. E2 승자(처리 없음 = E1 모델)의 OOF 확률, 재학습 없음.
     t = 0.05 ~ 0.95 (0.05 간격) × 규칙 A·B × visit·subpage → 결과 CSV. 곡선은 점수 경계마다 촘촘히."""
     from ow_metrics import apply_mon_threshold
@@ -342,9 +359,9 @@ def e3(subset):
     dataset = 'pkl_m25_u5000' if subset else 'pkl'
     curves = {}
     for mode in SPLIT_MODES:
-        z = np.load(os.path.join(CACHE, 'oof', f'E1{tag}-{mode}.npz'))
+        z = np.load(os.path.join(CACHE, 'oof', f'{src}{tag}-{mode}.npz'))
         P, C, y, f = z['proba'], z['classes'], z['y'], z['fold']
-        print(f'\n## E3{tag}-{mode}: mon {(y != UNMON).sum()}, unmon {(y == UNMON).sum()}, 클래스 {len(C)} (E1 OOF)')
+        print(f'\n## {exp}{tag}-{mode}: mon {(y != UNMON).sum()}, unmon {(y == UNMON).sum()}, 클래스 {len(C)} ({src} OOF)')
         print(f'  {"t":>5s} | {"규칙 A: TPR":>11s} {"FPR":>7s} {"prec":>6s} {"wrong":>6s} | '
               f'{"규칙 B: TPR":>11s} {"FPR":>7s} {"prec":>6s} {"wrong":>6s}')
         rows = {}
@@ -355,11 +372,11 @@ def e3(subset):
                 r = ow_metrics(y, pred, labels=C)
                 sd_tpr, sd_fpr = fold_spread(y, pred, f)
                 rows[(rule, t)] = r
-                record({'exp_id': f'E3{tag}-{rule}-{mode}-t{t:.2f}', 'dataset': dataset, 'split_mode': mode,
-                        'feature_set': 'all376_skip14', 'model': 'RF(n=200,rs=42)', 'imbalance': 'none',
+                record({'exp_id': f'{exp}{tag}-{rule}-{mode}-t{t:.2f}', 'dataset': dataset, 'split_mode': mode,
+                        'feature_set': fs, 'model': 'RF(n=200,rs=42)', 'imbalance': 'none',
                         'threshold': float(t), 'n_classes': len(C), 'TPR': r['TPR'], 'FPR': r['FPR'],
                         'precision': r['precision'], 'recall': r['recall'], 'macro_f1': r['macro_f1'],
-                        'notes': f'CV5 OOF train only, source E1{tag}-{mode}; decision={desc}; TP {r["TP"]}, '
+                        'notes': f'CV5 OOF train only, source {src}{tag}-{mode}; decision={desc}; TP {r["TP"]}, '
                                  f'wrong_site {r["wrong_site"]}, FN {r["FN"]}, FP {r["FP"]}; det_TPR {r["det_TPR"]:.4f}; '
                                  f'fold std TPR {sd_tpr:.4f} FPR {sd_fpr:.4f}'})
         for t in E3_GRID:
@@ -379,7 +396,7 @@ def e3(subset):
         # 대표 임계값의 confusion matrix (규칙 A·B가 같아지는 0.5)
         cm, labels, cs = unmon_confusion(y, apply_threshold(P, C, 0.5))
         pd.DataFrame(cm, index=labels, columns=labels).to_csv(
-            os.path.join(ROOT, 'results', 'confusion', f'E3{tag}-{mode}-t0.50.csv'))
+            os.path.join(ROOT, 'results', 'confusion', f'{exp}{tag}-{mode}-t0.50.csv'))
         # 현실 비율로 환산한 precision: TP·k... = TPR / (TPR + wrong_site_rate + k·FPR)
         print(f'  mon:unmon 비율별 precision (규칙 A·B 중 FPR 목표를 만족하는 최고 TPR 점, 실험 비율은 '
               f'{(y != UNMON).sum() / (y == UNMON).sum():.1f}:1)')
@@ -394,7 +411,74 @@ def e3(subset):
                 prec = [tpr / (tpr + wsr + k * fpr) for k in E3_RATIOS]
                 print(f'    FPR≤{x:.1%} 규칙 {rule}: t={c["t"][i]:.3f} TPR {tpr:.4f} FPR {fpr:.4f} → precision '
                       + ', '.join(f'1:{k} {p:.3f}' for k, p in zip(E3_RATIOS, prec)))
-    plot_e3(curves, tag)
+    if plot:
+        plot_e3(curves, tag)
+    return curves
+
+
+def e4(subset):
+    """E4 leak-free 비교. E1·E3를 leak 포함 피처(A팀 기존 CSV, 앞 14셀 그대로)로 다시 돌린다.
+    피처 이름·순서·행·split·모델이 모두 같고 바뀌는 것은 '앞 14셀을 버렸는가' 하나다."""
+    tag = '-subset' if subset else ''
+    d0, d14 = load_pkl(0, subset), load_pkl(14, subset)
+    assert d0['names'] == d14['names'] and (d0['y'] == d14['y']).all() and (d0['row'] == d14['row']).all()
+    e1(subset, skip=0, exp='E4-E1')
+    leak = e3(subset, exp='E4-E3', src='E4-E1', fs=feature_set_name(d0, 0), plot=False)
+    free = {}
+    for mode in SPLIT_MODES:
+        z = np.load(os.path.join(CACHE, 'oof', f'E1{tag}-{mode}.npz'))
+        for rule in RULES:
+            free[(mode, rule)] = rule_curve(z['proba'], z['classes'], z['y'], rule)
+    print('\n## 비교: FPR 목표별 최고 TPR (사이트까지 맞힘, pooled) — leak 포함 → leak 제거')
+    for mode in SPLIT_MODES:
+        for rule in RULES:
+            a, b = leak[(mode, rule)], free[(mode, rule)]
+            best = lambda c, x: c['TPR'][c['FPR'] <= x].max() if (c['FPR'] <= x).any() else float('nan')
+            print(f'  {mode:7s} 규칙 {rule}: ' + ', '.join(
+                f'FPR≤{x:.1%} {best(a, x):.4f} → {best(b, x):.4f}' for x in E3_FPR_TARGETS))
+    # 모델이 무엇에 기대는가: train 전체(visit 기준 train 행)로 한 번 학습한 RF의 불순도 중요도 상위 10개
+    print('\n## RF 중요도 상위 10 (train 전체, 96클래스). dir_008 = 8번째 셀 방향 (skip14에서는 22번째 셀)')
+    for name, d in (('leak 포함', d0), ('leak 제거', d14)):
+        tr = d['fold_visit'] >= 0
+        m = rf().fit(d['X'][tr], d['y'][tr])
+        o = np.argsort(-m.feature_importances_)[:10]
+        print(f'  {name}: ' + ', '.join(f'{d["names"][i]} {m.feature_importances_[i]:.4f}' for i in o))
+    plot_e4(leak, free, tag)
+
+
+def plot_e4(leak, free, tag):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 10})
+    series = [('leak 제거 (앞 14셀 버림, E1·E3)', free, '#2a78d6'), ('leak 포함 (A팀 기존 CSV, E4)', leak, '#eb6834')]
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True, facecolor='#fcfcfb')
+    for ax, mode in zip(axes, SPLIT_MODES):
+        for label, cv, color in series:
+            cB, cA = cv[(mode, 'B')], cv[(mode, 'A')]
+            keep = cB['FPR'] >= 1e-4
+            ax.plot(cB['FPR'][keep], cB['TPR'][keep], color=color, lw=2, label=label)
+            e = len(cA['FPR']) - 1  # 규칙 A 끝 = argmax 판정점
+            ax.plot([max(cA['FPR'][e], 1e-4)], [cA['TPR'][e]], 'o', ms=8, color=color, mec='#fcfcfb', mew=2, zorder=3)
+            ax.annotate(f'argmax {cA["TPR"][e]:.3f} @ {cA["FPR"][e]:.2%}', (max(cA['FPR'][e], 1e-4), cA['TPR'][e]),
+                        xytext=(10, -14), textcoords='offset points', color=ink, fontsize=8,
+                        bbox=dict(boxstyle='round,pad=0.2', fc='#fcfcfb', ec='none'))
+        ax.set_xscale('log'); ax.set_xlim(1e-4, 1); ax.set_ylim(0, 1)
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v * 100:g}%'))
+        ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, _: ''))
+        ax.axvline(0.01, color=muted, lw=1, ls=(0, (3, 3)))
+        ax.set_title(f'{mode} 모드', color=ink, loc='left')
+        ax.set_xlabel('FPR (로그 축)', color=ink)
+        _style(ax, ink, muted, grid, base)
+    axes[0].set_ylabel('TPR (사이트까지 맞힘)', color=ink)
+    axes[0].legend(frameon=False, loc='lower right', labelcolor=ink, fontsize=9)
+    fig.suptitle('E4 leak 포함 vs 제거 — 96클래스 RF, CV OOF (선 = 규칙 B, 점 = argmax)', color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out = os.path.join(ROOT, 'figures', f'ow_e4_leak{tag}.png')
+    fig.savefig(out, dpi=150); plt.close(fig)
+    print(f'\n그림: {out}', flush=True)
 
 
 def _style(ax, ink, muted, grid, base):
@@ -470,7 +554,7 @@ def plot_e3(curves, tag):
             ax.plot(c['TPR'][gi], c['precision'][gi], 'o', color=col[rule], ms=5, mec='#fcfcfb', mew=0.8)
         # 규칙 A의 끝점(= argmax) 표시
         cA = curves[(mode, 'A')]
-        e = np.argmax(cA['FPR'])
+        e = len(cA['FPR']) - 1
         axes[0, j].annotate('규칙 A 끝 = argmax', (cA['FPR'][e], cA['TPR'][e]), xytext=(14, -40),
                             textcoords='offset points', color=ink, fontsize=8,
                             arrowprops=dict(arrowstyle='-', color=muted, lw=0.8))
@@ -498,10 +582,10 @@ def plot_e3(curves, tag):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot', 'e3'])
+    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot', 'e3', 'e4'])
     ap.add_argument('--subset', action='store_true')
     a = ap.parse_args()
     if a.exp == 'e2plot':
         plot_e2('-subset' if a.subset else '')
     else:
-        {'e1': e1, 'e2': e2, 'e3': e3}[a.exp](a.subset)
+        {'e1': e1, 'e2': e2, 'e3': e3, 'e4': e4}[a.exp](a.subset)
