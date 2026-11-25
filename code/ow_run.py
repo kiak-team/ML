@@ -128,12 +128,33 @@ def nested_fpr_pred(proba, classes, y, fold, target):
     return pred, ts
 
 
+def rule_curve(proba, classes, y, rule):
+    """임계값을 점수 경계마다 훑은 곡선 (pooled). 반환: dict(t, FPR, TPR, precision, wrong_site_rate).
+    TPR은 사이트까지 맞힌 것만 센다. 같은 점수는 한 점으로 묶는다(RF 확률은 1/200 단위라 동점이 많다).
+      rule 'A': argmax가 monitored 사이트이고 전체 확률 최댓값 >= t일 때만 monitored (지시 규칙: max < t → -1)
+      rule 'B': monitored 확률 최댓값 >= t이면 그 사이트"""
+    proba, classes = np.asarray(proba), np.asarray(classes)
+    if rule == 'A':
+        site = classes[proba.argmax(1)]
+        s = np.where(site != UNMON, proba.max(1), -np.inf)
+    else:
+        s, site = mon_score(proba, classes)
+    o = np.argsort(-s, kind='stable')
+    s, site, yy = s[o], site[o], y[o]
+    ok = np.isfinite(s)
+    s, site, yy = s[ok], site[ok], yy[ok]
+    is_u, hit = yy == UNMON, (yy != UNMON) & (site == yy)
+    wrong = (yy != UNMON) & (site != yy)
+    last = np.r_[np.flatnonzero(s[1:] != s[:-1]), len(s) - 1]  # 같은 점수 묶음의 마지막 인덱스
+    n_u, n_m = (y == UNMON).sum(), (y != UNMON).sum()
+    tp, fp, ws = np.cumsum(hit)[last], np.cumsum(is_u)[last], np.cumsum(wrong)[last]
+    return {'t': s[last], 'FPR': fp / n_u, 'TPR': tp / n_m, 'precision': tp / (last + 1), 'wrong_site_rate': ws / n_m}
+
+
 def strict_curve(proba, classes, y):
-    """규칙 B로 임계값을 끝까지 훑은 (FPR, TPR) 곡선. TPR은 사이트까지 맞힌 것만 센다 (그림용, pooled)."""
-    s, site = mon_score(proba, classes)
-    o = np.argsort(-s)
-    is_u, hit = (y == UNMON)[o], ((y != UNMON) & (site == y))[o]
-    return np.cumsum(is_u) / is_u.sum(), np.cumsum(hit) / (~is_u).sum()
+    """규칙 B 곡선의 (FPR, TPR). E2 그림용."""
+    c = rule_curve(proba, classes, y, 'B')
+    return c['FPR'], c['TPR']
 
 
 def fold_spread(y, pred, fold):
@@ -306,12 +327,181 @@ def plot_e2(tag=''):
     print(f'\n그림: {out}', flush=True)
 
 
+E3_GRID = np.round(np.arange(0.05, 0.951, 0.05), 2)
+E3_FPR_TARGETS = (0.001, 0.005, 0.01, 0.02, 0.05)
+E3_RATIOS = (1, 10, 100)  # mon : unmon = 1 : k 로 바꿨을 때의 precision
+RULES = {'A': ('max proba < t -> -1 (rule A)', apply_threshold),
+         'B': ('max monitored proba >= t (rule B)', None)}
+
+
+def e3(subset):
+    """E3 임계값 sweep. E2 승자(처리 없음 = E1 모델)의 OOF 확률, 재학습 없음.
+    t = 0.05 ~ 0.95 (0.05 간격) × 규칙 A·B × visit·subpage → 결과 CSV. 곡선은 점수 경계마다 촘촘히."""
+    from ow_metrics import apply_mon_threshold
+    tag = '-subset' if subset else ''
+    dataset = 'pkl_m25_u5000' if subset else 'pkl'
+    curves = {}
+    for mode in SPLIT_MODES:
+        z = np.load(os.path.join(CACHE, 'oof', f'E1{tag}-{mode}.npz'))
+        P, C, y, f = z['proba'], z['classes'], z['y'], z['fold']
+        print(f'\n## E3{tag}-{mode}: mon {(y != UNMON).sum()}, unmon {(y == UNMON).sum()}, 클래스 {len(C)} (E1 OOF)')
+        print(f'  {"t":>5s} | {"규칙 A: TPR":>11s} {"FPR":>7s} {"prec":>6s} {"wrong":>6s} | '
+              f'{"규칙 B: TPR":>11s} {"FPR":>7s} {"prec":>6s} {"wrong":>6s}')
+        rows = {}
+        for rule, (desc, fn) in RULES.items():
+            fn = fn or apply_mon_threshold
+            for t in E3_GRID:
+                pred = fn(P, C, t)
+                r = ow_metrics(y, pred, labels=C)
+                sd_tpr, sd_fpr = fold_spread(y, pred, f)
+                rows[(rule, t)] = r
+                record({'exp_id': f'E3{tag}-{rule}-{mode}-t{t:.2f}', 'dataset': dataset, 'split_mode': mode,
+                        'feature_set': 'all376_skip14', 'model': 'RF(n=200,rs=42)', 'imbalance': 'none',
+                        'threshold': float(t), 'n_classes': len(C), 'TPR': r['TPR'], 'FPR': r['FPR'],
+                        'precision': r['precision'], 'recall': r['recall'], 'macro_f1': r['macro_f1'],
+                        'notes': f'CV5 OOF train only, source E1{tag}-{mode}; decision={desc}; TP {r["TP"]}, '
+                                 f'wrong_site {r["wrong_site"]}, FN {r["FN"]}, FP {r["FP"]}; det_TPR {r["det_TPR"]:.4f}; '
+                                 f'fold std TPR {sd_tpr:.4f} FPR {sd_fpr:.4f}'})
+        for t in E3_GRID:
+            a, b = rows[('A', t)], rows[('B', t)]
+            fmt = lambda r: f'{r["TPR"]:11.4f} {r["FPR"]:7.4f} {r["precision"]:6.4f} {r["wrong_site"]:6d}'
+            print(f'  {t:5.2f} | {fmt(a)} | {fmt(b)}')
+        for rule in RULES:
+            curves[(mode, rule)] = c = rule_curve(P, C, y, rule)
+            for t in E3_GRID:  # 촘촘한 곡선과 그리드 판정(ow_metrics)이 같은 점을 주는지 대조
+                i = np.flatnonzero(c['t'] >= t)
+                tpr, fpr = (c['TPR'][i.max()], c['FPR'][i.max()]) if len(i) else (0.0, 0.0)
+                r = rows[(rule, t)]
+                assert abs(tpr - r['TPR']) < 1e-12 and abs(fpr - r['FPR']) < 1e-12, (rule, t, tpr, r['TPR'])
+            print(f'  규칙 {rule} 촘촘한 곡선: FPR 목표별 최고 TPR (pooled) — ' + ', '.join(
+                f'≤{x:.1%}: ' + (f'{c["TPR"][c["FPR"] <= x].max():.4f}' if (c['FPR'] <= x).any() else '-')
+                for x in E3_FPR_TARGETS) + f'  | 도달 가능한 최대 FPR {c["FPR"].max():.4f}')
+        # 대표 임계값의 confusion matrix (규칙 A·B가 같아지는 0.5)
+        cm, labels, cs = unmon_confusion(y, apply_threshold(P, C, 0.5))
+        pd.DataFrame(cm, index=labels, columns=labels).to_csv(
+            os.path.join(ROOT, 'results', 'confusion', f'E3{tag}-{mode}-t0.50.csv'))
+        # 현실 비율로 환산한 precision: TP·k... = TPR / (TPR + wrong_site_rate + k·FPR)
+        print(f'  mon:unmon 비율별 precision (규칙 A·B 중 FPR 목표를 만족하는 최고 TPR 점, 실험 비율은 '
+              f'{(y != UNMON).sum() / (y == UNMON).sum():.1f}:1)')
+        for x in (0.001, 0.01, 0.05):
+            for rule in RULES:
+                c = curves[(mode, rule)]
+                ok = np.flatnonzero(c['FPR'] <= x)
+                if not len(ok):
+                    continue
+                i = ok[np.argmax(c['TPR'][ok])]
+                tpr, fpr, wsr = c['TPR'][i], c['FPR'][i], c['wrong_site_rate'][i]
+                prec = [tpr / (tpr + wsr + k * fpr) for k in E3_RATIOS]
+                print(f'    FPR≤{x:.1%} 규칙 {rule}: t={c["t"][i]:.3f} TPR {tpr:.4f} FPR {fpr:.4f} → precision '
+                      + ', '.join(f'1:{k} {p:.3f}' for k, p in zip(E3_RATIOS, prec)))
+    plot_e3(curves, tag)
+
+
+def _style(ax, ink, muted, grid, base):
+    ax.set_facecolor('#fcfcfb')
+    ax.grid(True, color=grid, lw=0.6); ax.set_axisbelow(True)
+    for s in ('top', 'right'):
+        ax.spines[s].set_visible(False)
+    for s in ('left', 'bottom'):
+        ax.spines[s].set_color(base)
+    ax.tick_params(colors=muted)
+
+
+def plot_e3(curves, tag):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    col = {'A': '#2a78d6', 'B': '#eb6834'}
+    lab = {'A': '규칙 A: 최댓값 < t → −1 (지시 규칙)', 'B': '규칙 B: monitored 최댓값 ≥ t'}
+    pct = FuncFormatter(lambda v, _: f'{v * 100:g}%')
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 10})
+
+    def at_grid(c, rule):
+        """0.05 간격 임계값에서의 점 (곡선 위). 규칙 A는 t 이상인 점수만 판정하므로 같은 계산이다."""
+        idx = [np.flatnonzero(c['t'] >= t).max() if (c['t'] >= t).any() else None for t in E3_GRID]
+        return [(t, i) for t, i in zip(E3_GRID, idx) if i is not None]
+
+    # ---- 그림 1: 임계값 → TPR, FPR (small multiples: 위 TPR / 아래 FPR 로그) ----
+    fig, axes = plt.subplots(2, 2, figsize=(11, 7), sharex=True, facecolor='#fcfcfb')
+    for j, mode in enumerate(SPLIT_MODES):
+        for rule in RULES:
+            c = curves[(mode, rule)]
+            pts = at_grid(c, rule)
+            ts = [t for t, _ in pts]
+            tpr = [c['TPR'][i] for _, i in pts]
+            fpr = [c['FPR'][i] for _, i in pts]
+            axes[0, j].plot(ts, tpr, '-o', color=col[rule], lw=2, ms=5, mec='#fcfcfb', mew=0.8, label=lab[rule])
+            keep = [k for k, v in enumerate(fpr) if v > 0]
+            axes[1, j].plot([ts[k] for k in keep], [fpr[k] for k in keep], '-o', color=col[rule], lw=2, ms=5,
+                            mec='#fcfcfb', mew=0.8, label=lab[rule])
+        axes[0, j].set_title(f'{mode} 모드', color=ink, loc='left')
+        axes[0, j].set_ylim(0, 1)
+        axes[1, j].set_yscale('log'); axes[1, j].set_ylim(1e-4, 1)
+        axes[1, j].yaxis.set_major_formatter(pct)
+        axes[1, j].set_xlabel('임계값 t', color=ink)
+        for i in range(2):
+            _style(axes[i, j], ink, muted, grid, base)
+            axes[i, j].axvline(0.5, color=muted, lw=1, ls=(0, (3, 3)))
+        axes[0, j].text(0.51, 0.95, 't ≥ 0.5: 두 규칙이 같다', color=muted, fontsize=8, va='top')
+    axes[0, 0].set_ylabel('TPR (사이트까지 맞힘)', color=ink)
+    axes[1, 0].set_ylabel('FPR (로그 축, 0은 생략)', color=ink)
+    axes[0, 0].legend(frameon=False, loc='lower left', labelcolor=ink, fontsize=9)
+    fig.suptitle('E3 임계값 sweep (t = 0.05 간격) — E1 모델, CV OOF', color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out1 = os.path.join(ROOT, 'figures', f'ow_e3_threshold{tag}.png')
+    fig.savefig(out1, dpi=150); plt.close(fig)
+
+    # ---- 그림 2: TPR–FPR 곡선 (위) · PR 곡선 (아래) ----
+    fig, axes = plt.subplots(2, 2, figsize=(11, 8), facecolor='#fcfcfb')
+    for j, mode in enumerate(SPLIT_MODES):
+        for rule in ('B', 'A'):  # A를 위에 그린다 (FPR 1% 이하에서 겹치는 구간)
+            c = curves[(mode, rule)]
+            pts = at_grid(c, rule)
+            ax = axes[0, j]
+            keep = c['FPR'] >= 1e-4
+            ax.plot(c['FPR'][keep], c['TPR'][keep], color=col[rule], lw=2, label=lab[rule])
+            gi = [i for _, i in pts if c['FPR'][i] >= 1e-4]
+            ax.plot(c['FPR'][gi], c['TPR'][gi], 'o', color=col[rule], ms=5, mec='#fcfcfb', mew=0.8)
+            ax = axes[1, j]
+            ax.plot(c['TPR'], c['precision'], color=col[rule], lw=2, label=lab[rule])
+            gi = [i for _, i in pts]
+            ax.plot(c['TPR'][gi], c['precision'][gi], 'o', color=col[rule], ms=5, mec='#fcfcfb', mew=0.8)
+        # 규칙 A의 끝점(= argmax) 표시
+        cA = curves[(mode, 'A')]
+        e = np.argmax(cA['FPR'])
+        axes[0, j].annotate('규칙 A 끝 = argmax', (cA['FPR'][e], cA['TPR'][e]), xytext=(14, -40),
+                            textcoords='offset points', color=ink, fontsize=8,
+                            arrowprops=dict(arrowstyle='-', color=muted, lw=0.8))
+        ax = axes[0, j]
+        ax.set_xscale('log'); ax.set_xlim(1e-4, 1); ax.set_ylim(0, 1)
+        ax.xaxis.set_major_formatter(pct); ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, _: ''))
+        ax.axvline(0.01, color=muted, lw=1, ls=(0, (3, 3)))
+        ax.set_title(f'{mode} 모드 — TPR–FPR', color=ink, loc='left')
+        ax.set_xlabel('FPR (로그 축)', color=ink)
+        ax = axes[1, j]
+        ax.set_xlim(0, 1); ax.set_ylim(0, 1.02)
+        ax.set_title(f'{mode} 모드 — Precision–Recall', color=ink, loc='left')
+        ax.set_xlabel('Recall = TPR (사이트까지 맞힘)', color=ink)
+        for i in range(2):
+            _style(axes[i, j], ink, muted, grid, base)
+    axes[0, 0].set_ylabel('TPR (사이트까지 맞힘)', color=ink)
+    axes[1, 0].set_ylabel('Precision (실험 비율 mon:unmon ≈ 1.9:1)', color=ink)
+    axes[0, 0].legend(frameon=False, loc='lower right', labelcolor=ink, fontsize=9)
+    fig.suptitle('E3 곡선 — 선 = 점수 경계마다, 점 = t 0.05 간격', color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out2 = os.path.join(ROOT, 'figures', f'ow_e3_roc_pr{tag}.png')
+    fig.savefig(out2, dpi=150); plt.close(fig)
+    print(f'\n그림: {out1}\n      {out2}', flush=True)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot'])
+    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot', 'e3'])
     ap.add_argument('--subset', action='store_true')
     a = ap.parse_args()
     if a.exp == 'e2plot':
         plot_e2('-subset' if a.subset else '')
     else:
-        {'e1': e1, 'e2': e2}[a.exp](a.subset)
+        {'e1': e1, 'e2': e2, 'e3': e3}[a.exp](a.subset)
