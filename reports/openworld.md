@@ -66,3 +66,43 @@ A팀은 split만 검사해 "자를 필요 없다"고 판단했다(`docs/EXTRA_CR
 | 빈 split | 뺀다 (mon 7,962개, unmon 9,953개) | A팀과 같음 |
 
 재현: `python -I -X utf8 code/ow_leak_check.py "<extra credit 폴더>/mon.zip" "<extra credit 폴더>/unmon.zip" > logs/ow_leak_check.log` (약 20초, zip은 풀지 않는다)
+
+## 1. split 전략 (2단계)
+
+> C팀이 커밋한 공유 split 파일은 없었다. C팀 노트북(`code/closed_world_experiments.ipynb`)은 옛 분할(`inst < 18`)을 쓴다.
+> 결정(2026-11-26): **test holdout과 visit 모드 CV는 A팀 규칙을 그대로 파일로 옮기고, subpage 모드만 `random_state=42`로 새로 만든다.**
+> A팀의 기존 open-world 수치와 행 단위로 같은 분할이라 바로 비교할 수 있다.
+
+생성: `python -I -W ignore -X utf8 code/ow_splits.py "<extra credit 폴더>/mon.zip" "<extra credit 폴더>/unmon.zip" > logs/ow_splits.log` (약 10초, 다시 돌려도 같은 파일이 나온다)
+
+### 1.1 파일
+
+| 파일 | 행 | 열 | 대응 |
+|---|---|---|---|
+| `splits/pkl_mon.csv` | 19,000 | `row, site, url, inst, is_test, fold_visit, fold_subpage` | `row` = `features/*_mon.csv`의 행 번호(0부터) |
+| `splits/pkl_unmon.csv` | 10,000 | `row, is_test, fold` | `row` = `features/*_unmon.csv`의 행 번호 |
+| `splits/sliver_mon.csv` | 19,000 방문 | `group, site, inst, n_nonempty_split, is_test, fold` | 피처 행의 `group`으로 매칭 (split 5개 + join이 같은 group) |
+| `splits/sliver_unmon.csv` | 19,000 방문 | `group, id, n_nonempty_split, is_test, fold` | 같음 |
+
+test 행의 fold는 −1이다. 축소판(`mon_25`, `unmon_5000` 등)은 같은 파일의 부분집합이라(`site < N`, `id < N`) 이 표를 걸러서 쓴다.
+
+### 1.2 규칙
+
+| | test holdout | CV fold | 출처 |
+|---|---|---|---|
+| pkl mon | URL마다 방문 2개(`ld.mon_is_test`), 1,900개 | **visit**: `inst % 5` / **subpage**: URL 단위 `StratifiedGroupKFold(5, shuffle=True, random_state=42)` | visit·test = A팀, subpage = 신규 |
+| pkl unmon | `default_rng(0).permutation`의 앞 1,000개 | 섞은 순서에서 train i번째 → `i % 5`. **두 모드에 같은 값** | A팀 `openworld.split` |
+| sliver mon | `ld.sliver_is_test(group)`, 1,900 방문(사이트당 18~23) | train 방문에 `GroupKFold(5)` | A팀 `verify_sliver_sets.py` |
+| sliver unmon | `ld.sliver_is_test(group + 10**7)`, 1,901 방문 | 같은 방식으로 따로 | test = A팀 `openworld_sliver.py`, fold = 신규 |
+
+- **visit 모드**("랜덤 split"에 해당): 같은 URL(subpage)의 다른 방문이 train과 검증 양쪽에 들어간다. 각 URL이 5개 fold 전부에 나온다.
+- **subpage 모드**: 한 URL의 train 방문 18개가 전부 같은 fold에 들어간다. 사이트마다 fold당 URL이 **정확히 2개**라 클래스 균형이 유지된다(fold당 3,420행).
+- 두 모드의 차이는 **mon을 묶는 방식 하나뿐이다.** unmon fold는 같다(unmon은 기록마다 다른 사이트라 묶을 단위가 없다).
+- `code/ow_splits.py`가 A팀 `openworld.split(skip=14)`의 train·test·fold와 행 단위로 같은지 assert로 대조한다. sliver test 방문 수(train 34,199 / test 3,801)도 A팀 `logs/openworld_sliver_v2.log`와 같다.
+
+### 1.3 가정과 한계
+
+- **subpage 모드는 CV 비교 전용이다.** test holdout이 URL마다 방문 2개라 test의 URL은 전부 train에도 있다. 최종 test 1회 평가는 visit 모드 기준으로 하고, subpage 모드와의 차이는 CV로 보고한다.
+- **TrafficSliver는 방문(group) 단위 분할만 있다.** 파일명에 subpage 정보가 없다.
+- `random_state=42`는 새로 만든 subpage fold에만 쓴다. A팀 규칙 부분(unmon 시드 0, `inst % 5`, 정수 해시)은 기존 수치와 비교하려고 그대로 둔다.
+- 불균형: pkl train에서 unmon 9,000개 대 mon 사이트 하나 180개로 **50배**다(E2에서 다룬다).
