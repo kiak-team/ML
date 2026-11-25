@@ -1,0 +1,21 @@
+E1 dataset=pkl: 피처 376개, monitored 사이트 95개(데이터에서 셈) + unmon -1 = 96클래스, 행 29000 (test 2900개는 쓰지 않음)
+
+## E1-visit
+    fold 0: train 20880 / val 5220  10s
+    fold 1: train 20880 / val 5220  10s
+    fold 2: train 20880 / val 5220  10s
+    fold 3: train 20880 / val 5220  9s
+    fold 4: train 20880 / val 5220  10s
+  [E1-visit] TPR 0.8958  FPR 0.0102  precision 0.9731  macro_f1 0.9315  | det_TPR 0.9153  wrong_site 332 (1.94%)  FN 1449  FP 92  | fold std TPR 0.0191 FPR 0.0011
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(60, 5), (15, 4), (47, 3), (45, 3), (64, 3)])
+      -1 열(-1로 예측된 mon): 1449 = FN
+
+## E1-subpage
+    fold 0: train 20880 / val 5220  11s
+    fold 1: train 20880 / val 5220  10s
+    fold 2: train 20880 / val 5220  10s
+    fold 3: train 20880 / val 5220  10s
+    fold 4: train 20880 / val 5220  10s
+  [E1-subpage] TPR 0.6302  FPR 0.0091  precision 0.8974  macro_f1 0.7190  | det_TPR 0.6975  wrong_site 1150 (6.73%)  FN 5173  FP 82  | fold std TPR 0.0285 FPR 0.0022
+      -1 행(실제 unmon 9000): -1로 8918, mon으로 82 (FP가 많은 사이트 [(47, 5), (4, 3), (7, 3), (63, 3), (13, 3)])
+      -1 열(-1로 예측된 mon): 5173 = FN

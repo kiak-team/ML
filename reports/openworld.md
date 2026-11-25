@@ -106,3 +106,53 @@ test 행의 fold는 −1이다. 축소판(`mon_25`, `unmon_5000` 등)은 같은 
 - **TrafficSliver는 방문(group) 단위 분할만 있다.** 파일명에 subpage 정보가 없다.
 - `random_state=42`는 새로 만든 subpage fold에만 쓴다. A팀 규칙 부분(unmon 시드 0, `inst % 5`, 정수 해시)은 기존 수치와 비교하려고 그대로 둔다.
 - 불균형: pkl train에서 unmon 9,000개 대 mon 사이트 하나 180개로 **50배**다(E2에서 다룬다).
+
+## 2. 평가 지표 (4단계 정의, 모든 실험 공통)
+
+코드: `code/ow_metrics.py`, 단위 테스트: `tests/test_ow_metrics.py` (13개, `python -I -m unittest discover -s tests -v`)
+
+| 실제 \ 예측 | 정답 사이트 | 다른 monitored 사이트 | −1 |
+|---|---|---|---|
+| monitored | **TP** | **wrong_site** (TP 아님, 따로 셈) | FN |
+| unmonitored | FP | FP | TN |
+
+- `TPR = TP / mon 수`, `FPR = FP / unmon 수`, `precision = TP / (TP + wrong_site + FP)` (monitored로 판정한 것 전체가 분모)
+- `recall`: 결과 CSV 컬럼 고정 때문에 둔다. positive를 "사이트까지 맞힌 것"으로 정의하면 TPR과 같은 값이다.
+- `macro_f1`: −1을 포함한 (N+1)개 클래스의 macro F1 (보조).
+- notes에 함께 적는 것: `det_TPR = (TP + wrong_site) / mon 수` (사이트는 틀려도 monitored로는 잡은 비율), wrong_site 개수, FN·FP 개수, fold 간 표준편차.
+- sklearn `accuracy_score`는 쓰지 않는다. unmon이 많으면 사이트를 하나도 못 맞혀도 높게 나온다(테스트 `test_accuracy_score_is_misleading`: accuracy 0.97, TPR 0).
+- confusion matrix는 `results/confusion/<exp_id>.csv`에 저장한다(첫 행·열 = −1).
+
+## 3. 실험 결과
+
+결과 원본: `results/openworld_results.csv` (고정 컬럼). 별도 표기가 없으면 pkl, 앞 14셀 버린 피처, train 내부 5-fold CV의 out-of-fold 예측이다. test는 아직 쓰지 않았다.
+
+### E1 — 베이스라인 (multi, 96클래스)
+
+| 설정 | 값 |
+|---|---|
+| 클래스 | monitored 95개(데이터에서 셈) + unmon 전체를 −1 한 클래스 = 96 |
+| 피처 | 376개 전체 (`ow_skip14`) |
+| 모델 | `RandomForestClassifier(n_estimators=200, random_state=42)` — A팀 설정에서 시드만 42 |
+| 불균형 처리 | 없음 (train에서 unmon 9,000 : mon 사이트 하나 180 = 50배) |
+| 판정 | argmax (임계값 없음) |
+| 재현 | `python -I -W ignore -X utf8 code/ow_run.py e1 > logs/ow_e1.log` (약 2분, M3) |
+
+| split_mode | TPR | FPR | precision | macro F1 | det_TPR | wrong_site | FN | FP |
+|---|---|---|---|---|---|---|---|---|
+| visit | **0.8958** (±0.019) | 0.0102 (±0.001) | 0.9731 | 0.9315 | 0.9153 | 332 (1.9%) | 1,449 | 92 |
+| subpage | **0.6302** (±0.029) | 0.0091 (±0.002) | 0.8974 | 0.7190 | 0.6975 | 1,150 (6.7%) | 5,173 | 82 |
+| 차이 | **−0.266** | −0.001 | −0.076 | −0.213 | −0.218 | ×3.5 | ×3.6 | |
+
+(± = fold 5개의 표준편차. mon 17,100 / unmon 9,000)
+
+**파이프라인 검증**
+- subset(mon 사이트 25개 / unmon 5,000개, 26클래스)에서 먼저 돌렸다: visit TPR 0.898, subpage 0.600. 전체와 같은 방향이다(`logs/ow_e1_subset.log`, CSV의 `pkl_m25_u5000` 행).
+- E1-visit의 OOF 확률을 A팀 `openworld.report()`에 넣으면 ROC-AUC 0.9913, FPR≤1%에서 TPR_site 0.882다. A팀 134개 피처 결과(0.9926, 0.889, `docs/TEST_SPLIT.md`)와 0.7%p 안에서 맞는다. 피처 수(376 vs 134) 말고는 같은 조건이다.
+
+**해석**
+- **같은 subpage의 반복 관측이 train과 검증에 섞이면 TPR이 26.6%p 부풀려진다.** visit 모드는 "학습 때 본 페이지를 다시 방문"하는 상황을, subpage 모드는 "같은 사이트의 처음 보는 페이지"를 맞히는 상황을 잰다.
+- FPR은 두 모드에서 같다(0.010 vs 0.009). unmon fold가 같고 바뀐 것은 mon을 묶는 방식뿐이기 때문이다(1.2절). 따라서 차이는 전부 mon 쪽에서 나온다.
+- 떨어진 TPR의 대부분은 **FN**(mon → −1, 1,449 → 5,173)이다. wrong_site는 332 → 1,150으로 늘지만 FN보다 훨씬 작다. 처음 보는 페이지는 다른 monitored 사이트로 헷갈리기보다 **"아는 사이트가 아니다"로 판정된다.** 모델이 사이트보다 페이지 단위의 지문을 배웠다는 뜻이다.
+- 어느 쪽이 현실적인지는 위협 모델에 달렸다. 감시 대상 페이지가 정해져 있으면 visit, 사이트 전체를 감시하면 subpage다. 과제와 A팀·C팀 수치는 visit 기준이므로 **주 지표는 visit으로 보고하고, subpage는 일반화 한계로 함께 보고한다.**
+- 불균형(50배)의 흔적: argmax 판정에서 FN(1,449)이 FP(92)의 16배다. 모호한 mon 기록이 수가 많은 −1 쪽으로 쏠린다. E2에서 다룬다.
