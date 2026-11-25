@@ -160,7 +160,8 @@ def rule_curve(proba, classes, y, rule):
     last = np.r_[np.flatnonzero(s[1:] != s[:-1]), len(s) - 1]  # 같은 점수 묶음의 마지막 인덱스
     n_u, n_m = (y == UNMON).sum(), (y != UNMON).sum()
     tp, fp, ws = np.cumsum(hit)[last], np.cumsum(is_u)[last], np.cumsum(wrong)[last]
-    return {'t': s[last], 'FPR': fp / n_u, 'TPR': tp / n_m, 'precision': tp / (last + 1), 'wrong_site_rate': ws / n_m}
+    return {'t': s[last], 'FPR': fp / n_u, 'TPR': tp / n_m, 'precision': tp / (last + 1), 'wrong_site_rate': ws / n_m,
+            'det_TPR': (tp + ws) / n_m}  # det_TPR: 사이트는 틀려도 monitored로 잡은 비율
 
 
 def strict_curve(proba, classes, y):
@@ -481,6 +482,95 @@ def plot_e4(leak, free, tag):
     print(f'\n그림: {out}', flush=True)
 
 
+E5_CAVEAT = 'CAVEAT binary: may be inflated by data artifact (mon/unmon collection & site-population gap; see report 0, E4, E5)'
+LEAK_NAME = {14: 'free', 0: 'leak'}
+
+
+def e5(subset):
+    """E5 binary (보조): mon = 1 / unmon = -1. 같은 RF, 불균형 처리 없음. leak 제거·포함 × visit·subpage.
+    점수 = P(mon). argmax(= t 0.5)와 FPR <= 1%·0.1% 판정점(나머지 4개 fold로 임계값). multi(E1·E4)와 같은 FPR에서 비교."""
+    from sklearn.metrics import roc_auc_score
+    tag = '-subset' if subset else ''
+    curves = {}
+    for skip in (14, 0):
+        d = load_pkl(skip, subset)
+        db = dict(d, y=np.where(d['y'] == UNMON, UNMON, 1))
+        fs = feature_set_name(d, skip)
+        for mode in SPLIT_MODES:
+            exp_id = f'E5{tag}-{LEAK_NAME[skip]}-{mode}'
+            print(f'\n## {exp_id} ({fs})', flush=True)
+            fold = db[f'fold_{mode}']
+            tr = fold >= 0
+            y, f = db['y'][tr], fold[tr]
+            proba, classes, secs = cv_oof(db['X'], db['y'], fold, rf)
+            assert list(classes) == [UNMON, 1]
+            save_oof(exp_id, db, mode, proba, classes)
+            p1 = proba[:, 1]
+            auc = roc_auc_score(y == 1, p1)
+            auc_sd = np.std([roc_auc_score(y[f == k] == 1, p1[f == k]) for k in range(5)])
+            print(f'  ROC-AUC {auc:.4f} (fold std {auc_sd:.4f})')
+            base = f'; ROC-AUC {auc:.4f} (fold std {auc_sd:.4f}); {E5_CAVEAT}'
+            evaluate(exp_id, db, mode, apply_threshold(proba, classes, 0.0), classes, '', fs, 'RF(n=200,rs=42) binary',
+                     'none', base + f'; fit+predict {sum(secs):.0f}s', decision='argmax = P(mon) >= 0.5')
+            for target, suf in ((0.01, 'fpr1'), (0.001, 'fpr0.1')):
+                pred, ts = nested_fpr_pred(proba, classes, y, f, target)
+                evaluate(f'{exp_id}-{suf}', db, mode, pred, classes, round(float(np.mean(ts)), 4), fs,
+                         'RF(n=200,rs=42) binary', 'none',
+                         base + f'; threshold per fold {[round(t, 4) for t in ts]}',
+                         decision=f'P(mon) >= t, t from other 4 folds for FPR<={target:.1%}')
+            curves[('bin', skip, mode)] = rule_curve(proba, classes, y, 'B')
+            src = 'E1' if skip == 14 else 'E4-E1'
+            z = np.load(os.path.join(CACHE, 'oof', f'{src}{tag}-{mode}.npz'))
+            curves[('multi', skip, mode)] = rule_curve(z['proba'], z['classes'], z['y'], 'B')
+            curves[('multiA', skip, mode)] = rule_curve(z['proba'], z['classes'], z['y'], 'A')
+            s_multi, _ = mon_score(z['proba'], z['classes'])
+            print(f'  (비교) multi {src} 점수의 탐지 ROC-AUC {roc_auc_score(z["y"] != UNMON, s_multi):.4f}')
+
+    best = lambda c, key, x: c[key][c['FPR'] <= x].max() if (c['FPR'] <= x).any() else float('nan')
+    print('\n## 같은 FPR에서 비교 (pooled): binary TPR | multi 탐지(det_TPR, 사이트 무관) | multi TPR(사이트까지)')
+    for skip in (14, 0):
+        for mode in SPLIT_MODES:
+            b, m, mA = curves[('bin', skip, mode)], curves[('multi', skip, mode)], curves[('multiA', skip, mode)]
+            print(f'  {LEAK_NAME[skip]:4s} {mode:7s} ' + ' | '.join(
+                f'FPR≤{x:.1%}: bin {best(b, "TPR", x):.4f}, multi det {max(best(m, "det_TPR", x), best(mA, "det_TPR", x)):.4f}, '
+                f'multi site {max(best(m, "TPR", x), best(mA, "TPR", x)):.4f}' for x in (0.001, 0.01, 0.05)))
+    plot_e5(curves, tag)
+
+
+def plot_e5(curves, tag):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 10})
+    series = [(('bin', 14), 'TPR', 'binary, leak 제거', '#2a78d6'),
+              (('multi', 14), 'det_TPR', 'multi 탐지(사이트 무관), leak 제거', '#eb6834'),
+              (('bin', 0), 'TPR', 'binary, leak 포함', '#1baf7a')]
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True, facecolor='#fcfcfb')
+    for ax, mode in zip(axes, SPLIT_MODES):
+        for (kind, skip), key, label, color in series:
+            c = curves[(kind, skip, mode)]
+            keep = c['FPR'] >= 1e-4
+            ax.plot(c['FPR'][keep], c[key][keep], color=color, lw=2, label=label)
+        ax.set_xscale('log'); ax.set_xlim(1e-4, 1); ax.set_ylim(0, 1.02)
+        ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f'{v * 100:g}%'))
+        ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, _: ''))
+        for x in (0.001, 0.01):
+            ax.axvline(x, color=muted, lw=1, ls=(0, (3, 3)))
+        ax.set_title(f'{mode} 모드', color=ink, loc='left')
+        ax.set_xlabel('FPR (로그 축)', color=ink)
+        _style(ax, ink, muted, grid, base)
+    axes[0].set_ylabel('TPR (monitored로 탐지한 비율)', color=ink)
+    axes[0].legend(frameon=False, loc='lower right', labelcolor=ink, fontsize=9)
+    fig.suptitle('E5 binary (보조) — 탐지 곡선, CV OOF. leak 포함 곡선은 데이터 아티팩트로 부풀려진 값',
+                 color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out = os.path.join(ROOT, 'figures', f'ow_e5_binary{tag}.png')
+    fig.savefig(out, dpi=150); plt.close(fig)
+    print(f'\n그림: {out}', flush=True)
+
+
 def _style(ax, ink, muted, grid, base):
     ax.set_facecolor('#fcfcfb')
     ax.grid(True, color=grid, lw=0.6); ax.set_axisbelow(True)
@@ -582,10 +672,10 @@ def plot_e3(curves, tag):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot', 'e3', 'e4'])
+    ap.add_argument('exp', choices=['e1', 'e2', 'e2plot', 'e3', 'e4', 'e5'])
     ap.add_argument('--subset', action='store_true')
     a = ap.parse_args()
     if a.exp == 'e2plot':
         plot_e2('-subset' if a.subset else '')
     else:
-        {'e1': e1, 'e2': e2, 'e3': e3, 'e4': e4}[a.exp](a.subset)
+        {'e1': e1, 'e2': e2, 'e3': e3, 'e4': e4, 'e5': e5}[a.exp](a.subset)
