@@ -6,6 +6,8 @@
   python -I -W ignore -X utf8 code/ow_models.py e7              > logs/ow_e7.log
   python -I -W ignore -X utf8 code/ow_models.py e8 [--subset]   > logs/ow_e8[_subset].log  # 피처 그룹 (RF, LR)
   python -I -W ignore -X utf8 code/ow_models.py e9 [--subset]   > logs/ow_e9[_subset].log  # 피처 선택 (RF)
+  python -I -W ignore -X utf8 code/ow_models.py e10 [--subset]  > logs/ow_e10[_subset].log # RF 격자 탐색 + 튜닝 모델 OOF
+  python -I -W ignore -X utf8 code/ow_models.py e10b [--subset] > logs/ow_e10b[_subset].log # 불균형 재확인 + subpage
 
 공통
   피처 = features/ow_skip14_*.csv (앞 14셀 버림 = leak 제거). 이 파일의 실험은 전부 leak 제거 피처 기준이다
@@ -749,13 +751,261 @@ def replot_e9(subset):
     plot_e9(z['summary'], corr, tag)
 
 
+# ---------------- E10 하이퍼파라미터 튜닝 (RF + 후보 134) ----------------
+RF_GRID = {'n_estimators': [100, 200, 300], 'max_depth': [10, 20, None],
+           'min_samples_split': [2, 5, 10], 'class_weight': [None, 'balanced']}
+RF_DEFAULT = {'n_estimators': 200, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}
+
+
+def scorer_tpr_fpr1(est, X, y):
+    """open-world scorer: 이 검증 fold에서 규칙 B로 FPR <= 1%가 되는 최고 TPR (multi는 사이트까지 맞힘).
+    E7~E9의 'fold별 TPR@FPR≤1%'와 같은 계산이다. accuracy가 아니다."""
+    return best_at(R.rule_curve(est.predict_proba(X), est.classes_, np.asarray(y), 'B'), 'TPR', 0.01)
+
+
+def scorer_macro_f1(est, X, y):
+    from sklearn.metrics import f1_score
+    return f1_score(y, est.predict(X), labels=est.classes_, average='macro', zero_division=0)
+
+
+def fold_tpr1(S, classes, y, f):
+    return [best_at(R.rule_curve(S[f == k], classes, y[f == k], 'B'), 'TPR', 0.01) for k in range(5)]
+
+
+def e10(subset):
+    import json
+    from sklearn.model_selection import GridSearchCV, PredefinedSplit
+    tag = '-subset' if subset else ''
+    d = load(subset)
+    fs = f'cand{len(d["names"])}_skip14'
+    fold = d['fold_visit']
+    tr = fold >= 0
+    out = {}
+    print(f'E10 dataset={d["dataset"]}: RF + 후보 {len(d["names"])}개 (leak 제거 피처). 격자 {RF_GRID} = '
+          f'{np.prod([len(v) for v in RF_GRID.values()])}개 조합, visit 5-fold (기존 split 그대로).')
+    print('scoring = fold별 TPR@FPR≤1% (multi는 사이트까지 맞힘). 보조 = macro F1(argmax). C팀 튜닝(closed-world accuracy)과 기준이 다르다')
+    for mode in MODES:
+        y = labels(d, mode)
+        print(f'\n######## {mode} ########', flush=True)
+        t0 = time.time()
+        gs = GridSearchCV(RandomForestClassifier(n_jobs=-1, random_state=RS), RF_GRID,
+                          scoring={'tpr1': scorer_tpr_fpr1, 'macro_f1': scorer_macro_f1}, refit=False,
+                          cv=PredefinedSplit(fold[tr]), n_jobs=1, error_score='raise')
+        gs.fit(d['X'][tr], y[tr])
+        cv = pd.DataFrame(gs.cv_results_)
+        cols = ['param_' + k for k in RF_GRID]
+        cv = cv[cols + ['mean_test_tpr1', 'std_test_tpr1'] + [f'split{k}_test_tpr1' for k in range(5)]
+                + ['mean_test_macro_f1', 'std_test_macro_f1', 'mean_fit_time']].sort_values('mean_test_tpr1', ascending=False)
+        os.makedirs(os.path.join(R.ROOT, 'results'), exist_ok=True)
+        cv.to_csv(os.path.join(R.ROOT, 'results', f'ow_e10_grid_{mode}{tag}.csv'), index=False)
+        print(f'  격자 탐색 {time.time() - t0:.0f}s. 상위 8개 (TPR@FPR≤1% fold 평균 ± sd | macro F1 | fit s/fold):')
+        def pstr(r):
+            return '{' + ', '.join(f'{k}={None if pd.isna(r["param_" + k]) else r["param_" + k]}' for k in RF_GRID) + '}'
+        for _, r in cv.head(8).iterrows():
+            print(f'    {pstr(r)}  {r.mean_test_tpr1:.4f} ± {r.std_test_tpr1:.4f} | '
+                  f'{r.mean_test_macro_f1:.4f} | {r.mean_fit_time:.1f}')
+        is_def = np.all([(cv['param_' + k].astype(object).where(cv['param_' + k].notna(), None) == v)
+                         if v is not None else cv['param_' + k].isna() for k, v in RF_DEFAULT.items()], axis=0)
+        rdef = cv[is_def].iloc[0]
+        rank_def = int(np.flatnonzero(is_def)[0]) + 1
+        print(f'  기본값 {RF_DEFAULT}: {rdef.mean_test_tpr1:.4f} ± {rdef.std_test_tpr1:.4f} (54개 중 {rank_def}위)')
+        # 기본값 조합이 E7 RF와 같은 값인지 (같은 시드·같은 fold → 같아야 한다)
+        if not subset:
+            z = np.load(os.path.join(R.CACHE, 'oof', f'E7-{mode}-rf.npz'))
+            e7f = fold_tpr1(z['proba'], z['classes'], z['y'], z['fold'])
+            gdf = [rdef[f'split{k}_test_tpr1'] for k in range(5)]
+            print(f'  일관성: 격자의 기본값 fold별 {np.round(gdf, 4).tolist()} vs E7 RF {np.round(e7f, 4).tolist()} '
+                  f'→ {"같다" if np.allclose(gdf, e7f) else "다르다"}')
+        best = cv.iloc[0]
+        bp = {k: (None if pd.isna(best['param_' + k]) else best['param_' + k]) for k in RF_GRID}
+        bp = {k: (int(v) if isinstance(v, (int, float, np.integer, np.floating)) and float(v).is_integer() else v)
+              for k, v in bp.items()}
+        # 격자 경계: 범위 끝에 붙은 값. min_samples_split=2는 sklearn의 최솟값이라 더 내릴 수 없다(경계 아님)
+        edge = [k for k, v in bp.items() if k != 'class_weight' and v is not None and v in (RF_GRID[k][0], RF_GRID[k][-1])
+                and not (k == 'min_samples_split' and v == 2)]
+        # 판정: 개선폭(fold 평균)이 max(1%p, 기본값 fold sd)보다 큰가. 짝지은 fold 차이도 함께
+        bf = np.array([best[f'split{k}_test_tpr1'] for k in range(5)])
+        dfold = np.array([rdef[f'split{k}_test_tpr1'] for k in range(5)])
+        delta, thr = bf.mean() - dfold.mean(), max(0.01, dfold.std())
+        sig = delta > thr
+        print(f'  최고 {bp}: {bf.mean():.4f} ± {bf.std():.4f} | Δ vs 기본값 {delta:+.4f} (기준 {thr:.4f}) → '
+              f'{"유의한 개선" if sig else "유의한 개선 아님"} | 짝지은 fold 차이 {np.round(bf - dfold, 4).tolist()} '
+              f'(5개 중 {int(np.sum(bf > dfold))}개 fold에서 개선)')
+        print(f'  격자 경계: {"없음" if not edge else ", ".join(f"{k}={bp[k]} (범위 끝)" for k in edge)}'
+              + ('' if bp['max_depth'] is not None else ' | max_depth=None은 제한 없음(확장 불필요)')
+              + (' | min_samples_split=2는 허용 최솟값' if bp['min_samples_split'] == 2 else '')
+              + ' — 확장 여부는 아래 파라미터별 최고값이 범위 끝으로 갈수록 계속 오르는지로 판단')
+        # 파라미터별 주변 최댓값 (그림·해석용)
+        marg = {k: {str(v): float(cv[(cv['param_' + k].isna() if v is None else cv['param_' + k] == v)].mean_test_tpr1.max())
+                    for v in RF_GRID[k]} for k in RF_GRID}
+        print(f'  파라미터별 최고값: {marg}')
+        out[mode] = {'best': bp, 'best_folds': bf.tolist(), 'default_folds': dfold.tolist(), 'delta': float(delta),
+                     'thr': float(thr), 'significant': bool(sig), 'edge': edge, 'marginal': marg, 'rank_default': rank_def,
+                     'best_macro_f1': float(best.mean_test_macro_f1), 'default_macro_f1': float(rdef.mean_test_macro_f1)}
+        # 튜닝 모델의 전체 OOF → 판정점 4개를 CSV에 (튜닝 전 = E7-*-rf 행)
+        print(f'\n## E10{tag}-{mode}-rf-tuned: {bp}', flush=True)
+        make = lambda: RandomForestClassifier(n_jobs=-1, random_state=RS, **bp)
+        S, classes, tf, _ = cv_scores(d['X'], y, fold, make, parallel=False)
+        save_scores(f'E10{tag}-{mode}-rf-tuned', d, mode, S, classes)
+        desc = f'RF tuned {bp} {mode}'
+        out[mode]['tuned'] = _slim(assess(f'E10{tag}-{mode}-rf-tuned', d, mode, S, classes, fs, desc,
+                                          extra_notes=f'; E10 GridSearchCV(54, scoring=TPR@FPR<=1%) best; '
+                                          f'delta vs default {delta:+.4f} ({"significant" if sig else "not significant"})'))
+    json.dump(out, open(os.path.join(R.CACHE, f'e10_summary{tag}.json'), 'w'), indent=1, default=str)
+    print('\n격자 결과: results/ow_e10_grid_{binary,multi}' + tag + '.csv')
+
+
+def _slim(s):
+    keep = ('roc_auc', 'roc_auc_sd', 'pr_auc', 'best_fpr0.1', 'best_fpr1', 'best_fpr5', 'tpr_fpr1_folds')
+    r = {k: s[k] for k in keep}
+    for p in ('argmax', 'fpr0.1', 'fpr1', 'fpr5'):
+        r[p] = {k: s[p][k] for k in ('TPR', 'FPR', 'precision', 'macro_f1', 'det_TPR', 'wrong_site', 'FP') if k in s[p]}
+    return r
+
+
+def _params(p):
+    """JSON에서 읽은 파라미터의 숫자 문자열('300')을 int로."""
+    return {k: (int(v) if isinstance(v, str) and v.isdigit() else v) for k, v in p.items()}
+
+
+def e10b(subset):
+    """E10 후속: 튜닝된 최종 모델로 (1) E2 불균형 기법 재확인 (multi), (2) subpage 모드 1회 (binary·multi)."""
+    import json
+    tag = '-subset' if subset else ''
+    z = json.load(open(os.path.join(R.CACHE, f'e10_summary{tag}.json')))
+    d = load(subset)
+    fs = f'cand{len(d["names"])}_skip14'
+    out = {'imbalance': {}, 'subpage': {}}
+    # (1) 불균형: 튜닝 파라미터 고정, 불균형 처리만 바꾼다. 언더샘플링은 학습 fold의 unmon만 줄인다(E2와 같은 함수)
+    bp = _params(z['multi']['best'])
+    print(f'E10b dataset={d["dataset"]}: 최종 모델 RF {bp} + {fs}')
+    print('\n######## (1) 불균형 처리 재확인 (multi, visit) — 튜닝 파라미터 고정, 처리만 바꾼다 ########')
+    y = labels(d, 'multi')
+    variants = [('none', {'class_weight': None}, None), ('balanced', {'class_weight': 'balanced'}, None),
+                ('under1x', {'class_weight': None}, 1), ('under5x', {'class_weight': None}, 5),
+                ('under10x', {'class_weight': None}, 10)]
+    for name, cw, ratio in variants:
+        p = dict(bp, **cw)
+        exp_id = f'E10{tag}-multi-rf-tuned-imb-{name}'
+        print(f'\n## {exp_id}: {p}' + (f', unmon 언더샘플링 ×{ratio}' if ratio else ''), flush=True)
+        S, classes, _ = R.cv_oof(d['X'], y, d['fold_visit'],
+                                 lambda: RandomForestClassifier(n_jobs=-1, random_state=RS, **p),
+                                 sampler=R.undersampler(ratio) if ratio else None)
+        s = assess(exp_id, d, 'multi', S, classes, fs, f'RF tuned {p} multi', imbalance=name,
+                   extra_notes='; E10 imbalance re-check with tuned params')
+        out['imbalance'][name] = _slim(s)
+    # (2) subpage 모드: 같은 최종 모델 (binary는 binary 튜닝 파라미터)
+    print('\n######## (2) subpage 모드 (처음 보는 URL로 일반화) ########')
+    for mode in MODES:
+        p = _params(z[mode]['best'])
+        exp_id = f'E10{tag}-{mode}-rf-tuned-subpage'
+        print(f'\n## {exp_id}: {p}', flush=True)
+        S, classes, _, _ = cv_scores(d['X'], labels(d, mode), d['fold_subpage'],
+                                     lambda: RandomForestClassifier(n_jobs=-1, random_state=RS, **p), parallel=False)
+        out['subpage'][mode] = _slim(assess(exp_id, d, mode, S, classes, fs, f'RF tuned {p} {mode}', split_mode='subpage',
+                                            extra_notes='; E10 final model in subpage mode'))
+    json.dump(out, open(os.path.join(R.CACHE, f'e10b_summary{tag}.json'), 'w'), indent=1, default=str)
+    e10_report(tag)
+    plot_e10(tag)
+
+
+def e10_report(tag):
+    import json
+    a = json.load(open(os.path.join(R.CACHE, f'e10_summary{tag}.json')))
+    b = json.load(open(os.path.join(R.CACHE, f'e10b_summary{tag}.json')))
+    print('\n## 요약 E10 — 튜닝 전(기본값) vs 후, visit. TPR@FPR≤1% = fold 평균 ± sd')
+    for mode in MODES:
+        s = a[mode]
+        print(f'  {mode}: 기본값 {np.mean(s["default_folds"]):.4f} ± {np.std(s["default_folds"]):.4f} → '
+              f'튜닝 {np.mean(s["best_folds"]):.4f} ± {np.std(s["best_folds"]):.4f} | Δ {s["delta"]:+.4f} (기준 {s["thr"]:.4f}) '
+              f'{"유의" if s["significant"] else "유의한 개선 아님"} | macro F1 {s["default_macro_f1"]:.4f} → {s["best_macro_f1"]:.4f} '
+              f'| 최고 {s["best"]} | 기본값 순위 {s["rank_default"]}/54')
+    print('\n## 불균형 재확인 (multi, 튜닝 파라미터): TPR@FPR≤1% fold 평균 | pooled 0.1/1/5% | argmax TPR FPR')
+    for k, s in b['imbalance'].items():
+        print(f'  {k:9s} {np.mean(s["tpr_fpr1_folds"]):.4f} ± {np.std(s["tpr_fpr1_folds"]):.4f} | '
+              f'{s["best_fpr0.1"]:.4f} {s["best_fpr1"]:.4f} {s["best_fpr5"]:.4f} | {s["argmax"]["TPR"]:.4f} {s["argmax"]["FPR"]:.4f}')
+    print('\n## subpage 모드 (최종 모델): visit 대비')
+    for mode in MODES:
+        sv, ss = a[mode]['tuned'], b['subpage'][mode]
+        print(f'  {mode}: visit {np.mean(sv["tpr_fpr1_folds"]):.4f} → subpage {np.mean(ss["tpr_fpr1_folds"]):.4f} ± '
+              f'{np.std(ss["tpr_fpr1_folds"]):.4f} | AUC {sv["roc_auc"]:.4f} → {ss["roc_auc"]:.4f} | '
+              f'argmax TPR {sv["argmax"]["TPR"]:.4f} → {ss["argmax"]["TPR"]:.4f}')
+
+
+def plot_e10(tag):
+    import json
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    a = json.load(open(os.path.join(R.CACHE, f'e10_summary{tag}.json')))
+    b = json.load(open(os.path.join(R.CACHE, f'e10b_summary{tag}.json')))
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 9.5})
+    pct = FuncFormatter(lambda v, _: f'{v * 100:g}%')
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.4), facecolor='#fcfcfb', gridspec_kw={'width_ratios': [1, 1, 1.25]})
+    # (a)(b) 튜닝 전후: fold별 점 + 평균
+    for ax, mode in zip(axes[:2], MODES):
+        s = a[mode]
+        for i, (key, lab, c) in enumerate((('default_folds', '기본값', '#898781'), ('best_folds', '튜닝', '#2a78d6'))):
+            v = np.array(s[key])
+            ax.scatter(np.full(5, i) + np.linspace(-0.12, 0.12, 5), v, s=28, color=c, alpha=0.55, lw=0, zorder=3)
+            ax.plot([i - 0.25, i + 0.25], [v.mean()] * 2, color=c, lw=2.5, zorder=4)
+            ax.annotate(f'{v.mean() * 100:.1f}', (i + 0.27, v.mean()), va='center', color=ink, fontsize=9)
+        for k in range(5):
+            ax.plot([-0.12 + 0.06 * k, 1 - 0.12 + 0.06 * k], [s['default_folds'][k], s['best_folds'][k]],
+                    color=grid, lw=1, zorder=2)
+        ax.set_xticks([0, 1], ['기본값', '튜닝'])
+        ax.set_xlim(-0.5, 1.6)
+        ax.yaxis.set_major_formatter(pct)
+        ax.set_title(f'{mode}: Δ {s["delta"] * 100:+.1f}%p — '
+                     + ('유의' if s['significant'] else '유의한 개선 아님'), color=ink, loc='left')
+        R._style(ax, ink, muted, grid, base)
+        ax.tick_params(axis='x', colors=ink)
+    axes[0].set_ylabel('TPR@FPR≤1% (fold별 점, 가로선 = 평균)', color=ink)
+    # (c) 불균형 재확인 (multi)
+    ax = axes[2]
+    names = list(b['imbalance'])
+    lab = {'none': '처리 없음', 'balanced': "class_weight='balanced'", 'under1x': '언더샘플링 ×1',
+           'under5x': '언더샘플링 ×5', 'under10x': '언더샘플링 ×10'}
+    y = np.arange(len(names))[::-1]
+    for yy, n in zip(y, names):
+        s = b['imbalance'][n]
+        v = np.array(s['tpr_fpr1_folds'])
+        ax.errorbar(v.mean(), yy, xerr=v.std(), fmt='o', ms=8, color='#eb6834' if n == 'none' else '#2a78d6',
+                    ecolor=base, elinewidth=2, mec='#fcfcfb', mew=1.5, zorder=3)
+        ax.annotate(f'{v.mean() * 100:.1f}', (v.mean(), yy), xytext=(0, 9), textcoords='offset points', ha='center',
+                    color=ink, fontsize=8.5)
+    ax.set_yticks(y, [lab[n] for n in names])
+    ax.set_ylim(-0.6, len(names) - 0.3)
+    lo = min(np.mean(b['imbalance'][n]['tpr_fpr1_folds']) for n in names)
+    ax.set_xlim(max(0, lo - 0.1), 1); ax.xaxis.set_major_formatter(pct)
+    ax.set_xlabel('TPR@FPR≤1% (fold 평균 ± sd, 사이트까지 맞힘)', color=ink)
+    ax.set_title('multi: 불균형 처리 재확인 (튜닝 파라미터)', color=ink, loc='left')
+    R._style(ax, ink, muted, grid, base)
+    ax.tick_params(axis='y', colors=ink)
+    fig.suptitle('E10 RF 튜닝 (후보 134, leak 제거 피처, visit CV5) — scoring = TPR@FPR≤1%. 회색 선 = 같은 fold끼리 연결',
+                 color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out = os.path.join(R.ROOT, 'figures', f'ow_e10_tuning{tag}.png')
+    fig.savefig(out, dpi=150); plt.close(fig)
+    print(f'\n그림: {out}', flush=True)
+
+
+def replot_e10(subset):
+    tag = '-subset' if subset else ''
+    e10_report(tag)
+    plot_e10(tag)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['time', 'e7', 'e7plot', 'e8', 'e8plot', 'e9', 'e9plot'])
+    ap.add_argument('exp', choices=['time', 'e7', 'e7plot', 'e8', 'e8plot', 'e9', 'e9plot', 'e10', 'e10b', 'e10plot'])
     ap.add_argument('--subset', action='store_true')
     ap.add_argument('--models', nargs='+', default=None, help='e7: 이 모델만 돌린다')
     a = ap.parse_args()
     if a.exp == 'e7' and a.models:
         e7(a.subset, tuple(a.models))
     else:
-        {'time': timing, 'e7': e7, 'e7plot': replot_e7, 'e8': e8, 'e8plot': replot_e8, 'e9': e9, 'e9plot': replot_e9}[a.exp](a.subset)
+        {'time': timing, 'e7': e7, 'e7plot': replot_e7, 'e8': e8, 'e8plot': replot_e8, 'e9': e9, 'e9plot': replot_e9, 'e10': e10, 'e10b': e10b,
+         'e10plot': replot_e10}[a.exp](a.subset)

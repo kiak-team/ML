@@ -1,0 +1,162 @@
+E10b dataset=pkl_m25_u5000: 최종 모델 RF {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None} + cand134_skip14
+
+######## (1) 불균형 처리 재확인 (multi, visit) — 튜닝 파라미터 고정, 처리만 바꾼다 ########
+
+## E10-subset-multi-rf-tuned-imb-none: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None}
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 0.9956 (fold std 0.0008)  PR-AUC 0.9959  | pooled best TPR@FPR≤0.1/1/5% 0.8302 / 0.9300 / 0.9580  | per-fold TPR@FPR≤1% 0.9262 ± 0.0195
+  [E10-subset-multi-rf-tuned-imb-none-argmax] TPR 0.9038  FPR 0.0042  precision 0.9874  macro_f1 0.9431  | det_TPR 0.9111  wrong_site 33 (0.73%)  FN 400  FP 19  | fold std TPR 0.0137 FPR 0.0017
+      -1 행(실제 unmon 4501): -1로 4482, mon으로 19 (FP가 많은 사이트 [(7, 5), (4, 3), (5, 3), (24, 2), (22, 2)])
+      -1 열(-1로 예측된 mon): 400 = FN
+  [E10-subset-multi-rf-tuned-imb-none-fpr0.1] TPR 0.8267  FPR 0.0011  precision 0.9976  macro_f1 0.9016  | det_TPR 0.8276  wrong_site 4 (0.09%)  FN 776  FP 5  | fold std TPR 0.0316 FPR 0.0010
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(4, 2), (7, 2), (9, 1)])
+      -1 열(-1로 예측된 mon): 776 = FN
+  [E10-subset-multi-rf-tuned-imb-none-fpr1] TPR 0.9296  FPR 0.0102  precision 0.9833  macro_f1 0.9555  | det_TPR 0.9351  wrong_site 25 (0.56%)  FN 292  FP 46  | fold std TPR 0.0177 FPR 0.0014
+      -1 행(실제 unmon 4501): -1로 4455, mon으로 46 (FP가 많은 사이트 [(0, 11), (22, 4), (6, 4), (7, 4), (17, 4)])
+      -1 열(-1로 예측된 mon): 292 = FN
+  [E10-subset-multi-rf-tuned-imb-none-fpr5] TPR 0.9584  FPR 0.0498  precision 0.9362  macro_f1 0.9481  | det_TPR 0.9740  wrong_site 70 (1.56%)  FN 117  FP 224  | fold std TPR 0.0118 FPR 0.0111
+      -1 행(실제 unmon 4501): -1로 4277, mon으로 224 (FP가 많은 사이트 [(0, 33), (6, 30), (15, 17), (22, 15), (9, 15)])
+      -1 열(-1로 예측된 mon): 117 = FN
+
+## E10-subset-multi-rf-tuned-imb-balanced: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': 'balanced'}
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 0.9875 (fold std 0.0040)  PR-AUC 0.9897  | pooled best TPR@FPR≤0.1/1/5% 0.7704 / 0.9000 / 0.9436  | per-fold TPR@FPR≤1% 0.9000 ± 0.0205
+  [E10-subset-multi-rf-tuned-imb-balanced-argmax] TPR 0.9647  FPR 0.1075  precision 0.8795  macro_f1 0.9223  | det_TPR 0.9893  wrong_site 111 (2.47%)  FN 48  FP 484  | fold std TPR 0.0139 FPR 0.0136
+      -1 행(실제 unmon 4501): -1로 4017, mon으로 484 (FP가 많은 사이트 [(15, 52), (6, 43), (13, 40), (0, 36), (17, 35)])
+      -1 열(-1로 예측된 mon): 48 = FN
+  [E10-subset-multi-rf-tuned-imb-balanced-fpr0.1] TPR 0.7729  FPR 0.0013  precision 0.9983  macro_f1 0.8679  | det_TPR 0.7729  wrong_site 0 (0.00%)  FN 1022  FP 6  | fold std TPR 0.0157 FPR 0.0013
+      -1 행(실제 unmon 4501): -1로 4495, mon으로 6 (FP가 많은 사이트 [(0, 2), (6, 2), (4, 1), (17, 1)])
+      -1 열(-1로 예측된 mon): 1022 = FN
+  [E10-subset-multi-rf-tuned-imb-balanced-fpr1] TPR 0.9007  FPR 0.0100  precision 0.9878  macro_f1 0.9415  | det_TPR 0.9018  wrong_site 5 (0.11%)  FN 442  FP 45  | fold std TPR 0.0214 FPR 0.0028
+      -1 행(실제 unmon 4501): -1로 4456, mon으로 45 (FP가 많은 사이트 [(0, 15), (6, 11), (17, 5), (22, 3), (4, 3)])
+      -1 열(-1로 예측된 mon): 442 = FN
+  [E10-subset-multi-rf-tuned-imb-balanced-fpr5] TPR 0.9433  FPR 0.0493  precision 0.9442  macro_f1 0.9445  | det_TPR 0.9498  wrong_site 29 (0.64%)  FN 226  FP 222  | fold std TPR 0.0181 FPR 0.0078
+      -1 행(실제 unmon 4501): -1로 4279, mon으로 222 (FP가 많은 사이트 [(0, 42), (6, 38), (23, 22), (15, 16), (17, 14)])
+      -1 열(-1로 예측된 mon): 226 = FN
+
+## E10-subset-multi-rf-tuned-imb-under1x: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None}, unmon 언더샘플링 ×1
+    fold 0: fit 3744 (unmon 144) / val 1787  1s
+    fold 1: fit 3744 (unmon 144) / val 1796  1s
+    fold 2: fit 3744 (unmon 144) / val 1767  1s
+    fold 3: fit 3744 (unmon 144) / val 1827  1s
+    fold 4: fit 3744 (unmon 144) / val 1824  1s
+  ROC-AUC 0.9814 (fold std 0.0064)  PR-AUC 0.9854  | pooled best TPR@FPR≤0.1/1/5% 0.6811 / 0.8736 / 0.9329  | per-fold TPR@FPR≤1% 0.8740 ± 0.0205
+  [E10-subset-multi-rf-tuned-imb-under1x-argmax] TPR 0.9660  FPR 0.3410  precision 0.7214  macro_f1 0.8327  | det_TPR 0.9980  wrong_site 144 (3.20%)  FN 9  FP 1535  | fold std TPR 0.0144 FPR 0.0080
+      -1 행(실제 unmon 4501): -1로 2966, mon으로 1535 (FP가 많은 사이트 [(0, 150), (6, 133), (23, 129), (17, 122), (15, 109)])
+      -1 열(-1로 예측된 mon): 9 = FN
+  [E10-subset-multi-rf-tuned-imb-under1x-fpr0.1] TPR 0.6887  FPR 0.0013  precision 0.9981  macro_f1 0.8082  | det_TPR 0.6887  wrong_site 0 (0.00%)  FN 1401  FP 6  | fold std TPR 0.0085 FPR 0.0021
+      -1 행(실제 unmon 4501): -1로 4495, mon으로 6 (FP가 많은 사이트 [(0, 5), (6, 1)])
+      -1 열(-1로 예측된 mon): 1401 = FN
+  [E10-subset-multi-rf-tuned-imb-under1x-fpr1] TPR 0.8731  FPR 0.0104  precision 0.9874  macro_f1 0.9256  | det_TPR 0.8738  wrong_site 3 (0.07%)  FN 568  FP 47  | fold std TPR 0.0208 FPR 0.0024
+      -1 행(실제 unmon 4501): -1로 4454, mon으로 47 (FP가 많은 사이트 [(0, 18), (6, 14), (7, 3), (17, 3), (22, 2)])
+      -1 열(-1로 예측된 mon): 568 = FN
+  [E10-subset-multi-rf-tuned-imb-under1x-fpr5] TPR 0.9331  FPR 0.0489  precision 0.9449  macro_f1 0.9399  | det_TPR 0.9387  wrong_site 25 (0.56%)  FN 276  FP 220  | fold std TPR 0.0178 FPR 0.0051
+      -1 행(실제 unmon 4501): -1로 4281, mon으로 220 (FP가 많은 사이트 [(0, 66), (6, 43), (23, 18), (16, 11), (15, 10)])
+      -1 열(-1로 예측된 mon): 276 = FN
+
+## E10-subset-multi-rf-tuned-imb-under5x: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None}, unmon 언더샘플링 ×5
+    fold 0: fit 4320 (unmon 720) / val 1787  1s
+    fold 1: fit 4320 (unmon 720) / val 1796  1s
+    fold 2: fit 4320 (unmon 720) / val 1767  1s
+    fold 3: fit 4320 (unmon 720) / val 1827  1s
+    fold 4: fit 4320 (unmon 720) / val 1824  1s
+  ROC-AUC 0.9912 (fold std 0.0022)  PR-AUC 0.9921  | pooled best TPR@FPR≤0.1/1/5% 0.7827 / 0.8938 / 0.9484  | per-fold TPR@FPR≤1% 0.8918 ± 0.0209
+  [E10-subset-multi-rf-tuned-imb-under5x-argmax] TPR 0.9558  FPR 0.0449  precision 0.9352  macro_f1 0.9465  | det_TPR 0.9771  wrong_site 96 (2.13%)  FN 103  FP 202  | fold std TPR 0.0119 FPR 0.0083
+      -1 행(실제 unmon 4501): -1로 4299, mon으로 202 (FP가 많은 사이트 [(0, 25), (15, 25), (9, 17), (13, 17), (17, 17)])
+      -1 열(-1로 예측된 mon): 103 = FN
+  [E10-subset-multi-rf-tuned-imb-under5x-fpr0.1] TPR 0.7764  FPR 0.0011  precision 0.9983  macro_f1 0.8697  | det_TPR 0.7767  wrong_site 1 (0.02%)  FN 1005  FP 5  | fold std TPR 0.0219 FPR 0.0012
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(0, 4), (4, 1)])
+      -1 열(-1로 예측된 mon): 1005 = FN
+  [E10-subset-multi-rf-tuned-imb-under5x-fpr1] TPR 0.8920  FPR 0.0098  precision 0.9870  macro_f1 0.9363  | det_TPR 0.8940  wrong_site 9 (0.20%)  FN 477  FP 44  | fold std TPR 0.0212 FPR 0.0015
+      -1 행(실제 unmon 4501): -1로 4457, mon으로 44 (FP가 많은 사이트 [(0, 19), (6, 9), (22, 3), (4, 3), (7, 3)])
+      -1 열(-1로 예측된 mon): 477 = FN
+  [E10-subset-multi-rf-tuned-imb-under5x-fpr5] TPR 0.9487  FPR 0.0493  precision 0.9434  macro_f1 0.9468  | det_TPR 0.9562  wrong_site 34 (0.76%)  FN 197  FP 222  | fold std TPR 0.0169 FPR 0.0088
+      -1 행(실제 unmon 4501): -1로 4279, mon으로 222 (FP가 많은 사이트 [(6, 40), (0, 39), (17, 19), (9, 16), (15, 16)])
+      -1 열(-1로 예측된 mon): 197 = FN
+
+## E10-subset-multi-rf-tuned-imb-under10x: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None}, unmon 언더샘플링 ×10
+    fold 0: fit 5040 (unmon 1440) / val 1787  1s
+    fold 1: fit 5040 (unmon 1440) / val 1796  1s
+    fold 2: fit 5040 (unmon 1440) / val 1767  1s
+    fold 3: fit 5040 (unmon 1440) / val 1827  1s
+    fold 4: fit 5040 (unmon 1440) / val 1824  1s
+  ROC-AUC 0.9938 (fold std 0.0012)  PR-AUC 0.9942  | pooled best TPR@FPR≤0.1/1/5% 0.7929 / 0.9084 / 0.9551  | per-fold TPR@FPR≤1% 0.9033 ± 0.0178
+  [E10-subset-multi-rf-tuned-imb-under10x-argmax] TPR 0.9451  FPR 0.0169  precision 0.9697  macro_f1 0.9576  | det_TPR 0.9578  wrong_site 57 (1.27%)  FN 190  FP 76  | fold std TPR 0.0131 FPR 0.0019
+      -1 행(실제 unmon 4501): -1로 4425, mon으로 76 (FP가 많은 사이트 [(0, 12), (15, 9), (22, 8), (4, 6), (7, 6)])
+      -1 열(-1로 예측된 mon): 190 = FN
+  [E10-subset-multi-rf-tuned-imb-under10x-fpr0.1] TPR 0.7933  FPR 0.0011  precision 0.9983  macro_f1 0.8807  | det_TPR 0.7936  wrong_site 1 (0.02%)  FN 929  FP 5  | fold std TPR 0.0199 FPR 0.0007
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(0, 2), (4, 1), (6, 1), (9, 1)])
+      -1 열(-1로 예측된 mon): 929 = FN
+  [E10-subset-multi-rf-tuned-imb-under10x-fpr1] TPR 0.9084  FPR 0.0098  precision 0.9870  macro_f1 0.9454  | det_TPR 0.9107  wrong_site 10 (0.22%)  FN 402  FP 44  | fold std TPR 0.0178 FPR 0.0023
+      -1 행(실제 unmon 4501): -1로 4457, mon으로 44 (FP가 많은 사이트 [(0, 16), (6, 6), (7, 4), (22, 3), (4, 3)])
+      -1 열(-1로 예측된 mon): 402 = FN
+  [E10-subset-multi-rf-tuned-imb-under10x-fpr5] TPR 0.9547  FPR 0.0495  precision 0.9411  macro_f1 0.9487  | det_TPR 0.9649  wrong_site 46 (1.02%)  FN 158  FP 223  | fold std TPR 0.0133 FPR 0.0088
+      -1 행(실제 unmon 4501): -1로 4278, mon으로 223 (FP가 많은 사이트 [(0, 41), (6, 36), (15, 20), (17, 16), (22, 15)])
+      -1 열(-1로 예측된 mon): 158 = FN
+
+######## (2) subpage 모드 (처음 보는 URL로 일반화) ########
+
+## E10-subset-binary-rf-tuned-subpage: {'n_estimators': 300, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}
+    fold 0: fit 7214 / val 1787  fit 1s predict 0s
+    fold 1: fit 7205 / val 1796  fit 1s predict 0s
+    fold 2: fit 7234 / val 1767  fit 1s predict 0s
+    fold 3: fit 7174 / val 1827  fit 1s predict 0s
+    fold 4: fit 7177 / val 1824  fit 1s predict 0s
+  ROC-AUC 0.9753 (fold std 0.0057)  PR-AUC 0.9766  | pooled best TPR@FPR≤0.1/1/5% 0.4462 / 0.7271 / 0.8633  | per-fold TPR@FPR≤1% 0.7356 ± 0.0526
+  [E10-subset-binary-rf-tuned-subpage-argmax] TPR 0.8840  FPR 0.0618  precision 0.9347  macro_f1 0.9111  | det_TPR 0.8840  wrong_site 0 (0.00%)  FN 522  FP 278  | fold std TPR 0.0532 FPR 0.0116
+      -1 행(실제 unmon 4501): -1로 4223, mon으로 278 (FP가 많은 사이트 [(1, 278)])
+      -1 열(-1로 예측된 mon): 522 = FN
+  [E10-subset-binary-rf-tuned-subpage-fpr0.1] TPR 0.4451  FPR 0.0011  precision 0.9975  macro_f1 0.6989  | det_TPR 0.4451  wrong_site 0 (0.00%)  FN 2497  FP 5  | fold std TPR 0.0354 FPR 0.0007
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(1, 5)])
+      -1 열(-1로 예측된 mon): 2497 = FN
+  [E10-subset-binary-rf-tuned-subpage-fpr1] TPR 0.7273  FPR 0.0098  precision 0.9867  macro_f1 0.8563  | det_TPR 0.7273  wrong_site 0 (0.00%)  FN 1227  FP 44  | fold std TPR 0.0572 FPR 0.0034
+      -1 행(실제 unmon 4501): -1로 4457, mon으로 44 (FP가 많은 사이트 [(1, 44)])
+      -1 열(-1로 예측된 mon): 1227 = FN
+  [E10-subset-binary-rf-tuned-subpage-fpr5] TPR 0.8651  FPR 0.0502  precision 0.9451  macro_f1 0.9073  | det_TPR 0.8651  wrong_site 0 (0.00%)  FN 607  FP 226  | fold std TPR 0.0543 FPR 0.0136
+      -1 행(실제 unmon 4501): -1로 4275, mon으로 226 (FP가 많은 사이트 [(1, 226)])
+      -1 열(-1로 예측된 mon): 607 = FN
+
+## E10-subset-multi-rf-tuned-subpage: {'n_estimators': 300, 'max_depth': 20, 'min_samples_split': 2, 'class_weight': None}
+    fold 0: fit 7214 / val 1787  fit 1s predict 0s
+    fold 1: fit 7205 / val 1796  fit 1s predict 0s
+    fold 2: fit 7234 / val 1767  fit 1s predict 0s
+    fold 3: fit 7174 / val 1827  fit 1s predict 0s
+    fold 4: fit 7177 / val 1824  fit 1s predict 0s
+  ROC-AUC 0.9712 (fold std 0.0103)  PR-AUC 0.9729  | pooled best TPR@FPR≤0.1/1/5% 0.5124 / 0.6567 / 0.7436  | per-fold TPR@FPR≤1% 0.6569 ± 0.0689
+  [E10-subset-multi-rf-tuned-subpage-argmax] TPR 0.6253  FPR 0.0042  precision 0.9389  macro_f1 0.7292  | det_TPR 0.6618  wrong_site 164 (3.64%)  FN 1522  FP 19  | fold std TPR 0.0585 FPR 0.0016
+      -1 행(실제 unmon 4501): -1로 4482, mon으로 19 (FP가 많은 사이트 [(7, 4), (22, 3), (4, 3), (5, 2), (15, 2)])
+      -1 열(-1로 예측된 mon): 1522 = FN
+  [E10-subset-multi-rf-tuned-subpage-fpr0.1] TPR 0.4971  FPR 0.0011  precision 0.9850  macro_f1 0.6348  | det_TPR 0.5036  wrong_site 29 (0.64%)  FN 2234  FP 5  | fold std TPR 0.0351 FPR 0.0012
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(4, 2), (0, 1), (7, 1), (9, 1)])
+      -1 열(-1로 예측된 mon): 2234 = FN
+  [E10-subset-multi-rf-tuned-subpage-fpr1] TPR 0.6564  FPR 0.0102  precision 0.9345  macro_f1 0.7594  | det_TPR 0.6922  wrong_site 161 (3.58%)  FN 1385  FP 46  | fold std TPR 0.0630 FPR 0.0025
+      -1 행(실제 unmon 4501): -1로 4455, mon으로 46 (FP가 많은 사이트 [(0, 10), (22, 4), (4, 4), (6, 4), (7, 4)])
+      -1 열(-1로 예측된 mon): 1385 = FN
+  [E10-subset-multi-rf-tuned-subpage-fpr5] TPR 0.7422  FPR 0.0489  precision 0.8335  macro_f1 0.7837  | det_TPR 0.8416  wrong_site 447 (9.93%)  FN 713  FP 220  | fold std TPR 0.0700 FPR 0.0134
+      -1 행(실제 unmon 4501): -1로 4281, mon으로 220 (FP가 많은 사이트 [(0, 28), (6, 23), (15, 16), (9, 16), (22, 14)])
+      -1 열(-1로 예측된 mon): 713 = FN
+
+## 요약 E10 — 튜닝 전(기본값) vs 후, visit. TPR@FPR≤1% = fold 평균 ± sd
+  binary: 기본값 0.8733 ± 0.0148 → 튜닝 0.8736 ± 0.0191 | Δ +0.0002 (기준 0.0148) 유의한 개선 아님 | macro F1 0.9557 → 0.9556 | 최고 {'n_estimators': '300', 'max_depth': None, 'min_samples_split': '2', 'class_weight': None} | 기본값 순위 2/54
+  multi: 기본값 0.9247 ± 0.0156 → 튜닝 0.9262 ± 0.0195 | Δ +0.0016 (기준 0.0156) 유의한 개선 아님 | macro F1 0.9419 → 0.9426 | 최고 {'n_estimators': '300', 'max_depth': 20, 'min_samples_split': '2', 'class_weight': None} | 기본값 순위 4/54
+
+## 불균형 재확인 (multi, 튜닝 파라미터): TPR@FPR≤1% fold 평균 | pooled 0.1/1/5% | argmax TPR FPR
+  none      0.9262 ± 0.0195 | 0.8302 0.9300 0.9580 | 0.9038 0.0042
+  balanced  0.9000 ± 0.0205 | 0.7704 0.9000 0.9436 | 0.9647 0.1075
+  under1x   0.8740 ± 0.0205 | 0.6811 0.8736 0.9329 | 0.9660 0.3410
+  under5x   0.8918 ± 0.0209 | 0.7827 0.8938 0.9484 | 0.9558 0.0449
+  under10x  0.9033 ± 0.0178 | 0.7929 0.9084 0.9551 | 0.9451 0.0169
+
+## subpage 모드 (최종 모델): visit 대비
+  binary: visit 0.8736 → subpage 0.7356 ± 0.0526 | AUC 0.9932 → 0.9753 | argmax TPR 0.9756 → 0.8840
+  multi: visit 0.9262 → subpage 0.6569 ± 0.0689 | AUC 0.9956 → 0.9712 | argmax TPR 0.9038 → 0.6253
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e10_tuning-subset.png
