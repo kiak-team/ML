@@ -123,6 +123,30 @@ class TestMonThreshold(unittest.TestCase):
         self.assertAlmostEqual(np.mean(u >= 0.94), 0.06)  # 그보다 조금이라도 낮추면 넘는다
 
 
+class TestExtraColumns(unittest.TestCase):
+    """ow_run.extra_metrics: E7부터 결과 CSV 뒤에 붙인 컬럼."""
+    def test_mixed_hand_computed(self):
+        from ow_run import extra_metrics
+        y_true = [0, 1, 2, 3, -1, -1, -1, -1, -1, -1]   # test_mixed_hand_computed와 같은 예
+        y_pred = [0, 1, 0, -1, 2, -1, -1, 0, -1, -1]
+        r = ow_metrics(y_true, y_pred)
+        e = extra_metrics(r, y_true, y_pred, n_classes=5)
+        self.assertAlmostEqual(e['accuracy'], 6 / 10)          # 0, 1 + TN 4개
+        p, t = 2 / 5, 2 / 4
+        self.assertAlmostEqual(e['f1'], 2 * p * t / (p + t))
+        self.assertAlmostEqual(e['det_TPR'], 3 / 4)
+        self.assertAlmostEqual(e['site_id_rate'], 2 / 3)       # 잡은 mon 3개 중 사이트까지 맞힌 2개
+
+    def test_binary_has_no_site_rate_and_nan_f1(self):
+        from ow_run import extra_metrics
+        r = ow_metrics([1, -1], [-1, -1])                      # 아무것도 판정하지 않음 → precision NaN
+        e = extra_metrics(r, [1, -1], [-1, -1], n_classes=2)
+        self.assertEqual(e['site_id_rate'], '')
+        self.assertTrue(math.isnan(e['f1']))
+        r = ow_metrics([1, -1], [-1, 1])                       # 판정 1개가 오탐 → precision 0, TPR 0
+        self.assertEqual(extra_metrics(r, [1, -1], [-1, 1], 2)['f1'], 0.0)
+
+
 class TestConfusion(unittest.TestCase):
     def test_unmon_row_col(self):
         y_true = [0, 1, 2, 3, -1, -1, -1, -1]

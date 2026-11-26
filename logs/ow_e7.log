@@ -1,0 +1,321 @@
+E7 dataset=pkl: 피처 cand134_skip14 (@all @early @bseq @dir50 @qconst), monitored 사이트 95개(데이터에서 셈) + unmon -1 → multi 96클래스 / binary 2클래스. split visit, CV5 OOF. HGB = LightGBM 대체
+
+## E7-binary-lr: LR(max_iter=2000) log+std
+    fold 0: fit 20880 / val 5220  fit 0s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 0s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9180 (fold std 0.0043)  PR-AUC 0.9461  | pooled best TPR@FPR≤0.1/1/5% 0.0261 / 0.2437 / 0.5660  | per-fold TPR@FPR≤1% 0.2511 ± 0.0336
+  [E7-binary-lr-argmax] TPR 0.9195  FPR 0.2432  precision 0.8778  macro_f1 0.8453  | det_TPR 0.9195  wrong_site 0 (0.00%)  FN 1377  FP 2189  | fold std TPR 0.0041 FPR 0.0111
+      -1 행(실제 unmon 9000): -1로 6811, mon으로 2189 (FP가 많은 사이트 [(1, 2189)])
+      -1 열(-1로 예측된 mon): 1377 = FN
+  [E7-binary-lr-fpr0.1] TPR 0.0275  FPR 0.0012  precision 0.9772  macro_f1 0.2865  | det_TPR 0.0275  wrong_site 0 (0.00%)  FN 16629  FP 11  | fold std TPR 0.0116 FPR 0.0007
+      -1 행(실제 unmon 9000): -1로 8989, mon으로 11 (FP가 많은 사이트 [(1, 11)])
+      -1 열(-1로 예측된 mon): 16629 = FN
+  [E7-binary-lr-fpr1] TPR 0.2467  FPR 0.0103  precision 0.9784  macro_f1 0.4863  | det_TPR 0.2467  wrong_site 0 (0.00%)  FN 12882  FP 93  | fold std TPR 0.0251 FPR 0.0029
+      -1 행(실제 unmon 9000): -1로 8907, mon으로 93 (FP가 많은 사이트 [(1, 93)])
+      -1 열(-1로 예측된 mon): 12882 = FN
+  [E7-binary-lr-fpr5] TPR 0.5642  FPR 0.0500  precision 0.9554  macro_f1 0.6967  | det_TPR 0.5642  wrong_site 0 (0.00%)  FN 7452  FP 450  | fold std TPR 0.0165 FPR 0.0084
+      -1 행(실제 unmon 9000): -1로 8550, mon으로 450 (FP가 많은 사이트 [(1, 450)])
+      -1 열(-1로 예측된 mon): 7452 = FN
+
+## E7-binary-rf: RF(n=200,rs=42)
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9886 (fold std 0.0009)  PR-AUC 0.9934  | pooled best TPR@FPR≤0.1/1/5% 0.4784 / 0.7705 / 0.9356  | per-fold TPR@FPR≤1% 0.7735 ± 0.0326
+  [E7-binary-rf-argmax] TPR 0.9899  FPR 0.1356  precision 0.9328  macro_f1 0.9392  | det_TPR 0.9899  wrong_site 0 (0.00%)  FN 172  FP 1220  | fold std TPR 0.0014 FPR 0.0065
+      -1 행(실제 unmon 9000): -1로 7780, mon으로 1220 (FP가 많은 사이트 [(1, 1220)])
+      -1 열(-1로 예측된 mon): 172 = FN
+  [E7-binary-rf-fpr0.1] TPR 0.4606  FPR 0.0010  precision 0.9989  macro_f1 0.6456  | det_TPR 0.4606  wrong_site 0 (0.00%)  FN 9223  FP 9  | fold std TPR 0.0277 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(1, 9)])
+      -1 열(-1로 예측된 mon): 9223 = FN
+  [E7-binary-rf-fpr1] TPR 0.7682  FPR 0.0097  precision 0.9934  macro_f1 0.8406  | det_TPR 0.7682  wrong_site 0 (0.00%)  FN 3964  FP 87  | fold std TPR 0.0133 FPR 0.0032
+      -1 행(실제 unmon 9000): -1로 8913, mon으로 87 (FP가 많은 사이트 [(1, 87)])
+      -1 열(-1로 예측된 mon): 3964 = FN
+  [E7-binary-rf-fpr5] TPR 0.9348  FPR 0.0491  precision 0.9731  macro_f1 0.9351  | det_TPR 0.9348  wrong_site 0 (0.00%)  FN 1115  FP 442  | fold std TPR 0.0056 FPR 0.0058
+      -1 행(실제 unmon 9000): -1로 8558, mon으로 442 (FP가 많은 사이트 [(1, 442)])
+      -1 열(-1로 예측된 mon): 1115 = FN
+
+## E7-binary-svm: SVC(C=10,gamma=scale) log+std+gw
+    fold 0: fit 20880 / val 5220  fit 48s predict 2s
+    fold 1: fit 20880 / val 5220  fit 50s predict 2s
+    fold 2: fit 20880 / val 5220  fit 49s predict 2s
+    fold 3: fit 20880 / val 5220  fit 49s predict 2s
+    fold 4: fit 20880 / val 5220  fit 50s predict 2s
+  ROC-AUC 0.9930 (fold std 0.0010)  PR-AUC 0.9957  | pooled best TPR@FPR≤0.1/1/5% 0.4354 / 0.8395 / 0.9743  | per-fold TPR@FPR≤1% 0.8355 ± 0.0331
+  [E7-binary-svm-argmax] TPR 0.9839  FPR 0.0681  precision 0.9648  macro_f1 0.9620  | det_TPR 0.9839  wrong_site 0 (0.00%)  FN 275  FP 613  | fold std TPR 0.0015 FPR 0.0062
+      -1 행(실제 unmon 9000): -1로 8387, mon으로 613 (FP가 많은 사이트 [(1, 613)])
+      -1 열(-1로 예측된 mon): 275 = FN
+  [E7-binary-svm-fpr0.1] TPR 0.4134  FPR 0.0010  precision 0.9987  macro_f1 0.6132  | det_TPR 0.4134  wrong_site 0 (0.00%)  FN 10031  FP 9  | fold std TPR 0.0418 FPR 0.0008
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(1, 9)])
+      -1 열(-1로 예측된 mon): 10031 = FN
+  [E7-binary-svm-fpr1] TPR 0.8397  FPR 0.0098  precision 0.9939  macro_f1 0.8867  | det_TPR 0.8397  wrong_site 0 (0.00%)  FN 2741  FP 88  | fold std TPR 0.0073 FPR 0.0019
+      -1 행(실제 unmon 9000): -1로 8912, mon으로 88 (FP가 많은 사이트 [(1, 88)])
+      -1 열(-1로 예측된 mon): 2741 = FN
+  [E7-binary-svm-fpr5] TPR 0.9743  FPR 0.0498  precision 0.9738  macro_f1 0.9624  | det_TPR 0.9743  wrong_site 0 (0.00%)  FN 439  FP 448  | fold std TPR 0.0030 FPR 0.0051
+      -1 행(실제 unmon 9000): -1로 8552, mon으로 448 (FP가 많은 사이트 [(1, 448)])
+      -1 열(-1로 예측된 mon): 439 = FN
+
+## E7-binary-svmp: SVC(C=10,gamma=scale,probability=True) log+std+gw
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+    fold 0: fit 20880 / val 5220  fit 274s predict 2s
+    fold 1: fit 20880 / val 5220  fit 284s predict 2s
+    fold 2: fit 20880 / val 5220  fit 280s predict 2s
+    fold 3: fit 20880 / val 5220  fit 280s predict 2s
+    fold 4: fit 20880 / val 5220  fit 285s predict 2s
+  ROC-AUC 0.9930 (fold std 0.0010)  PR-AUC 0.9957  | pooled best TPR@FPR≤0.1/1/5% 0.4291 / 0.8365 / 0.9744  | per-fold TPR@FPR≤1% 0.8355 ± 0.0331
+  [E7-binary-svmp-argmax] TPR 0.9797  FPR 0.0577  precision 0.9700  macro_f1 0.9631  | det_TPR 0.9797  wrong_site 0 (0.00%)  FN 347  FP 519  | fold std TPR 0.0015 FPR 0.0047
+      -1 행(실제 unmon 9000): -1로 8481, mon으로 519 (FP가 많은 사이트 [(1, 519)])
+      -1 열(-1로 예측된 mon): 347 = FN
+  [E7-binary-svmp-fpr0.1] TPR 0.4158  FPR 0.0010  precision 0.9987  macro_f1 0.6149  | det_TPR 0.4158  wrong_site 0 (0.00%)  FN 9989  FP 9  | fold std TPR 0.0320 FPR 0.0008
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(1, 9)])
+      -1 열(-1로 예측된 mon): 9989 = FN
+  [E7-binary-svmp-fpr1] TPR 0.8380  FPR 0.0100  precision 0.9938  macro_f1 0.8854  | det_TPR 0.8380  wrong_site 0 (0.00%)  FN 2771  FP 90  | fold std TPR 0.0075 FPR 0.0014
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(1, 90)])
+      -1 열(-1로 예측된 mon): 2771 = FN
+  [E7-binary-svmp-fpr5] TPR 0.9744  FPR 0.0500  precision 0.9737  macro_f1 0.9624  | det_TPR 0.9744  wrong_site 0 (0.00%)  FN 437  FP 450  | fold std TPR 0.0029 FPR 0.0055
+      -1 행(실제 unmon 9000): -1로 8550, mon으로 450 (FP가 많은 사이트 [(1, 450)])
+      -1 열(-1로 예측된 mon): 437 = FN
+
+## E7-binary-et: ET(n=200,rs=42)
+    fold 0: fit 20880 / val 5220  fit 1s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 1s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9912 (fold std 0.0004)  PR-AUC 0.9951  | pooled best TPR@FPR≤0.1/1/5% 0.5672 / 0.8334 / 0.9501  | per-fold TPR@FPR≤1% 0.8412 ± 0.0097
+  [E7-binary-et-argmax] TPR 0.9877  FPR 0.1178  precision 0.9409  macro_f1 0.9449  | det_TPR 0.9877  wrong_site 0 (0.00%)  FN 210  FP 1060  | fold std TPR 0.0013 FPR 0.0075
+      -1 행(실제 unmon 9000): -1로 7940, mon으로 1060 (FP가 많은 사이트 [(1, 1060)])
+      -1 열(-1로 예측된 mon): 210 = FN
+  [E7-binary-et-fpr0.1] TPR 0.5720  FPR 0.0014  precision 0.9987  macro_f1 0.7188  | det_TPR 0.5720  wrong_site 0 (0.00%)  FN 7319  FP 13  | fold std TPR 0.0549 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8987, mon으로 13 (FP가 많은 사이트 [(1, 13)])
+      -1 열(-1로 예측된 mon): 7319 = FN
+  [E7-binary-et-fpr1] TPR 0.8373  FPR 0.0100  precision 0.9938  macro_f1 0.8850  | det_TPR 0.8373  wrong_site 0 (0.00%)  FN 2783  FP 90  | fold std TPR 0.0084 FPR 0.0025
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(1, 90)])
+      -1 열(-1로 예측된 mon): 2783 = FN
+  [E7-binary-et-fpr5] TPR 0.9503  FPR 0.0493  precision 0.9734  macro_f1 0.9457  | det_TPR 0.9503  wrong_site 0 (0.00%)  FN 850  FP 444  | fold std TPR 0.0068 FPR 0.0058
+      -1 행(실제 unmon 9000): -1로 8556, mon으로 444 (FP가 많은 사이트 [(1, 444)])
+      -1 열(-1로 예측된 mon): 850 = FN
+
+## E7-binary-hgb: HGB(default,rs=42)
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 1s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9943 (fold std 0.0006)  PR-AUC 0.9969  | pooled best TPR@FPR≤0.1/1/5% 0.6480 / 0.8822 / 0.9739  | per-fold TPR@FPR≤1% 0.8841 ± 0.0172
+  [E7-binary-hgb-argmax] TPR 0.9872  FPR 0.0792  precision 0.9595  macro_f1 0.9599  | det_TPR 0.9872  wrong_site 0 (0.00%)  FN 219  FP 713  | fold std TPR 0.0017 FPR 0.0035
+      -1 행(실제 unmon 9000): -1로 8287, mon으로 713 (FP가 많은 사이트 [(1, 713)])
+      -1 열(-1로 예측된 mon): 219 = FN
+  [E7-binary-hgb-fpr0.1] TPR 0.6445  FPR 0.0009  precision 0.9993  macro_f1 0.7654  | det_TPR 0.6445  wrong_site 0 (0.00%)  FN 6079  FP 8  | fold std TPR 0.0182 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8992, mon으로 8 (FP가 많은 사이트 [(1, 8)])
+      -1 열(-1로 예측된 mon): 6079 = FN
+  [E7-binary-hgb-fpr1] TPR 0.8837  FPR 0.0101  precision 0.9940  macro_f1 0.9156  | det_TPR 0.8837  wrong_site 0 (0.00%)  FN 1988  FP 91  | fold std TPR 0.0083 FPR 0.0018
+      -1 행(실제 unmon 9000): -1로 8909, mon으로 91 (FP가 많은 사이트 [(1, 91)])
+      -1 열(-1로 예측된 mon): 1988 = FN
+  [E7-binary-hgb-fpr5] TPR 0.9740  FPR 0.0499  precision 0.9737  macro_f1 0.9621  | det_TPR 0.9740  wrong_site 0 (0.00%)  FN 445  FP 449  | fold std TPR 0.0039 FPR 0.0032
+      -1 행(실제 unmon 9000): -1로 8551, mon으로 449 (FP가 많은 사이트 [(1, 449)])
+      -1 열(-1로 예측된 mon): 445 = FN
+
+## E7-binary-knn: kNN(k=5) log+std+gw
+    fold 0: fit 20880 / val 5220  fit 0s predict 1s
+    fold 1: fit 20880 / val 5220  fit 0s predict 1s
+    fold 2: fit 20880 / val 5220  fit 0s predict 1s
+    fold 3: fit 20880 / val 5220  fit 0s predict 1s
+    fold 4: fit 20880 / val 5220  fit 0s predict 1s
+  ROC-AUC 0.9677 (fold std 0.0036)  PR-AUC 0.9686  | pooled best TPR@FPR≤0.1/1/5% 0.0000 / 0.0000 / 0.0000  | per-fold TPR@FPR≤1% 0.0000 ± 0.0000
+  [E7-binary-knn-argmax] TPR 0.9926  FPR 0.2086  precision 0.9004  macro_f1 0.9105  | det_TPR 0.9926  wrong_site 0 (0.00%)  FN 126  FP 1877  | fold std TPR 0.0021 FPR 0.0071
+      -1 행(실제 unmon 9000): -1로 7123, mon으로 1877 (FP가 많은 사이트 [(1, 1877)])
+      -1 열(-1로 예측된 mon): 126 = FN
+  [E7-binary-knn-fpr0.1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.2564  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-binary-knn-fpr1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.2564  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-binary-knn-fpr5] TPR 0.1867  FPR 0.0127  precision 0.9655  macro_f1 0.4360  | det_TPR 0.1867  wrong_site 0 (0.00%)  FN 13907  FP 114  | fold std TPR 0.3735 FPR 0.0253
+      -1 행(실제 unmon 9000): -1로 8886, mon으로 114 (FP가 많은 사이트 [(1, 114)])
+      -1 열(-1로 예측된 mon): 13907 = FN
+
+## E7-multi-lr: LR(max_iter=2000) log+std
+    fold 0: fit 20880 / val 5220  fit 7s predict 0s
+    fold 1: fit 20880 / val 5220  fit 6s predict 0s
+    fold 2: fit 20880 / val 5220  fit 6s predict 0s
+    fold 3: fit 20880 / val 5220  fit 6s predict 0s
+    fold 4: fit 20880 / val 5220  fit 6s predict 0s
+  ROC-AUC 0.9653 (fold std 0.0013)  PR-AUC 0.9794  | pooled best TPR@FPR≤0.1/1/5% 0.2658 / 0.5243 / 0.7391  | per-fold TPR@FPR≤1% 0.5233 ± 0.0228
+  [E7-multi-lr-argmax] TPR 0.8213  FPR 0.1030  precision 0.8303  macro_f1 0.8252  | det_TPR 0.9350  wrong_site 1944 (11.37%)  FN 1112  FP 927  | fold std TPR 0.0127 FPR 0.0062
+      -1 행(실제 unmon 9000): -1로 8073, mon으로 927 (FP가 많은 사이트 [(92, 26), (81, 26), (0, 25), (31, 25), (61, 22)])
+      -1 열(-1로 예측된 mon): 1112 = FN
+  [E7-multi-lr-fpr0.1] TPR 0.2632  FPR 0.0011  precision 0.9947  macro_f1 0.3815  | det_TPR 0.2640  wrong_site 14 (0.08%)  FN 12586  FP 10  | fold std TPR 0.0170 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(47, 1), (74, 1), (8, 1), (30, 1), (31, 1)])
+      -1 열(-1로 예측된 mon): 12586 = FN
+  [E7-multi-lr-fpr1] TPR 0.5238  FPR 0.0102  precision 0.9776  macro_f1 0.6543  | det_TPR 0.5304  wrong_site 113 (0.66%)  FN 8030  FP 92  | fold std TPR 0.0131 FPR 0.0020
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(31, 6), (0, 4), (86, 4), (52, 3), (54, 3)])
+      -1 열(-1로 예측된 mon): 8030 = FN
+  [E7-multi-lr-fpr5] TPR 0.7387  FPR 0.0503  precision 0.9168  macro_f1 0.8099  | det_TPR 0.7792  wrong_site 693 (4.05%)  FN 3775  FP 453  | fold std TPR 0.0135 FPR 0.0051
+      -1 행(실제 unmon 9000): -1로 8547, mon으로 453 (FP가 많은 사이트 [(31, 20), (0, 17), (81, 14), (92, 11), (6, 11)])
+      -1 열(-1로 예측된 mon): 3775 = FN
+
+## E7-multi-rf: RF(n=200,rs=42)
+    fold 0: fit 20880 / val 5220  fit 5s predict 0s
+    fold 1: fit 20880 / val 5220  fit 4s predict 0s
+    fold 2: fit 20880 / val 5220  fit 4s predict 0s
+    fold 3: fit 20880 / val 5220  fit 4s predict 0s
+    fold 4: fit 20880 / val 5220  fit 4s predict 0s
+  ROC-AUC 0.9926 (fold std 0.0013)  PR-AUC 0.9961  | pooled best TPR@FPR≤0.1/1/5% 0.7874 / 0.8926 / 0.9318  | per-fold TPR@FPR≤1% 0.8951 ± 0.0122
+  [E7-multi-rf-argmax] TPR 0.8960  FPR 0.0078  precision 0.9741  macro_f1 0.9322  | det_TPR 0.9157  wrong_site 337 (1.97%)  FN 1441  FP 70  | fold std TPR 0.0173 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8930, mon으로 70 (FP가 많은 사이트 [(63, 6), (7, 6), (60, 5), (19, 3), (32, 3)])
+      -1 열(-1로 예측된 mon): 1441 = FN
+  [E7-multi-rf-fpr0.1] TPR 0.7880  FPR 0.0011  precision 0.9972  macro_f1 0.8751  | det_TPR 0.7896  wrong_site 28 (0.16%)  FN 3597  FP 10  | fold std TPR 0.0230 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(22, 2), (63, 2), (26, 1), (66, 1), (70, 1)])
+      -1 열(-1로 예측된 mon): 3597 = FN
+  [E7-multi-rf-fpr1] TPR 0.8938  FPR 0.0100  precision 0.9833  macro_f1 0.9350  | det_TPR 0.9037  wrong_site 169 (0.99%)  FN 1647  FP 90  | fold std TPR 0.0180 FPR 0.0025
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(0, 7), (63, 7), (75, 6), (71, 6), (94, 4)])
+      -1 열(-1로 예측된 mon): 1647 = FN
+  [E7-multi-rf-fpr5] TPR 0.9318  FPR 0.0478  precision 0.9513  macro_f1 0.9411  | det_TPR 0.9543  wrong_site 385 (2.25%)  FN 782  FP 430  | fold std TPR 0.0147 FPR 0.0025
+      -1 행(실제 unmon 9000): -1로 8570, mon으로 430 (FP가 많은 사이트 [(0, 30), (50, 24), (71, 23), (75, 20), (94, 16)])
+      -1 열(-1로 예측된 mon): 782 = FN
+
+## E7-multi-svm: SVC(C=10,gamma=scale) log+std+gw
+    fold 0: fit 20880 / val 5220  fit 17s predict 17s
+    fold 1: fit 20880 / val 5220  fit 17s predict 17s
+    fold 2: fit 20880 / val 5220  fit 17s predict 17s
+    fold 3: fit 20880 / val 5220  fit 17s predict 17s
+    fold 4: fit 20880 / val 5220  fit 17s predict 17s
+  ROC-AUC 0.9701 (fold std 0.0074)  PR-AUC 0.9852  | pooled best TPR@FPR≤0.1/1/5% 0.2150 / 0.7031 / 0.9221  | per-fold TPR@FPR≤1% 0.7202 ± 0.0513
+  [E7-multi-svm-argmax] TPR 0.9229  FPR 0.0247  precision 0.9535  macro_f1 0.9379  | det_TPR 0.9549  wrong_site 547 (3.20%)  FN 771  FP 222  | fold std TPR 0.0159 FPR 0.0028
+      -1 행(실제 unmon 9000): -1로 8778, mon으로 222 (FP가 많은 사이트 [(71, 9), (0, 8), (66, 8), (17, 7), (86, 7)])
+      -1 열(-1로 예측된 mon): 771 = FN
+  [E7-multi-svm-fpr0.1] TPR 0.2013  FPR 0.0011  precision 0.9894  macro_f1 0.3186  | det_TPR 0.2029  wrong_site 27 (0.16%)  FN 13631  FP 10  | fold std TPR 0.0498 FPR 0.0012
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(71, 2), (45, 1), (39, 1), (60, 1), (16, 1)])
+      -1 열(-1로 예측된 mon): 13631 = FN
+  [E7-multi-svm-fpr1] TPR 0.7032  FPR 0.0102  precision 0.9786  macro_f1 0.8159  | det_TPR 0.7132  wrong_site 171 (1.00%)  FN 4905  FP 92  | fold std TPR 0.0340 FPR 0.0017
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(66, 7), (71, 7), (17, 5), (61, 4), (45, 4)])
+      -1 열(-1로 예측된 mon): 4905 = FN
+  [E7-multi-svm-fpr5] TPR 0.9221  FPR 0.0492  precision 0.9440  macro_f1 0.9330  | det_TPR 0.9509  wrong_site 493 (2.88%)  FN 839  FP 443  | fold std TPR 0.0165 FPR 0.0058
+      -1 행(실제 unmon 9000): -1로 8557, mon으로 443 (FP가 많은 사이트 [(52, 34), (79, 25), (81, 18), (6, 18), (23, 18)])
+      -1 열(-1로 예측된 mon): 839 = FN
+
+## E7-multi-svmp: SVC(C=10,gamma=scale,probability=True) log+std+gw
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+/Users/kangrihyun/Desktop/ML/.venv/lib/python3.14/site-packages/sklearn/svm/_base.py:236: FutureWarning: The `probability` parameter was deprecated in 1.9 and will be removed in version 1.11. Use `CalibratedClassifierCV(SVC(), ensemble=False)` instead of `SVC(probability=True)`
+  warnings.warn(
+    fold 0: fit 20880 / val 5220  fit 128s predict 19s
+    fold 1: fit 20880 / val 5220  fit 127s predict 19s
+    fold 2: fit 20880 / val 5220  fit 126s predict 19s
+    fold 3: fit 20880 / val 5220  fit 130s predict 18s
+    fold 4: fit 20880 / val 5220  fit 123s predict 19s
+  ROC-AUC 0.9926 (fold std 0.0013)  PR-AUC 0.9961  | pooled best TPR@FPR≤0.1/1/5% 0.7046 / 0.8663 / 0.9304  | per-fold TPR@FPR≤1% 0.8633 ± 0.0226
+  [E7-multi-svmp-argmax] TPR 0.9246  FPR 0.0238  precision 0.9544  macro_f1 0.9393  | det_TPR 0.9563  wrong_site 541 (3.16%)  FN 748  FP 214  | fold std TPR 0.0162 FPR 0.0028
+      -1 행(실제 unmon 9000): -1로 8786, mon으로 214 (FP가 많은 사이트 [(71, 8), (37, 8), (0, 7), (66, 7), (49, 6)])
+      -1 열(-1로 예측된 mon): 748 = FN
+  [E7-multi-svmp-fpr0.1] TPR 0.6951  FPR 0.0013  precision 0.9977  macro_f1 0.8146  | det_TPR 0.6960  wrong_site 15 (0.09%)  FN 5198  FP 12  | fold std TPR 0.0313 FPR 0.0010
+      -1 행(실제 unmon 9000): -1로 8988, mon으로 12 (FP가 많은 사이트 [(42, 2), (71, 2), (0, 1), (27, 1), (49, 1)])
+      -1 열(-1로 예측된 mon): 5198 = FN
+  [E7-multi-svmp-fpr1] TPR 0.8667  FPR 0.0100  precision 0.9858  macro_f1 0.9211  | det_TPR 0.8739  wrong_site 123 (0.72%)  FN 2156  FP 90  | fold std TPR 0.0262 FPR 0.0026
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(71, 7), (66, 5), (0, 5), (37, 4), (49, 4)])
+      -1 열(-1로 예측된 mon): 2156 = FN
+  [E7-multi-svmp-fpr5] TPR 0.9302  FPR 0.0499  precision 0.9440  macro_f1 0.9371  | det_TPR 0.9591  wrong_site 494 (2.89%)  FN 699  FP 449  | fold std TPR 0.0181 FPR 0.0071
+      -1 행(실제 unmon 9000): -1로 8551, mon으로 449 (FP가 많은 사이트 [(0, 21), (50, 14), (49, 14), (37, 12), (71, 12)])
+      -1 열(-1로 예측된 mon): 699 = FN
+
+## E7-multi-et: ET(n=200,rs=42)
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9918 (fold std 0.0012)  PR-AUC 0.9956  | pooled best TPR@FPR≤0.1/1/5% 0.7415 / 0.8674 / 0.9263  | per-fold TPR@FPR≤1% 0.8668 ± 0.0134
+  [E7-multi-et-argmax] TPR 0.8965  FPR 0.0136  precision 0.9654  macro_f1 0.9287  | det_TPR 0.9215  wrong_site 427 (2.50%)  FN 1343  FP 122  | fold std TPR 0.0151 FPR 0.0040
+      -1 행(실제 unmon 9000): -1로 8878, mon으로 122 (FP가 많은 사이트 [(63, 10), (37, 7), (71, 7), (47, 6), (60, 6)])
+      -1 열(-1로 예측된 mon): 1343 = FN
+  [E7-multi-et-fpr0.1] TPR 0.7422  FPR 0.0011  precision 0.9976  macro_f1 0.8436  | det_TPR 0.7434  wrong_site 20 (0.12%)  FN 4388  FP 10  | fold std TPR 0.0212 FPR 0.0008
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(37, 2), (71, 2), (63, 2), (70, 1), (31, 1)])
+      -1 열(-1로 예측된 mon): 4388 = FN
+  [E7-multi-et-fpr1] TPR 0.8680  FPR 0.0098  precision 0.9836  macro_f1 0.9202  | det_TPR 0.8773  wrong_site 159 (0.93%)  FN 2098  FP 88  | fold std TPR 0.0159 FPR 0.0022
+      -1 행(실제 unmon 9000): -1로 8912, mon으로 88 (FP가 많은 사이트 [(63, 13), (71, 9), (94, 5), (0, 5), (47, 4)])
+      -1 열(-1로 예측된 mon): 2098 = FN
+  [E7-multi-et-fpr5] TPR 0.9259  FPR 0.0488  precision 0.9464  macro_f1 0.9358  | det_TPR 0.9526  wrong_site 457 (2.67%)  FN 810  FP 439  | fold std TPR 0.0125 FPR 0.0045
+      -1 행(실제 unmon 9000): -1로 8561, mon으로 439 (FP가 많은 사이트 [(0, 46), (71, 25), (63, 23), (37, 18), (94, 18)])
+      -1 열(-1로 예측된 mon): 810 = FN
+
+## E7-multi-hgb: HGB(default,rs=42)
+    fold 0: fit 20880 / val 5220  fit 10s predict 0s
+    fold 1: fit 20880 / val 5220  fit 9s predict 0s
+    fold 2: fit 20880 / val 5220  fit 9s predict 0s
+    fold 3: fit 20880 / val 5220  fit 9s predict 0s
+    fold 4: fit 20880 / val 5220  fit 9s predict 0s
+  ROC-AUC 0.6555 (fold std 0.0118)  PR-AUC 0.7358  | pooled best TPR@FPR≤0.1/1/5% 0.0000 / 0.0000 / 0.0000  | per-fold TPR@FPR≤1% 0.0000 ± 0.0000
+  [E7-multi-hgb-argmax] TPR 0.3826  FPR 0.5203  precision 0.3345  macro_f1 0.3671  | det_TPR 0.8699  wrong_site 8333 (48.73%)  FN 2225  FP 4683  | fold std TPR 0.0130 FPR 0.0125
+      -1 행(실제 unmon 9000): -1로 4317, mon으로 4683 (FP가 많은 사이트 [(5, 119), (67, 107), (59, 101), (20, 101), (48, 85)])
+      -1 열(-1로 예측된 mon): 2225 = FN
+  [E7-multi-hgb-fpr0.1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.0053  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-multi-hgb-fpr1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.0053  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-multi-hgb-fpr5] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.0053  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+
+## E7-multi-knn: kNN(k=5) log+std+gw
+    fold 0: fit 20880 / val 5220  fit 0s predict 0s
+    fold 1: fit 20880 / val 5220  fit 0s predict 1s
+    fold 2: fit 20880 / val 5220  fit 0s predict 0s
+    fold 3: fit 20880 / val 5220  fit 0s predict 1s
+    fold 4: fit 20880 / val 5220  fit 0s predict 1s
+  ROC-AUC 0.9656 (fold std 0.0044)  PR-AUC 0.9727  | pooled best TPR@FPR≤0.1/1/5% 0.0000 / 0.0000 / 0.8170  | per-fold TPR@FPR≤1% 0.0000 ± 0.0000
+  [E7-multi-knn-argmax] TPR 0.8952  FPR 0.1472  precision 0.8487  macro_f1 0.8713  | det_TPR 0.9774  wrong_site 1405 (8.22%)  FN 387  FP 1325  | fold std TPR 0.0202 FPR 0.0075
+      -1 행(실제 unmon 9000): -1로 7675, mon으로 1325 (FP가 많은 사이트 [(50, 41), (6, 33), (71, 32), (92, 31), (86, 30)])
+      -1 열(-1로 예측된 mon): 387 = FN
+  [E7-multi-knn-fpr0.1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.0053  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-multi-knn-fpr1] TPR 0.0000  FPR 0.0000  precision nan  macro_f1 0.0053  | det_TPR 0.0000  wrong_site 0 (0.00%)  FN 17100  FP 0  | fold std TPR 0.0000 FPR 0.0000
+      -1 행(실제 unmon 9000): -1로 9000, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 17100 = FN
+  [E7-multi-knn-fpr5] TPR 0.8170  FPR 0.0447  precision 0.9524  macro_f1 0.8746  | det_TPR 0.8343  wrong_site 296 (1.73%)  FN 2833  FP 402  | fold std TPR 0.0227 FPR 0.0053
+      -1 행(실제 unmon 9000): -1로 8598, mon으로 402 (FP가 많은 사이트 [(71, 16), (50, 16), (6, 14), (56, 14), (81, 11)])
+      -1 열(-1로 예측된 mon): 2833 = FN
+
+## 요약 (visit, CV5 OOF, 후보 134개). TPR = 사이트까지 맞힘(binary는 탐지)
+  mode   model    | ROC-AUC (sd) | best TPR@FPR≤0.1% 1% 5% | per-fold TPR@1% (sd) | argmax TPR FPR prec macroF1 acc | fit s/fold
+  binary LR       | 0.9180 (0.0043) | 0.0261 0.2437 0.5660 | 0.2511 (0.0336) | 0.9195 0.2432 0.8778 0.8453 0.8634 | 1
+  binary RF       | 0.9886 (0.0009) | 0.4784 0.7705 0.9356 | 0.7735 (0.0326) | 0.9899 0.1356 0.9328 0.9392 0.9467 | 2
+  binary SVM(RBF) | 0.9930 (0.0010) | 0.4354 0.8395 0.9743 | 0.8355 (0.0331) | 0.9839 0.0681 0.9648 0.9620 0.9660 | 49
+  binary SVM(RBF)+Platt | 0.9930 (0.0010) | 0.4291 0.8365 0.9744 | 0.8355 (0.0331) | 0.9797 0.0577 0.9700 0.9631 0.9668 | 281
+  binary ET       | 0.9912 (0.0004) | 0.5672 0.8334 0.9501 | 0.8412 (0.0097) | 0.9877 0.1178 0.9409 0.9449 0.9513 | 1
+  binary HGB      | 0.9943 (0.0006) | 0.6480 0.8822 0.9739 | 0.8841 (0.0172) | 0.9872 0.0792 0.9595 0.9599 0.9643 | 1
+  binary k-NN     | 0.9677 (0.0036) | 0.0000 0.0000 0.0000 | 0.0000 (0.0000) | 0.9926 0.2086 0.9004 0.9105 0.9233 | 0
+  multi  LR       | 0.9653 (0.0013) | 0.2658 0.5243 0.7391 | 0.5233 (0.0228) | 0.8213 0.1030 0.8303 0.8252 0.8474 | 6
+  multi  RF       | 0.9926 (0.0013) | 0.7874 0.8926 0.9318 | 0.8951 (0.0122) | 0.8960 0.0078 0.9741 0.9322 0.9292 | 4
+  multi  SVM(RBF) | 0.9701 (0.0074) | 0.2150 0.7031 0.9221 | 0.7202 (0.0513) | 0.9229 0.0247 0.9535 0.9379 0.9410 | 17
+  multi  SVM(RBF)+Platt | 0.9926 (0.0013) | 0.7046 0.8663 0.9304 | 0.8633 (0.0226) | 0.9246 0.0238 0.9544 0.9393 0.9424 | 127
+  multi  ET       | 0.9918 (0.0012) | 0.7415 0.8674 0.9263 | 0.8668 (0.0134) | 0.8965 0.0136 0.9654 0.9287 0.9275 | 2
+  multi  HGB      | 0.6555 (0.0118) | 0.0000 0.0000 0.0000 | 0.0000 (0.0000) | 0.3826 0.5203 0.3345 0.3671 0.4161 | 9
+  multi  k-NN     | 0.9656 (0.0044) | 0.0000 0.0000 0.8170 | 0.0000 (0.0000) | 0.8952 0.1472 0.8487 0.8713 0.8806 | 0
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e7_models.png
+      /Users/kangrihyun/Desktop/ML/figures/ow_e7_roc_pr.png

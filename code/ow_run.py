@@ -27,8 +27,17 @@ from ow_metrics import UNMON, apply_threshold, fpr_threshold, mon_score, ow_metr
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(ROOT, 'results', 'openworld_results.csv')
 CACHE = os.path.join(ROOT, 'cache')
-COLUMNS = ['exp_id', 'dataset', 'split_mode', 'feature_set', 'model', 'imbalance', 'threshold', 'n_classes',
-           'TPR', 'FPR', 'precision', 'recall', 'macro_f1', 'notes']
+BASE_COLUMNS = ['exp_id', 'dataset', 'split_mode', 'feature_set', 'model', 'imbalance', 'threshold', 'n_classes',
+                'TPR', 'FPR', 'precision', 'recall', 'macro_f1', 'notes']
+# E7부터 뒤에 추가한 컬럼 (기존 14개는 순서·이름 그대로. E1~E6 행은 빈 값). 정의는 reports/openworld.md 2절
+#   accuracy     전체 샘플 중 라벨(-1 포함)이 정확히 맞은 비율. unmon이 많으면 부풀려지므로 해석 근거로 쓰지 않는다
+#   f1           2·precision·TPR/(precision+TPR) (TP 정의는 기존 그대로: 사이트까지 맞힘)
+#   roc_auc      탐지 ROC-AUC: 점수 = monitored 최댓값(binary는 P(mon)), 정답 = mon인가. 임계값과 무관
+#   pr_auc       같은 점수의 average precision
+#   det_TPR      (TP + wrong_site) / mon 수. 사이트는 틀려도 monitored로 잡은 비율
+#   site_id_rate TP / (TP + wrong_site). monitored로 잡은 mon 중 사이트까지 맞힌 비율 (multi만)
+EXTRA_COLUMNS = ['accuracy', 'f1', 'roc_auc', 'pr_auc', 'det_TPR', 'site_id_rate']
+COLUMNS = BASE_COLUMNS + EXTRA_COLUMNS
 RANDOM_STATE = 42
 SPLIT_MODES = ('visit', 'subpage')
 
@@ -176,20 +185,46 @@ def fold_spread(y, pred, fold):
     return np.std([p['TPR'] for p in per]), np.std([p['FPR'] for p in per])
 
 
+def _migrate_columns():
+    """기존 CSV(14개 컬럼)에 EXTRA_COLUMNS를 맨 뒤에 빈 값으로 붙인다. 기존 컬럼·값은 건드리지 않는다."""
+    head = list(pd.read_csv(RESULTS, nrows=0).columns)
+    if head == COLUMNS:
+        return
+    assert head == BASE_COLUMNS, f'결과 CSV 컬럼이 고정 컬럼과 다르다: {head}'
+    df = pd.read_csv(RESULTS, dtype=str, keep_default_na=False)
+    for c in EXTRA_COLUMNS:
+        df[c] = ''
+    df.to_csv(RESULTS, index=False)
+
+
 def record(row):
     os.makedirs(os.path.dirname(RESULTS), exist_ok=True)
     row = {c: row.get(c, '') for c in COLUMNS}
     for c in ('TPR', 'FPR', 'precision', 'recall', 'macro_f1'):
         row[c] = round(float(row[c]), 6)
+    for c in EXTRA_COLUMNS:
+        if row[c] != '' and row[c] is not None:
+            row[c] = round(float(row[c]), 6)
     new = not os.path.exists(RESULTS)
     if not new:
+        _migrate_columns()
         assert list(pd.read_csv(RESULTS, nrows=0).columns) == COLUMNS, '결과 CSV 컬럼이 고정 컬럼과 다르다'
     pd.DataFrame([row], columns=COLUMNS).to_csv(RESULTS, mode='a', header=new, index=False)
 
 
+def extra_metrics(r, y, pred, n_classes):
+    """EXTRA_COLUMNS 중 판정(pred)에서 바로 나오는 것. roc_auc·pr_auc는 점수가 필요해 호출하는 쪽이 넣는다."""
+    p, t = r['precision'], r['TPR']
+    return {'accuracy': float(np.mean(np.asarray(y) == np.asarray(pred))),
+            'f1': 2 * p * t / (p + t) if (p + t) > 0 else (0.0 if p == p else float('nan')),
+            'det_TPR': r['det_TPR'],
+            'site_id_rate': (r['TP'] / (r['TP'] + r['wrong_site']) if r['TP'] + r['wrong_site'] else float('nan'))
+            if n_classes > 2 else ''}
+
+
 def evaluate(exp_id, d, split_mode, pred, classes, threshold, feature_set, model, imbalance, extra_notes='',
-             decision='argmax'):
-    """pred = train 행의 OOF 판정. threshold = CSV에 적을 값('' = argmax)."""
+             decision='argmax', extras=None):
+    """pred = train 행의 OOF 판정. threshold = CSV에 적을 값('' = argmax). extras = EXTRA_COLUMNS에 더 넣을 값."""
     fold = d[f'fold_{split_mode}']
     tr = fold >= 0
     y, f = d['y'][tr], fold[tr]
@@ -205,7 +240,7 @@ def evaluate(exp_id, d, split_mode, pred, classes, threshold, feature_set, model
     record({'exp_id': exp_id, 'dataset': d['dataset'], 'split_mode': split_mode, 'feature_set': feature_set,
             'model': model, 'imbalance': imbalance, 'threshold': threshold, 'n_classes': len(classes),
             'TPR': r['TPR'], 'FPR': r['FPR'], 'precision': r['precision'], 'recall': r['recall'],
-            'macro_f1': r['macro_f1'], 'notes': notes})
+            'macro_f1': r['macro_f1'], 'notes': notes, **extra_metrics(r, y, pred, len(classes)), **(extras or {})})
     print(f'  [{exp_id}] TPR {r["TPR"]:.4f}  FPR {r["FPR"]:.4f}  precision {r["precision"]:.4f}  '
           f'macro_f1 {r["macro_f1"]:.4f}  | det_TPR {r["det_TPR"]:.4f}  wrong_site {r["wrong_site"]} '
           f'({r["wrong_site_rate"]:.2%})  FN {r["FN"]}  FP {r["FP"]}  | fold std TPR {sd_tpr:.4f} FPR {sd_fpr:.4f}')

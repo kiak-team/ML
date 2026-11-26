@@ -1,0 +1,19 @@
+## 소요 시간 측정: 후보 134개 피처, train 26100행 (mon 17100, unmon 9000). 실제 CV의 fold당 학습 = 약 20880행, 검증 = 약 5220행
+  20% 층화 서브샘플 5220행 (10%: 2610행), predict = 서브샘플 밖 2,000행
+
+  binary LR(max_iter=2000) log+std                  20% fit     0.0s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.0분 (fold 병렬)
+  binary RF(n=200,rs=42)                            20% fit     0.4s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.1분
+  binary ET(n=200,rs=42)                            20% fit     0.2s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.1분
+  binary HGB(default,rs=42)                         20% fit     0.6s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.2분
+  binary kNN(k=5) log+std+gw                        20% fit     0.0s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.0분 (fold 병렬)
+  binary SVC(C=10,gamma=scale) log+std+gw           20% fit     0.4s predict(2k)    0.2s | 지수 a 1.57 | 전체 추정 fold당    0.1분, 5-fold    0.1분 (fold 병렬)
+  binary SVC(C=10,gamma=scale) log+std+gw {'probability': True} 20% fit     2.4s predict(2k)    0.2s | 지수 a 1.45 | 전체 추정 fold당    0.3분, 5-fold    0.3분 (fold 병렬)
+  multi  LR(max_iter=2000) log+std                  20% fit     0.6s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.0분 (fold 병렬)
+  multi  RF(n=200,rs=42)                            20% fit     1.0s predict(2k)    0.1s | 지수 a 1.00 | 전체 추정 fold당    0.1분, 5-fold    0.4분
+  multi  ET(n=200,rs=42)                            20% fit     0.4s predict(2k)    0.1s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.1분
+  multi  HGB(default,rs=42)                         20% fit    14.0s predict(2k)    0.5s | 지수 a 1.00 | 전체 추정 fold당    1.0분, 5-fold    4.8분
+  multi  kNN(k=5) log+std+gw                        20% fit     0.1s predict(2k)    0.0s | 지수 a 1.00 | 전체 추정 fold당    0.0분, 5-fold    0.0분 (fold 병렬)
+  multi  SVC(C=10,gamma=scale) log+std+gw           20% fit     1.2s predict(2k)    1.4s | 지수 a 0.54 | 전체 추정 fold당    0.3분, 5-fold    0.3분 (fold 병렬)
+  multi  SVC(C=10,gamma=scale) log+std+gw {'probability': True} 20% fit     7.9s predict(2k)    1.4s | 지수 a 1.57 | 전체 추정 fold당    1.4분, 5-fold    1.4분 (fold 병렬)
+
+추정은 대략값이다(학습 시간 ∝ n^a, SVM·k-NN의 predict ∝ 학습 행 수). 병렬 fold 5개는 코어 8개 중 5개를 쓴다.
