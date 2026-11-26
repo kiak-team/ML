@@ -24,6 +24,8 @@
   -이름/-@그룹  앞에서 고른 것에서 제외 (예: @all -@timing)
 
   @qconst (13개)는 mon에서 준상수라 @early/@bseq/@dir50에서 빼 두었다. groups()의 설명 참고.
+  앞 K셀을 버린 피처(open-world)에서는 같은 13개가 K+1번째 셀부터 세므로 준상수가 아니다.
+  그 문맥에서는 별칭 @mid로 쓴다(= @qconst, ALIASES 설명 참고). skip 14면 15~28번째 셀 구간이다.
   이전 로그(stage3/3b/4)의 피처 수를 재현하려면 맨 뒤에 @qconst를 붙인다.
 
 분할:
@@ -155,6 +157,19 @@ def groups(names, pkl_qconst=True):
     return g
 
 
+# 그룹 별칭. groups()에 키를 더하지 않는다 — 그룹을 순회하는 코드(피처 중요도 permutation)에
+# 같은 피처가 두 번 나오기 때문이다. select()에서만 풀어 준다.
+#
+# @mid: @qconst와 같은 13개(first10_out, bseq_4~6, dir_006~014)를 가리키는 다른 이름.
+#   @qconst는 "앞 14셀을 버리지 않은 데이터에서 준상수였다"는 역사적 이름이다. 앞 K셀을 버린
+#   피처(features_ow.py 출력)에서는 같은 이름이 K+1번째 셀부터 세므로, skip 14에서는 이 13개가
+#   15~28번째 셀 구간을 가리킨다. 그 구간은 준상수가 아니고 사이트 정보가 가장 많다
+#   (train-only η² 평균 0.4030 대 @all 0.3617, docs/OPENWORLD.md 2.3).
+#   open-world 세트를 적을 때는 @mid로 쓰는 쪽이 오해가 없다. 실제로 이 이름 때문에
+#   "수업 공지가 금지한 앞 14셀 피처"로 잘못 읽은 일이 있었다.
+ALIASES = {'mid': 'qconst'}
+
+
 def select(spec, names):
     """['@order', 'n_total', '-in_burst_1'] → 피처 이름 리스트 (순서 유지, 중복 제거)."""
     g = groups(names)
@@ -162,9 +177,13 @@ def select(spec, names):
 
     def expand(tok):
         if tok.startswith('@'):
-            if tok[1:] not in g:
-                raise SystemExit(f'알 수 없는 그룹: {tok} (가능: {", ".join("@" + k for k in g)})')
-            return g[tok[1:]]
+            key = ALIASES.get(tok[1:], tok[1:])
+            if key not in g:
+                raise SystemExit(f'알 수 없는 그룹: {tok} '
+                                 f'(가능: {", ".join("@" + k for k in g)}'
+                                 f'{", " if ALIASES else ""}'
+                                 f'{", ".join("@" + k + "(=@" + v + ")" for k, v in ALIASES.items())})')
+            return g[key]
         if tok not in names:
             raise SystemExit(f'알 수 없는 피처: {tok} (--list로 확인)')
         return [tok]
