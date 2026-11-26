@@ -146,7 +146,9 @@ def groups(names, pkl_qconst=True):
         # 빼도 k-NN은 소수점 4자리까지 같고 RF는 -0.03%p다. 대신 RF가 1.6배 빨라진다.
         # 주의: unmon에서는 값이 변하고(일부는 다른 상수: bseq_6 mon 2 / unmon 1),
         #       이 13개만으로 mon/unmon이 AUC 0.9999로 갈린다. 수집 환경 차이로 보이지만
-        #       수집 코드가 없어 확정할 수 없다. open-world에서 쓸지는 따로 판단한다.
+        #       2026-11-26 수업 공지로 원인이 확정됐다: unmon을 Colab 메모리 때문에 줄이는 과정에서
+        #       이 패턴이 우연히 생겼다. 우연이므로 이 패턴에 기댄 피처·규칙은 일반화되지 않는다.
+        #       open-world에서는 쓰지 않는 쪽이 맞다.
         # 이전 로그(stage3/3b/4) 재현: @all -@const @early @bseq @dir50 @qconst → 131개
         g['qconst'] = [f for f in ['first10_out'] + [f'bseq_{j}' for j in range(4, 7)]
                        + [f'dir_{j:03d}' for j in range(6, 15)] if f in extra] if pkl_qconst else []
