@@ -2,7 +2,7 @@
 
 사용법: python -I -W ignore -X utf8 code/features_sliver_join_skip.py <npz> <out.csv> <K>
 
-왜 (A팀 지적, 2026-11-26)
+왜 (다른 팀 확인 요청, 2026-11-26)
   join은 방어 전 전체 트래픽이므로 pkl과 같은 수집 차이를 그대로 갖고 있다. 실제로 재 보면
   join에서 dir_008 하나로 mon/unmon이 AUC 0.9940으로 갈린다(docs/OPENWORLD.md의 "8번째 셀"과 같다).
   split에서는 같은 피처가 0.5200이어서 차이가 없다 — BWR이 셀을 경로 5개로 흩어 그 고정 구간이 사라진다.

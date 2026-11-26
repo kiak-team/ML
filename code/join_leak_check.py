@@ -3,7 +3,7 @@
 사용법: python -I -W ignore -X utf8 code/join_leak_check.py > logs/join_leak_check.log
         (stdout만 로그로. 2>&1 금지: joblib 경고가 로그를 GB로 불린다)
 
-배경 (A팀 지적, 2026-11-26)
+배경 (다른 팀 확인 요청, 2026-11-26)
   join은 방어 전 전체 트래픽이므로 pkl과 같은 수집 차이를 그대로 갖고 있다. 실제로 재 보면
   join에서 dir_008 하나로 mon/unmon이 AUC 0.9940으로 갈린다. split에서는 0.5200이다
   (BWR이 셀을 경로 5개로 흩어 그 고정 구간이 사라진다. 4.5의 "차이 없음"은 split 한정이다).
