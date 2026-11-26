@@ -1,0 +1,6 @@
+mode=multi skip=14 model=rf  log=False scale=False features=121  [CV 5-fold (train: mon 17100, unmon 9000)]
+  ROC-AUC 0.9888 (fold std 0.0022)   PR-AUC 0.9941
+  t=0.5    TPR 0.6061  FPR 0.0001  precision 0.9999  | TPR_site 0.6056  precision_site 0.9989
+  FPR≤5%   TPR 0.9359  FPR 0.0460  precision 0.9748  | TPR_site 0.9129  precision_site 0.9508
+  FPR≤1%   TPR 0.8756  FPR 0.0096  precision 0.9943  | TPR_site 0.8673  precision_site 0.9849
+  112.8s
