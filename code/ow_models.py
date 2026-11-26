@@ -5,6 +5,7 @@
   python -I -W ignore -X utf8 code/ow_models.py e7 --subset     > logs/ow_e7_subset.log   # 파이프라인 검증 (mon 25 / unmon 5000)
   python -I -W ignore -X utf8 code/ow_models.py e7              > logs/ow_e7.log
   python -I -W ignore -X utf8 code/ow_models.py e8 [--subset]   > logs/ow_e8[_subset].log  # 피처 그룹 (RF, LR)
+  python -I -W ignore -X utf8 code/ow_models.py e9 [--subset]   > logs/ow_e9[_subset].log  # 피처 선택 (RF)
 
 공통
   피처 = features/ow_skip14_*.csv (앞 14셀 버림 = leak 제거). 이 파일의 실험은 전부 leak 제거 피처 기준이다
@@ -494,13 +495,267 @@ def replot_e8(subset):
     plot_e8(summ, tag)
 
 
+# ---------------- E9 피처 선택 분석 (모델 고정: RF) ----------------
+from sklearn.base import BaseEstimator, TransformerMixin
+
+
+def eta_squared(X, y):
+    """열마다 η² = 클래스 간 제곱합 / 전체 제곱합 (A팀 check_features.eta2와 같은 값, 벡터화). 분산 0이면 0."""
+    X = np.asarray(X, np.float64)
+    _, inv = np.unique(y, return_inverse=True)
+    n = np.bincount(inv).astype(np.float64)
+    mu = X.mean(0)
+    sums = np.zeros((len(n), X.shape[1]))
+    np.add.at(sums, inv, X)
+    ssb = (n[:, None] * (sums / n[:, None] - mu) ** 2).sum(0)
+    sst = ((X - mu) ** 2).sum(0)
+    return np.divide(ssb, sst, out=np.zeros_like(ssb), where=sst > 0)
+
+
+class EtaSelect(TransformerMixin, BaseEstimator):
+    """학습 fold의 (X, y)로만 η²를 계산해 상위(bottom=True면 하위) k개 열을 고른다. 분산 0인 열은 하위 후보에서 뺀다.
+    mon_only=True: unmon(-1) 행을 빼고 사이트 라벨만으로 계산한다 (A팀 정의 = 사이트 구분력)"""
+    def __init__(self, k=20, bottom=False, mon_only=False):
+        self.k, self.bottom, self.mon_only = k, bottom, mon_only
+
+    def fit(self, X, y):
+        m = (np.asarray(y) != UNMON) if self.mon_only else slice(None)
+        self.eta_ = eta_squared(np.asarray(X)[m], np.asarray(y)[m])
+        if self.bottom:
+            ok = np.flatnonzero(np.asarray(X).std(0) > 0)
+            self.idx_ = ok[np.argsort(self.eta_[ok], kind='stable')[:self.k]]
+        else:
+            self.idx_ = np.argsort(-self.eta_, kind='stable')[:self.k]
+        return self
+
+    def transform(self, X):
+        return np.asarray(X)[:, self.idx_]
+
+
+def corr_reduce_idx(X, thr=0.95):
+    """열 순서대로 훑으며, 이미 남긴 열과 |상관| >= thr인 열은 버린다 (쌍마다 앞의 것을 남김). 분산 0인 열의 상관은 0으로 본다."""
+    X = np.asarray(X, np.float64)
+    sd = X.std(0)
+    Z = np.where(sd > 0, (X - X.mean(0)) / np.where(sd > 0, sd, 1), 0)
+    C = np.abs(Z.T @ Z / len(X))
+    keep = []
+    for j in range(X.shape[1]):
+        if not keep or C[j, keep].max() < thr:
+            keep.append(j)
+    return np.array(keep)
+
+
+class CorrReduce(TransformerMixin, BaseEstimator):
+    """학습 fold로만 상관을 계산해 |r| >= thr인 쌍에서 하나씩 뺀다."""
+    def __init__(self, thr=0.95):
+        self.thr = thr
+
+    def fit(self, X, y=None):
+        self.idx_ = corr_reduce_idx(X, self.thr)
+        return self
+
+    def transform(self, X):
+        return np.asarray(X)[:, self.idx_]
+
+
+E9_SETS = [  # (set_id, 피처 지정, 선택기, 방식) — 선택기는 fold 안에서 fit한다
+    ('all376', None, None, MODES),
+    ('cand134', CAND134, None, MODES),
+    ('cand134-qconst', CAND134 + ['-@qconst'], None, MODES),
+    ('eta-top20', None, lambda: EtaSelect(20), MODES),        # η² 라벨 = 그 방식의 학습 라벨 (multi는 unmon 포함 96클래스)
+    ('eta-top50', None, lambda: EtaSelect(50), MODES),
+    ('eta-top100', None, lambda: EtaSelect(100), MODES),
+    ('eta-bottom20', None, lambda: EtaSelect(20, bottom=True), MODES),  # 대조: A팀 함정(상위 20 < 하위 20) 확인용
+    ('eta-site-top20', None, lambda: EtaSelect(20, mon_only=True), ('multi',)),  # A팀 정의(사이트만). binary는 사이트 라벨이 없다
+    ('eta-site-top50', None, lambda: EtaSelect(50, mon_only=True), ('multi',)),
+    ('eta-site-top100', None, lambda: EtaSelect(100, mon_only=True), ('multi',)),
+    ('reduced095', None, lambda: CorrReduce(0.95), MODES),
+]
+# 앞 14셀을 버린 직후 구간(15~28번째 셀)을 가리키는 피처: @qconst 13 + A팀 그룹에 없는 dir_001~005·bseq_1~3 + in_burst_1~3
+EARLY_WINDOW = (['first10_out'] + [f'bseq_{j}' for j in range(1, 7)] + [f'dir_{j:03d}' for j in range(1, 15)]
+                + ['in_burst_1', 'in_burst_2', 'in_burst_3'])
+
+
+def e9(subset):
+    import json
+    from sklearn.pipeline import make_pipeline as mp
+    tag = '-subset' if subset else ''
+    full = R.load_pkl(14, subset)
+    d = dict(full, all_names=full['names'])
+    names = d['names']
+    pos = {f: i for i, f in enumerate(names)}
+    fold = d['fold_visit']
+    tr = fold >= 0
+    print(f'E9 dataset={d["dataset"]}: leak 제거 피처(skip14) 전체 {len(names)}개, 모델 RF(n=200, rs=42) 고정, visit CV5 OOF')
+    print('η²: 각 fold의 학습 행으로만 계산, 라벨 = 그 방식의 학습 라벨 (multi 96클래스 / binary 2클래스). '
+          'Reduced: 학습 fold의 |r| >= 0.95 쌍에서 열 순서상 뒤의 것을 뺀다')
+    summ, sel_log = {}, {}
+    for mode in MODES:
+        y_all = labels(d, mode)
+        for sid, spec, selector, modes in E9_SETS:
+            if mode not in modes:
+                continue
+            feats = names if spec is None else ex.select(spec, names)
+            X = d['X'][:, [pos[f] for f in feats]]
+            exp_id = f'E9{tag}-{mode}-rf-{sid}'
+            print(f'\n## {exp_id}: 입력 {len(feats)}개' + (f' → fold 안에서 {selector().__class__.__name__}' if selector else ''),
+                  flush=True)
+            make = (lambda: make_model('rf', feats, names)) if selector is None else \
+                (lambda: mp(selector(), make_model('rf', feats, names)))
+            # fold별 선택 결과 기록 (모델 학습과 같은 학습 행, 같은 결정적 계산)
+            chosen = []
+            if selector is not None:
+                for k in range(5):
+                    fit = tr & (fold != k)
+                    chosen.append([feats[i] for i in selector().fit(X[fit], y_all[fit]).idx_])
+                n_sel = [len(c) for c in chosen]
+                inter = set.intersection(*map(set, chosen))
+                print(f'  fold별 선택 개수 {n_sel}, 5개 fold 공통 {len(inter)}개')
+                sel_log[f'{mode}|{sid}'] = chosen
+            S, classes, tf, _ = cv_scores(X, y_all, fold, make, parallel=False)
+            fs = f'{sid}({np.mean([len(c) for c in chosen]):.0f} of {len(feats)})_skip14' if chosen else f'{sid}({len(feats)})_skip14'
+            s = assess(exp_id, d, mode, S, classes, fs, model_desc('rf') + f' {mode}',
+                       extra_notes=f'; E9 selection inside each training fold; fit {np.mean(tf):.0f}s/fold')
+            summ[f'{mode}|{sid}'] = {'mode': mode, 'set': sid, 'n': (float(np.mean([len(c) for c in chosen]))
+                                                                     if chosen else len(feats)),
+                                     'roc_auc': s['roc_auc'], 'roc_auc_sd': s['roc_auc_sd'],
+                                     **{f'best_{suf}': s[f'best_{suf}'] for _, suf in FPR_TARGETS},
+                                     'folds': [float(v) for v in s['tpr_fpr1_folds']],
+                                     'precision_fpr1': s['fpr1']['precision'], 'fit_s': float(np.mean(tf))}
+    json.dump({'summary': summ, 'selected': sel_log}, open(os.path.join(R.CACHE, f'e9_summary{tag}.json'), 'w'), indent=1)
+    corr = e9_corr(d, sel_log, tag)
+    e9_report(summ)
+    plot_e9(summ, corr, tag)
+
+
+def e9_corr(d, sel_log, tag):
+    """η² 상위 20개(fold 0 선택)의 상관행렬 — fold 0의 학습 행으로 계산. A팀 함정('상위 20개 = 기록 길이') 확인용."""
+    names = d['names']
+    pos = {f: i for i, f in enumerate(names)}
+    fold = d['fold_visit']
+    fit = (fold >= 0) & (fold != 0)
+    out = {}
+    print('\n## η² 상위/하위 20개의 상관 (fold 0 학습 행). |r| 통계는 서로 다른 쌍 190개 기준')
+    for mode in MODES:
+        for sid in ('eta-top20', 'eta-site-top20', 'eta-bottom20'):
+            if f'{mode}|{sid}' not in sel_log:
+                continue
+            f = sel_log[f'{mode}|{sid}'][0]
+            C = np.corrcoef(d['X'][fit][:, [pos[c] for c in f]].astype(np.float64).T)
+            C = np.nan_to_num(C)
+            iu = np.triu_indices(len(f), 1)
+            a = np.abs(C[iu])
+            g = ex.groups(names)
+            grp = {c: k for k in GW_GROUPS for c in g.get(k, [])}
+            grp.update({c: '15~28셀' for c in EARLY_WINDOW})
+            comp = pd.Series([grp.get(c, '기타') for c in f]).value_counts()
+            length = np.mean([c in g['length'] for c in f])
+            print(f'  {mode:6s} {sid:14s}: 평균 |r| {a.mean():.3f}, |r| >= 0.9 쌍 {np.mean(a >= 0.9):.0%}, >= 0.95 {np.mean(a >= 0.95):.0%} '
+                  f'| 길이 계열 {length:.0%} | 구성 ' + ', '.join(f'{k} {v}' for k, v in comp.items()))
+            print(f'      {" ".join(f)}')
+            out[(mode, sid)] = (f, C)
+    return out
+
+
+GW_GROUPS = ['count', 'timing', 'order', 'burst', 'cumul', 'early', 'bseq', 'cumulabs', 'cumul100', 'bseqlong', 'dir', 'qconst', 'const']
+
+
+def e9_report(summ):
+    print('\n## 요약 E9 (RF 고정) — TPR@FPR≤1% fold 평균 ± sd. Δ = cand134 대비, 유의 = |Δ| > max(1%p, cand134 fold sd)')
+    for mode in MODES:
+        ref = summ[f'{mode}|cand134']
+        thr = max(0.01, float(np.std(ref['folds'])))
+        print(f'  {mode}')
+        for sid, _, _, modes in E9_SETS:
+            if mode not in modes:
+                continue
+            s = summ[f'{mode}|{sid}']
+            dlt = np.mean(s['folds']) - np.mean(ref['folds'])
+            print(f'    {sid:15s} {s["n"]:6.1f}개 | {np.mean(s["folds"]):.4f} ± {np.std(s["folds"]):.4f} | '
+                  f'Δ {dlt:+.4f} ({"기준" if sid == "cand134" else "유의" if abs(dlt) > thr else "같은 수준"}) | '
+                  f'AUC {s["roc_auc"]:.4f} | TPR@0.1% {s["best_fpr0.1"]:.4f} @5% {s["best_fpr5"]:.4f} | '
+                  f'prec@1% {s["precision_fpr1"]:.4f} | fit {s["fit_s"]:.0f}s')
+
+
+def plot_e9(summ, corr, tag):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 9.5})
+    pct = FuncFormatter(lambda v, _: f'{v * 100:g}%')
+    sets = [s for s, *_ in E9_SETS]
+    lab = {'all376': 'All 376', 'cand134': 'A팀 후보 134', 'cand134-qconst': '후보 134 − @qconst (121)',
+           'eta-top20': '$\\eta^2$ 상위 20', 'eta-top50': '$\\eta^2$ 상위 50', 'eta-top100': '$\\eta^2$ 상위 100',
+           'eta-bottom20': '$\\eta^2$ 하위 20 (대조)', 'reduced095': 'Reduced (|r|<0.95)',
+           'eta-site-top20': '$\\eta^2$(사이트만) 상위 20', 'eta-site-top50': '$\\eta^2$(사이트만) 상위 50',
+           'eta-site-top100': '$\\eta^2$(사이트만) 상위 100'}
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5.6), sharey=True, facecolor='#fcfcfb')
+    y = np.arange(len(sets))[::-1]
+    for ax, mode in zip(axes, MODES):
+        for yy, sid in zip(y, sets):
+            if f'{mode}|{sid}' not in summ:
+                continue
+            s = summ[f'{mode}|{sid}']
+            m, sd = np.mean(s['folds']), np.std(s['folds'])
+            ref = sid == 'cand134'
+            ax.errorbar(m, yy, xerr=sd, fmt='o', ms=8, color='#2a78d6' if not ref else '#eb6834',
+                        ecolor=base, elinewidth=2, capsize=0, mec='#fcfcfb', mew=1.5, zorder=3)
+            ax.annotate(f'{m * 100:.1f}  ({s["n"]:.0f}개)', (m, yy), xytext=(0, 9), textcoords='offset points',
+                        ha='center', color=ink, fontsize=8.5)
+        rm = np.mean(summ[f'{mode}|cand134']['folds'])
+        ax.axvline(rm, color=muted, lw=1, ls=(0, (3, 3)))
+        ax.set_xlim(0, 1); ax.xaxis.set_major_formatter(pct)
+        ax.set_title(f'{mode} · RF', color=ink, loc='left')
+        ax.set_xlabel('TPR@FPR≤1% (fold 평균, 가로선 = ±1 sd)' + (' — 사이트까지 맞힘' if mode == 'multi' else ' — 탐지'), color=ink)
+        R._style(ax, ink, muted, grid, base)
+        ax.tick_params(axis='y', colors=ink)
+    axes[0].set_yticks(y, [lab[s] for s in sets])
+    fig.suptitle('E9 피처셋 비교 — RF 고정, leak 제거 피처, visit CV5 OOF. $\\eta^2$·Reduced는 학습 fold 안에서 선택. 주황 = 기준(후보 134), 점선 = 기준값',
+                 color=ink, x=0.01, ha='left')
+    fig.tight_layout()
+    out1 = os.path.join(R.ROOT, 'figures', f'ow_e9_featuresets{tag}.png')
+    fig.savefig(out1, dpi=150); plt.close(fig)
+
+    # $\\eta^2$ 상위 20 상관행렬 (multi, binary)
+    panels = [('binary', 'eta-top20', 'binary $\\eta^2$(2클래스)'), ('multi', 'eta-top20', 'multi $\\eta^2$(96클래스)'),
+              ('multi', 'eta-site-top20', '$\\eta^2$(사이트만, A팀 정의)')]
+    fig, axes = plt.subplots(1, 3, figsize=(20, 5.8), facecolor='#fcfcfb')
+    for ax, (mode, sid, title) in zip(axes, panels):
+        f, C = corr[(mode, sid)]
+        im = ax.imshow(np.abs(C), cmap='Blues', vmin=0, vmax=1)
+        ax.set_xticks(range(len(f)), f, rotation=90, fontsize=7.5, color=ink)
+        ax.set_yticks(range(len(f)), f, fontsize=7.5, color=ink)
+        a = np.abs(C[np.triu_indices(len(f), 1)])
+        ax.set_title(f'{title} 상위 20\n평균 |r| {a.mean():.2f}, |r| ≥ 0.9인 쌍 {np.mean(a >= 0.9):.0%}', color=ink, loc='left', fontsize=10)
+        for s in ax.spines.values():
+            s.set_visible(False)
+    cb = fig.colorbar(im, ax=axes, shrink=0.6, pad=0.015)
+    cb.set_label('|상관계수|', color=ink); cb.outline.set_visible(False)
+    fig.suptitle('E9 $\\eta^2$ 상위 20개 피처의 상관 (fold 0 학습 행, fold 0에서 선택된 20개, $\\eta^2$ 순서)', color=ink, x=0.01, y=0.98, ha='left')
+    out2 = os.path.join(R.ROOT, 'figures', f'ow_e9_eta_corr{tag}.png')
+    fig.savefig(out2, dpi=150, bbox_inches='tight'); plt.close(fig)
+    print(f'\n그림: {out1}\n      {out2}', flush=True)
+
+
+def replot_e9(subset):
+    import json
+    tag = '-subset' if subset else ''
+    z = json.load(open(os.path.join(R.CACHE, f'e9_summary{tag}.json')))
+    full = R.load_pkl(14, subset)
+    corr = e9_corr(full, z['selected'], tag)
+    e9_report(z['summary'])
+    plot_e9(z['summary'], corr, tag)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['time', 'e7', 'e7plot', 'e8', 'e8plot'])
+    ap.add_argument('exp', choices=['time', 'e7', 'e7plot', 'e8', 'e8plot', 'e9', 'e9plot'])
     ap.add_argument('--subset', action='store_true')
     ap.add_argument('--models', nargs='+', default=None, help='e7: 이 모델만 돌린다')
     a = ap.parse_args()
     if a.exp == 'e7' and a.models:
         e7(a.subset, tuple(a.models))
     else:
-        {'time': timing, 'e7': e7, 'e7plot': replot_e7, 'e8': e8, 'e8plot': replot_e8}[a.exp](a.subset)
+        {'time': timing, 'e7': e7, 'e7plot': replot_e7, 'e8': e8, 'e8plot': replot_e8, 'e9': e9, 'e9plot': replot_e9}[a.exp](a.subset)
