@@ -4,6 +4,7 @@
   python -I -W ignore -X utf8 code/ow_models.py time            > logs/ow_e7_timing.log   # 20% 층화 서브샘플 소요 시간
   python -I -W ignore -X utf8 code/ow_models.py e7 --subset     > logs/ow_e7_subset.log   # 파이프라인 검증 (mon 25 / unmon 5000)
   python -I -W ignore -X utf8 code/ow_models.py e7              > logs/ow_e7.log
+  python -I -W ignore -X utf8 code/ow_models.py e8 [--subset]   > logs/ow_e8[_subset].log  # 피처 그룹 (RF, LR)
 
 공통
   피처 = features/ow_skip14_*.csv (앞 14셀 버림 = leak 제거). 이 파일의 실험은 전부 leak 제거 피처 기준이다
@@ -345,13 +346,161 @@ def replot_e7(subset):
     plot_e7(out, tag)
 
 
+# ---------------- E8 피처 그룹 분석 (모델 고정: RF, LR) ----------------
+BASE_GROUPS = ('count', 'timing', 'order', 'burst', 'cumul')     # A팀 기본 55개의 원래 구분 (4/18/10/11/12)
+EXTRA_GROUPS = ('early', 'bseq', 'cumulabs', 'dir50', 'qconst')  # 추가 피처군. qconst = leak 제거 후 15~28번째 셀 구간
+FULL147 = ['@all'] + [f'@{g}' for g in EXTRA_GROUPS]             # 55 + 6 + 24 + 13 + 36 + 13
+E8_MODELS = ('rf', 'lr')
+GROUP_LABEL = {'count': 'Count', 'timing': 'Timing', 'order': 'Order·Conc.', 'burst': 'Burst', 'cumul': 'CUMUL',
+               'early': '@early', 'bseq': '@bseq', 'cumulabs': '@cumulabs', 'dir50': '@dir50', 'qconst': '@qconst'}
+
+
+def e8_sets(names):
+    """(set_id, 피처 이름 리스트, kind, group, 기준 set_id). 그룹 정의는 A팀 experiment.groups 그대로.
+    기본 그룹: 단독 / All55에서 제거. 추가 그룹: 단독 / All55에 추가 / Full147에서 제거."""
+    g = ex.groups(names)
+    all55, full = g['all'], ex.select(FULL147, names)
+    sets = [('all55', all55, 'ref', None, None)]
+    for k in BASE_GROUPS:
+        sets.append((f'only-{k}', g[k], 'alone', k, None))
+        sets.append((f'all55-{k}', [f for f in all55 if f not in g[k]], 'remove', k, 'all55'))
+    sets.append(('full147', full, 'ref', None, None))
+    for k in EXTRA_GROUPS:
+        sets.append((f'only-{k}', g[k], 'alone', k, None))
+        sets.append((f'all55+{k}', all55 + g[k], 'add', k, 'all55'))
+        sets.append((f'full147-{k}', [f for f in full if f not in g[k]], 'remove', k, 'full147'))
+    return sets
+
+
+def e8(subset):
+    import json
+    tag = '-subset' if subset else ''
+    d = load(subset, FULL147)
+    sets = e8_sets(d['all_names'])
+    pos = {f: i for i, f in enumerate(d['names'])}
+    print(f'E8 dataset={d["dataset"]}: leak 제거 피처(skip14). 그룹 크기 '
+          + ', '.join(f'{GROUP_LABEL[k]} {len(f)}' for s, f, kind, k, _ in sets if kind == 'alone')
+          + f' | All55 {len(sets[0][1])}, Full147 {len(d["names"])}. 모델 RF, LR. split visit, CV5 OOF')
+    print('그룹 정의: A팀 experiment.groups. bseq_1~3·dir_001~005·n_bursts_total은 A팀 정의대로 어느 그룹에도 넣지 않았다')
+    summ = {}
+    for mode in MODES:
+        for name in E8_MODELS:
+            for sid, feats, kind, grp, ref in sets:
+                exp_id = f'E8{tag}-{mode}-{name}-{sid}'
+                print(f'\n## {exp_id}: {len(feats)}개', flush=True)
+                X = d['X'][:, [pos[f] for f in feats]]
+                make = lambda: make_model(name, feats, d['all_names'])
+                S, classes, tf, _ = cv_scores(X, labels(d, mode), d['fold_visit'], make, parallel=name in PARALLEL)
+                s = assess(exp_id, d, mode, S, classes, f'{sid}({len(feats)})_skip14',
+                           model_desc(name) + f' {mode}', extra_notes=f'; E8 {kind} group={grp}; fit {np.mean(tf):.0f}s/fold')
+                summ[f'{mode}|{name}|{sid}'] = {
+                    'mode': mode, 'model': name, 'set': sid, 'kind': kind, 'group': grp, 'ref': ref, 'n': len(feats),
+                    'roc_auc': s['roc_auc'], 'roc_auc_sd': s['roc_auc_sd'],
+                    **{f'best_{suf}': s[f'best_{suf}'] for _, suf in FPR_TARGETS},
+                    'folds': [float(v) for v in s['tpr_fpr1_folds']], 'argmax_TPR': s['argmax']['TPR']}
+    out = os.path.join(R.CACHE, f'e8_summary{tag}.json')
+    json.dump(summ, open(out, 'w'), indent=1)
+    e8_report(summ)
+    plot_e8(summ, tag)
+
+
+def e8_report(summ):
+    """요약 표. Δ = 기준 대비 fold 평균 TPR@FPR≤1% 차이. 유의 = |Δ| > max(1%p, 기준 fold sd) (A팀 기준)."""
+    for mode in MODES:
+        for name in E8_MODELS:
+            S = {v['set']: v for v in summ.values() if v['mode'] == mode and v['model'] == name}
+            m = lambda sid: float(np.mean(S[sid]['folds']))
+            print(f'\n## 요약 {mode} {LABEL[name]} — TPR@FPR≤1% (fold 평균 ± sd), ROC-AUC. '
+                  f'Δ 유의 기준 = max(1%p, 기준 fold sd)')
+            for ref in ('all55', 'full147'):
+                r = S[ref]
+                print(f'  기준 {ref:8s} ({r["n"]:3d}개): {m(ref):.4f} ± {np.std(r["folds"]):.4f}  AUC {r["roc_auc"]:.4f}')
+            print(f'  {"그룹":12s} | 단독: 개수 TPR@1% AUC | 제거: Δ (유의) | 추가(55+g): Δ (유의)')
+            for g in BASE_GROUPS + EXTRA_GROUPS:
+                a = S[f'only-{g}']
+                rm = S[f'all55-{g}'] if g in BASE_GROUPS else S[f'full147-{g}']
+                thr = lambda ref: max(0.01, float(np.std(S[ref]['folds'])))
+                dr = m(rm['set']) - m(rm['ref'])
+                line = (f'  {GROUP_LABEL[g]:12s} | {a["n"]:3d} {m(a["set"]):.4f} {a["roc_auc"]:.4f} | '
+                        f'{rm["ref"]}-g {dr:+.4f} ({"유의" if abs(dr) > thr(rm["ref"]) else "같은 수준"})')
+                if g in EXTRA_GROUPS:
+                    ad = S[f'all55+{g}']
+                    da = m(ad['set']) - m('all55')
+                    line += f' | {da:+.4f} ({"유의" if abs(da) > thr("all55") else "같은 수준"})'
+                print(line)
+
+
+def plot_e8(summ, tag):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter, MaxNLocator
+    ink, muted, grid, base = '#0b0b0b', '#898781', '#e1e0d9', '#c3c2b7'
+    plt.rcParams.update({'font.family': ['AppleGothic', 'sans-serif'], 'axes.unicode_minus': False, 'font.size': 9.5})
+    pct = FuncFormatter(lambda v, _: f'{v * 100:g}%')
+    pp = FuncFormatter(lambda v, _: f'{v * 100:+.0f}%p' if v else '0')
+    groups = BASE_GROUPS + EXTRA_GROUPS
+    cols = [(m, n) for m in MODES for n in E8_MODELS]
+    fig, axes = plt.subplots(2, 4, figsize=(15, 7.6), sharey=True, facecolor='#fcfcfb')
+    y = np.arange(len(groups))[::-1]
+    for j, (mode, name) in enumerate(cols):
+        S = {v['set']: v for v in summ.values() if v['mode'] == mode and v['model'] == name}
+        m = lambda sid: float(np.mean(S[sid]['folds']))
+        # 위: 단독 사용
+        ax = axes[0, j]
+        vals = [m(f'only-{g}') for g in groups]
+        ax.barh(y, vals, height=0.6, color=['#2a78d6' if g in BASE_GROUPS else '#eb6834' for g in groups])
+        for yy, v in zip(y, vals):
+            ax.annotate(f'{v * 100:.0f}', (v, yy), xytext=(3, 0), textcoords='offset points', va='center',
+                        color=ink, fontsize=8)
+        for ref, ls in (('all55', (0, (3, 3))), ('full147', '-')):
+            ax.axvline(m(ref), color=muted, lw=1, ls=ls)
+        ax.set_xlim(0, 1.08); ax.xaxis.set_major_formatter(pct)
+        ax.set_title(f'{mode} · {LABEL[name]} — 단독 사용', color=ink, loc='left')
+        # 아래: 제거(기본 그룹: All55에서 / 추가 그룹: Full147에서) Δ, 회색 띠 = 유의 기준
+        ax2 = axes[1, j]
+        dr = [m(f'all55-{g}') - m('all55') if g in BASE_GROUPS else m(f'full147-{g}') - m('full147') for g in groups]
+        da = [np.nan if g in BASE_GROUPS else m(f'all55+{g}') - m('all55') for g in groups]
+        ax2.barh(y + 0.17, dr, height=0.32, color='#2a78d6', zorder=3, label='제거 (기본: All55−g / 추가: Full147−g)')
+        ax2.barh(y - 0.17, da, height=0.32, color='#eb6834', zorder=3, label='추가 (All55+g)')
+        band = max(0.01, float(np.std(S['all55']['folds'])), float(np.std(S['full147']['folds'])))
+        ax2.axvspan(-band, band, color='#efeee8', lw=0, zorder=0)
+        ax2.axvline(0, color=base, lw=1, zorder=2)
+        lim = max(0.05, np.nanmax(np.abs(dr + da)) * 1.15)
+        ax2.set_xlim(-lim, lim); ax2.xaxis.set_major_formatter(pp)
+        ax2.xaxis.set_major_locator(MaxNLocator(nbins=4, symmetric=True))
+        ax2.set_title(f'{mode} · {LABEL[name]} — 기준 대비 Δ', color=ink, loc='left')
+        for a in (ax, ax2):
+            R._style(a, ink, muted, grid, base)
+            a.tick_params(axis='y', colors=ink)
+    axes[0, 0].set_yticks(y, [GROUP_LABEL[g] for g in groups])
+    axes[0, 0].set_ylabel('그룹 (파랑 = 기본 55개 구분, 주황 = 추가 피처군)', color=ink)
+    h, l = axes[1, 0].get_legend_handles_labels()
+    fig.legend(h, l + [], frameon=False, loc='lower center', ncol=2, labelcolor=ink, fontsize=9)
+    fig.suptitle('E8 피처 그룹 — TPR@FPR≤1% (fold 평균, multi = 사이트까지 맞힘). 위 점선 = All55, 실선 = Full147. '
+                 '아래 회색 띠 = 유의 기준 max(1%p, fold sd). leak 제거 피처, visit CV5 OOF',
+                 color=ink, x=0.01, ha='left')
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
+    out = os.path.join(R.ROOT, 'figures', f'ow_e8_groups{tag}.png')
+    fig.savefig(out, dpi=150); plt.close(fig)
+    print(f'\n그림: {out}', flush=True)
+
+
+def replot_e8(subset):
+    import json
+    tag = '-subset' if subset else ''
+    summ = json.load(open(os.path.join(R.CACHE, f'e8_summary{tag}.json')))
+    e8_report(summ)
+    plot_e8(summ, tag)
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('exp', choices=['time', 'e7', 'e7plot'])
+    ap.add_argument('exp', choices=['time', 'e7', 'e7plot', 'e8', 'e8plot'])
     ap.add_argument('--subset', action='store_true')
     ap.add_argument('--models', nargs='+', default=None, help='e7: 이 모델만 돌린다')
     a = ap.parse_args()
     if a.exp == 'e7' and a.models:
         e7(a.subset, tuple(a.models))
     else:
-        {'time': timing, 'e7': e7, 'e7plot': replot_e7}[a.exp](a.subset)
+        {'time': timing, 'e7': e7, 'e7plot': replot_e7, 'e8': e8, 'e8plot': replot_e8}[a.exp](a.subset)
