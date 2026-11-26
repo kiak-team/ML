@@ -42,5 +42,16 @@ class TestCorrReduce(unittest.TestCase):
         self.assertEqual(CorrReduce(0.95).fit(X).transform(X).shape, (200, 3))
 
 
+
+class TestWilson(unittest.TestCase):
+    def test_known_values(self):
+        from ow_test import wilson
+        lo, hi = wilson(0, 1000)
+        self.assertEqual(lo, 0.0)
+        self.assertAlmostEqual(hi, 0.00383, places=5)     # 오탐 0개여도 FPR 상한은 약 0.38%
+        lo, hi = wilson(50, 100)
+        self.assertAlmostEqual(lo, 0.4038, places=4)
+        self.assertAlmostEqual(hi, 0.5962, places=4)
+
 if __name__ == '__main__':
     unittest.main()
