@@ -14,10 +14,11 @@ TPR@FPR<=1%가 얼마나 떨어지는지 잰다(REPEATS번 평균). 그룹 안 �
 실행 (레포 루트에서):
     python code/feature_importance_ow.py                  # 134개
     python code/feature_importance_ow.py --drop-qconst    # @qconst 13개를 뺀 121개
+    python code/feature_importance_ow.py --compare        # 위 두 결과를 한 그림에 (학습 없음)
 출력:
     results/fi/ow_group_perm{_121}.csv     fold × 그룹별 하락
     results/fi/ow_group_summary{_121}.csv  그룹별 평균 ± 표준편차
-    figures/fi_ow_group{_121}.png
+    figures/fi_ow_group{_121}.png, figures/fi_ow_group_compare.png
 로그는 tee로 남긴다: ... | tee logs/feature_importance_ow{_121}.log
 """
 import argparse
@@ -50,7 +51,10 @@ def main():
     ap.add_argument('--drop-qconst', action='store_true', help='@qconst 13개를 빼고 121개로 학습·평가')
     ap.add_argument('--repeats', type=int, default=3)
     ap.add_argument('--seed', type=int, default=0)
+    ap.add_argument('--compare', action='store_true', help='학습 없이 134개·121개 요약 CSV로 비교 그림만 그린다')
     a = ap.parse_args()
+    if a.compare:
+        return compare()
 
     d = M.load(False)  # 전체 데이터, 후보 134개
     names, X = list(d['names']), d['X']
@@ -114,6 +118,31 @@ def main():
     plt.tight_layout()
     plt.savefig(f'figures/fi_ow_group{tag}.png', dpi=200)
     print('DONE', flush=True)
+
+
+def compare():
+    """results/fi의 134개·121개 요약을 한 그림에 (figures/fi_ow_group_compare.png)."""
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    a = pd.read_csv('results/fi/ow_group_summary.csv', index_col=0) * [1, 100, 100]
+    b = pd.read_csv('results/fi/ow_group_summary_121.csv', index_col=0) * [1, 100, 100]
+    order = list(b.sort_values('mean', ascending=False).index) + ['qconst']
+    yy, h = np.arange(len(order)), 0.38
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for off, s, lab in [(-h / 2, a, '134 features (with qconst)'), (h / 2, b, '121 features (without qconst)')]:
+        ax.barh(yy + off, [s['mean'].get(g, np.nan) for g in order], h,
+                xerr=[s['std'].get(g, 0) for g in order], capsize=2, label=lab)
+    ax.set_yticks(yy)
+    ax.set_yticklabels(order)
+    ax.invert_yaxis()
+    ax.set_xlabel('Drop in TPR@FPR1% when group is shuffled (%p)')
+    ax.set_title('Open-world (RF): group permutation importance, visit 5-fold CV mean ± std')
+    ax.legend()
+    plt.tight_layout()
+    os.makedirs('figures', exist_ok=True)
+    plt.savefig('figures/fi_ow_group_compare.png', dpi=200)
+    print('saved figures/fi_ow_group_compare.png')
 
 
 if __name__ == '__main__':
