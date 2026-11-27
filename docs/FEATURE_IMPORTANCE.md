@@ -69,6 +69,8 @@
 
 ![](../figures/fi_ow_group_compare.png)
 
+
+
 - @qconst가 없으면 모델은 mon/unmon 구분까지 다른 그룹에 맡기게 되고, 그 몫을 대부분 **@burst**가 가져간다(20.3 → 50.6%p). 섞었을 때 TPR이 절반 넘게 떨어지므로 121개 모델에서는 burst가 사실상 핵심이다.
 - 나머지 그룹도 모두 커졌지만, 순서는 거의 그대로다: burst > timing ≈ cumul > bseq > early ≈ order > dir50 ≈ count. 134개에서 본 사이트 정보 순위가 @qconst 때문에 생긴 착시는 아니라는 뜻이다.
 - @dir50과 @count는 두 설정 모두에서 3%p 이하라 영향이 작다.
