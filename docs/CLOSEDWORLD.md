@@ -154,7 +154,7 @@ python -I -W ignore -X utf8 code/cw_df.py --epochs 60 --input dir+iat --tag iat
    **결정 (11/28, test 전): `stack:lgbm_tuned+et_base+rf_base+df_base+df_iat+knn_tuned+lr_base`.**
    Drive OOF로 다시 돌려 4절 표가 그대로 재현됨을 확인했다(mean 0.9795 / geo 0.9781 / wvote 0.9802 / stack 0.9809).
    네 방법의 차이는 fold 표준편차(0.0050~0.0077)보다 작아 **같은 수준**이다. 보고서에는 stack을 주 결과로 쓰고,
-   같은 실행에서 나오는 mean 등은 비교표에만 둔다(`--compare`). 메타 모델은 OOF 확률로 학습하고 test에는
+   비교표에는 같은 실행의 멤버 단일 모델 7개 test 점수를 둔다(`--compare`). mean 등 다른 결합은 test에서 계산하지 않는다. 메타 모델은 OOF 확률로 학습하고 test에는
    전체 train으로 다시 학습한 멤버의 확률이 들어가므로, 확률 분포 차이로 test가 CV보다 조금 낮을 수 있다.
 2. DF 멤버는 Colab에서 전체 train으로 다시 학습해 test 확률을 만든다.
    `cw_df.py --final --epochs 60 --tag base`, `cw_df.py --final --epochs 60 --input dir+iat --tag iat` → `results/cw_test/df_*_test.npz`
