@@ -1,0 +1,18 @@
+피처 134개, X (29000, 134), 그룹: count(4) timing(18) order(10) burst(11) cumul(12) early(6) bseq(24) dir50(36) qconst(13)
+fold 0: 기준 TPR@FPR1% 0.9012 (누적 18초)
+fold 1: 기준 TPR@FPR1% 0.8947 (누적 37초)
+fold 2: 기준 TPR@FPR1% 0.9009 (누적 57초)
+fold 3: 기준 TPR@FPR1% 0.9056 (누적 77초)
+fold 4: 기준 TPR@FPR1% 0.8558 (누적 95초)
+
+## 요약 — 피처 134개, 기준 TPR@FPR1% 0.8916 (fold 평균), 섞었을 때 하락 %p (fold 평균 ± sd)
+  @qconst  (13개)   35.43 ± 1.57
+  @burst   (11개)   20.29 ± 2.34
+  @cumul   (12개)   11.24 ± 1.51
+  @timing  (18개)   10.82 ± 1.07
+  @bseq    (24개)    8.36 ± 1.19
+  @early   ( 6개)    5.57 ± 0.89
+  @order   (10개)    4.71 ± 0.92
+  @count   ( 4개)    2.02 ± 0.55
+  @dir50   (36개)    1.17 ± 0.41
+DONE

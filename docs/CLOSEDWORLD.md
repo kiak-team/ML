@@ -5,7 +5,7 @@
 
 ## 요약
 
-- **모든 점수는 train 5-fold CV(OOF) 점수다. test는 아직 보지 않았다.** 분할은 11/15 새 분할([TEST_SPLIT.md](TEST_SPLIT.md)), fold는 `inst % 5`다(B파트 `splits/pkl_mon.csv`와 같음을 확인).
+- **9절을 뺀 모든 점수는 train 5-fold CV(OOF) 점수다.** test는 11/28에 한 번만 봤다(9절): **stack 98.79%**, inst 19 93.68%. 분할은 11/15 새 분할([TEST_SPLIT.md](TEST_SPLIT.md)), fold는 `inst % 5`다(B파트 `splits/pkl_mon.csv`와 같음을 확인).
 - 10월의 SoftVote 0.9716 등은 옛 분할(inst 18~19 = test) 기준이라 **전부 새 분할로 다시 쟀다.** 새 분할에서는 inst 19가 train fold 4에 들어가 점수가 0.5~1%p 낮다.
 - **단일 모델 최고: LightGBM 튜닝 96.56%.** sklearn 모델 중에서는 HGB 95.84%가 가장 높았다.
 - **딥러닝(DF 1D-CNN):** 논문 그대로(방향만) 94.81% → **방향 + 시간 간격 2채널 96.20%**(+1.39%p). 시간을 곱해 넣는 Tik-Tok 방식은 93.28%로 오히려 떨어졌다.
@@ -148,12 +148,47 @@ python -I -W ignore -X utf8 code/cw_df.py --epochs 60 --input dir+iat --tag iat
 결과는 `results/closedworld_results.csv`(B파트와 같은 20개 컬럼), `results/cw_best_params.json`, `results/cw_ensemble.json`,
 `results/cw_errors_*.csv`에 쌓인다. OOF 예측(`results/cw_oof/*.npz`, 모델당 수 MB)은 용량 때문에 커밋하지 않고 Drive에 둔다.
 
-## 8. test 평가 계획 (아직 하지 않음)
+## 8. test 평가 계획 (11/28 실행 → 9절)
 
 1. 최종 조합은 CV로 미리 정하고 이 문서에 적은 뒤 test를 돌린다. test를 보고 다시 고르지 않는다.
+   **결정 (11/28, test 전): `stack:lgbm_tuned+et_base+rf_base+df_base+df_iat+knn_tuned+lr_base`.**
+   Drive OOF로 다시 돌려 4절 표가 그대로 재현됨을 확인했다(mean 0.9795 / geo 0.9781 / wvote 0.9802 / stack 0.9809).
+   네 방법의 차이는 fold 표준편차(0.0050~0.0077)보다 작아 **같은 수준**이다. 보고서에는 stack을 주 결과로 쓰고,
+   비교표에는 같은 실행의 멤버 단일 모델 7개 test 점수를 둔다(`--compare`). mean 등 다른 결합은 test에서 계산하지 않는다. 메타 모델은 OOF 확률로 학습하고 test에는
+   전체 train으로 다시 학습한 멤버의 확률이 들어가므로, 확률 분포 차이로 test가 CV보다 조금 낮을 수 있다.
 2. DF 멤버는 Colab에서 전체 train으로 다시 학습해 test 확률을 만든다.
    `cw_df.py --final --epochs 60 --tag base`, `cw_df.py --final --epochs 60 --input dir+iat --tag iat` → `results/cw_test/df_*_test.npz`
 3. `cw_tuning.py test --final stack:lgbm_tuned+et_base+rf_base+df_base+df_iat+knn_tuned+lr_base --compare (비교표용 단일 모델들)`
    한 번 실행하면 `results/cw_test_LOCK`이 생겨 다시 실행되지 않는다(B파트 `ow_test.py`와 같은 방식).
 4. 보고 항목: test 정확도(1,900개), inst 19 정확도(95개), macro F1, 혼동행렬(`results/cw_test/`).
+
+## 9. test 결과 (1회, 2026-11-28)
+
+**test를 본 것은 이 한 번뿐이다.** 결합 방법은 test 전에 8절에 적어 두고(`d26accb`) 그대로 실행했다. 결과를 보고 바꾼 것은 없다.
+
+| 항목 | 내용 |
+|---|---|
+| test | mon 1,900개 (URL마다 방문 2개, `ld.mon_is_test`), 그중 inst 19는 95개 |
+| 학습 | 트리·k-NN·LR은 전체 train(17,100개)으로 재학습. DF 두 멤버는 Colab T4에서 `cw_df.py --final --epochs 60` (iat는 `sequences.py --length 5000 --time`으로 다시 만든 입력) |
+| 결합 | stack 메타 모델(LR, C=1)은 train OOF 전체로 학습 |
+| 신뢰구간 | Wilson 95% (test 표본 불확실성만) |
+| 재현 | `cw_tuning.py test --final stack:... --compare ...` → `logs/cw_test.log`, `results/cw_test/`. `results/cw_test_LOCK`이 있어 다시 돌지 않는다 |
+
+| 모델 | CV | **test** | test inst 19 (95개) | test macro F1 |
+|---|---|---|---|---|
+| **stack 7개 (최종)** | 98.09% | **98.79%** [98.19, 99.19] (오류 23개) | **93.68%** [86.9, 97.1] | 0.9879 |
+| DF-iat | 96.20% | 97.58% | 89.47% | 0.9758 |
+| LightGBM 튜닝 | 96.56% | 97.32% | 85.26% | 0.9732 |
+| ET | 95.28% | 96.47% | 86.32% | 0.9645 |
+| RF | 95.25% | 96.32% | 82.11% | 0.9633 |
+| DF (방향만) | 94.81% | 95.95% | 89.47% | 0.9594 |
+| k-NN 튜닝 | 94.05% | 95.42% | 81.05% | 0.9541 |
+| LR | 89.06% | 90.53% | 75.79% | 0.9050 |
+
+**해석**
+- **CV 추정이 test에서 유지된다.** 최종 stack은 CV 98.09% → test 98.79%(+0.7%p)이고, CV 값이 test 95% 구간 안에 있다.
+- 8개 모델 모두 test가 CV보다 0.7~1.5%p 높다. test 모델은 전체 train으로 학습해 사이트당 학습 기록이 CV fold보다 25% 많고, CV에는 inst 19가 많은 fold 4(모든 모델이 2~4%p 낮은 fold)가 섞여 있어서 CV가 조금 보수적이다. open-world test(B 파트 5절)에서 본 것과 같은 방향이다.
+- **앙상블 효과가 test에서도 크다.** 단일 최고(DF-iat 97.58%)보다 +1.2%p, inst 19에서는 +4.2%p다. 5절의 "다양성" 결론과 맞는다.
+- **inst 19는 여전히 가장 어렵다.** 93.68%로 전체보다 5.1%p 낮고, 단일 모델은 76~89%다. 시간 정보를 쓰는 DF 두 개가 inst 19에서 가장 강하다(89.5%). 느리게 로딩된 방문에서는 순서·시간 패턴이 요약 피처보다 덜 흔들리는 것으로 보인다.
+- 메타 모델은 OOF 확률로 학습하고 test에는 전체 train으로 재학습한 멤버의 확률이 들어갔지만(8절의 우려), test가 CV보다 낮아지지 않아 이 차이는 문제가 되지 않았다.
 

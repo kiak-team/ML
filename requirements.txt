@@ -8,3 +8,5 @@ scikit-learn>=1.4
 lightgbm>=4.0
 # code/ow_run.py 그림 (E2 이후)
 matplotlib>=3.8
+# code/cw_df.py (DF 1D-CNN, Colab GPU에서 돌린다)에 필요하다.
+# torch>=2.0

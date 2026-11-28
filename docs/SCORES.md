@@ -4,9 +4,16 @@
 
 ## 요약
 
-- **하이퍼파라미터 튜닝은 아직 하지 않았다.** 모든 모델은 기본 설정이며, 지금까지 바꾼 것은 피처와 전처리뿐이다.
-- **최종 점수(test 점수)는 아직 없다.** 현재 점수는 모두 train 내부 교차검증(CV) 점수다.
-- **최종 점수는 튜닝을 마친 뒤 test로 한 번만 측정한다.** 보고서에는 이 값을 쓴다.
+- **(11/28 갱신) 튜닝과 모델 비교는 끝났다.** closed-world는 C 파트([CLOSEDWORLD.md](CLOSEDWORLD.md)), open-world는 B 파트([reports/openworld.md](../reports/openworld.md)), 가산점은 [EXTRA_CREDIT.md](EXTRA_CREDIT.md)에 있다.
+- **최종 점수 현황** (test는 과제마다 한 번만 본다)
+
+| 과제 | 최종 구성 | CV | **test (1회)** | 상태 |
+|---|---|---|---|---|
+| closed-world (95개 사이트) | 7개 모델 stacking (LightGBM·ET·RF·DF·DF-iat·k-NN·LR) | 98.09% ± 0.59 | **98.79%** [98.19, 99.19], inst 19 93.68% | 완료 11/28 (CLOSEDWORLD.md 9절) |
+| open-world (96클래스) | RF 기본값, 후보 134개(앞 14셀 버림), 처리 없음 + 임계값 | TPR 89.4% @FPR 1% | **TPR 90.6% @FPR 0.8%**, FPR 0.1%에서 82.1% | 완료 (reports/openworld.md 5절) |
+| 가산점: TrafficSliver split | RF, 시간 피처 202개 | 16.1% | **17.0%** (방어 없음 join 90.6%) | 완료 (EXTRA_CREDIT.md) |
+
+- 아래 본문의 점수 중 날짜 표시가 없는 것은 튜닝 전·옛 분할 기준이다. 위 표와 섞어 쓰지 않는다.
 - **11/15에 test 분할을 바꿨다.** 마지막 방문(inst 19)을 test에 몰아 두던 옛 분할은 test가 CV보다 8.6%p 낮았다. 지금은 URL마다 방문 2개를 골고루 뽑아, CV와 test가 1%p 안에서 맞는다 ([TEST_SPLIT.md](TEST_SPLIT.md)). 이 문서의 CV 점수 중 날짜 표시가 없는 것은 옛 분할 기준이다.
 
 ---
