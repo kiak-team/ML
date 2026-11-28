@@ -9,7 +9,7 @@
 
 | 과제 | 최종 구성 | CV | **test (1회)** | 상태 |
 |---|---|---|---|---|
-| closed-world (95개 사이트) | 7개 모델 stacking (LightGBM·ET·RF·DF·DF-iat·k-NN·LR) | 98.09% ± 0.59 | — | **test 아직 안 봄** (DF `--final`을 Colab에서 먼저 돌려야 함, CLOSEDWORLD.md 8절) |
+| closed-world (95개 사이트) | 7개 모델 stacking (LightGBM·ET·RF·DF·DF-iat·k-NN·LR) | 98.09% ± 0.59 | **98.79%** [98.19, 99.19], inst 19 93.68% | 완료 11/28 (CLOSEDWORLD.md 9절) |
 | open-world (96클래스) | RF 기본값, 후보 134개(앞 14셀 버림), 처리 없음 + 임계값 | TPR 89.4% @FPR 1% | **TPR 90.6% @FPR 0.8%**, FPR 0.1%에서 82.1% | 완료 (reports/openworld.md 5절) |
 | 가산점: TrafficSliver split | RF, 시간 피처 202개 | 16.1% | **17.0%** (방어 없음 join 90.6%) | 완료 (EXTRA_CREDIT.md) |
 
