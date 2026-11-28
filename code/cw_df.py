@@ -146,7 +146,7 @@ def main():
     ap.add_argument('--input', default='dir', choices=['dir', 'tiktok', 'dir+iat', 'tam'],
                     help='dir: 방향(DF 논문) / tiktok: 방향×시각(Tik-Tok 논문) / dir+iat: 방향과 log 시간 간격 2채널. '
                          '/ tam: 시간 구간별 송신·수신 셀 수 2채널 (Robust Fingerprinting, USENIX Sec 2023). '
-                         'tiktok·dir+iat·tam은 sequences.py --time으로 만든 npz가 필요 (tam은 --length 10000 --time 권장: 잘림 0%)')
+                         'tiktok·dir+iat·tam은 sequences.py --time으로 만든 npz가 필요 (tam은 --length 10000 --time 권장: 잘림 0%%)')
     ap.add_argument('--tam-sec', type=float, default=80, help='tam: 앞에서 몇 초까지 볼지 (논문 80초)')
     ap.add_argument('--tam-bins', type=int, default=1800, help='tam: 구간 수 (논문 1800 → 약 44ms)')
     ap.add_argument('--sched', default='none', choices=['none', 'cosine'], help='학습률 스케줄 (cosine: 점점 줄임)')
