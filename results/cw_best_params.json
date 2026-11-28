@@ -1,0 +1,101 @@
+{
+  "lgbm": {
+    "model": "lgbm",
+    "fs": "cand131",
+    "params": {
+      "subsample_freq": 1,
+      "subsample": 0.9,
+      "reg_lambda": 0.0,
+      "num_leaves": 63,
+      "n_estimators": 400,
+      "min_child_samples": 20,
+      "learning_rate": 0.03,
+      "colsample_bytree": 0.5
+    },
+    "cv": 0.9655555555555557,
+    "std": 0.007508188933662711
+  },
+  "et": {
+    "model": "et",
+    "fs": "cand131",
+    "params": {
+      "n_estimators": 300,
+      "min_samples_leaf": 1,
+      "max_features": 0.1,
+      "criterion": "gini"
+    },
+    "cv": 0.9528070175438597,
+    "std": 0.011214660608531593
+  },
+  "rf": {
+    "model": "rf",
+    "fs": "cand131",
+    "params": {
+      "n_estimators": 300,
+      "min_samples_leaf": 1,
+      "max_features": 0.1,
+      "criterion": "gini"
+    },
+    "cv": 0.9524561403508773,
+    "std": 0.01304578621145166
+  },
+  "knn": {
+    "model": "knn",
+    "fs": "cand131",
+    "params": {
+      "weights": "distance",
+      "p": 1,
+      "n_neighbors": 3,
+      "_gw": false
+    },
+    "cv": 0.9404678362573099,
+    "std": 0.013649177929001673
+  },
+  "svm": {
+    "model": "svm",
+    "fs": "cand131",
+    "params": {
+      "gamma": "scale",
+      "_gw": false,
+      "C": 30
+    },
+    "cv": 0.943157894736842,
+    "std": 0.013082434691825769
+  },
+  "lr": {
+    "model": "lr",
+    "fs": "cand131",
+    "params": {
+      "max_iter": 3000,
+      "C": 1
+    },
+    "cv": 0.8906432748538012,
+    "std": 0.011411752905403959
+  },
+  "mlp": {
+    "model": "mlp",
+    "fs": "cand131",
+    "params": {
+      "learning_rate_init": 0.001,
+      "hidden_layer_sizes": [
+        512
+      ],
+      "alpha": 0.001
+    },
+    "cv": 0.9330994152046783,
+    "std": 0.010933326827264483
+  },
+  "hgb": {
+    "model": "hgb",
+    "fs": "cand131",
+    "params": {
+      "max_leaf_nodes": 15,
+      "max_iter": 300,
+      "max_features": 1.0,
+      "learning_rate": 0.05,
+      "l2_regularization": 1.0
+    },
+    "cv": 0.9580701754385965,
+    "std": 0.007451494940910644
+  }
+}
