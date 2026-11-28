@@ -37,4 +37,3 @@ cache/
 
 # closed-world OOF 예측 (모델당 수 MB): Drive에 둔다 (docs/CLOSEDWORLD.md 7절)
 results/cw_oof/
-results/cw_test/
