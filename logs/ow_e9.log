@@ -1,0 +1,440 @@
+E9 dataset=pkl: leak 제거 피처(skip14) 전체 376개, 모델 RF(n=200, rs=42) 고정, visit CV5 OOF
+η²: 각 fold의 학습 행으로만 계산, 라벨 = 그 방식의 학습 라벨 (multi 96클래스 / binary 2클래스). Reduced: 학습 fold의 |r| >= 0.95 쌍에서 열 순서상 뒤의 것을 뺀다
+
+## E9-binary-rf-all376: 입력 376개
+    fold 0: fit 20880 / val 5220  fit 4s predict 0s
+    fold 1: fit 20880 / val 5220  fit 4s predict 0s
+    fold 2: fit 20880 / val 5220  fit 4s predict 0s
+    fold 3: fit 20880 / val 5220  fit 5s predict 0s
+    fold 4: fit 20880 / val 5220  fit 5s predict 0s
+  ROC-AUC 0.9855 (fold std 0.0007)  PR-AUC 0.9914  | pooled best TPR@FPR≤0.1/1/5% 0.3837 / 0.7279 / 0.9140  | per-fold TPR@FPR≤1% 0.7224 ± 0.0339
+  [E9-binary-rf-all376-argmax] TPR 0.9882  FPR 0.1436  precision 0.9290  macro_f1 0.9347  | det_TPR 0.9882  wrong_site 0 (0.00%)  FN 201  FP 1292  | fold std TPR 0.0016 FPR 0.0032
+      -1 행(실제 unmon 9000): -1로 7708, mon으로 1292 (FP가 많은 사이트 [(1, 1292)])
+      -1 열(-1로 예측된 mon): 201 = FN
+  [E9-binary-rf-all376-fpr0.1] TPR 0.3837  FPR 0.0007  precision 0.9991  macro_f1 0.5925  | det_TPR 0.3837  wrong_site 0 (0.00%)  FN 10538  FP 6  | fold std TPR 0.0150 FPR 0.0004
+      -1 행(실제 unmon 9000): -1로 8994, mon으로 6 (FP가 많은 사이트 [(1, 6)])
+      -1 열(-1로 예측된 mon): 10538 = FN
+  [E9-binary-rf-all376-fpr1] TPR 0.7226  FPR 0.0094  precision 0.9932  macro_f1 0.8117  | det_TPR 0.7226  wrong_site 0 (0.00%)  FN 4744  FP 85  | fold std TPR 0.0187 FPR 0.0033
+      -1 행(실제 unmon 9000): -1로 8915, mon으로 85 (FP가 많은 사이트 [(1, 85)])
+      -1 열(-1로 예측된 mon): 4744 = FN
+  [E9-binary-rf-all376-fpr5] TPR 0.9119  FPR 0.0488  precision 0.9726  macro_f1 0.9196  | det_TPR 0.9119  wrong_site 0 (0.00%)  FN 1506  FP 439  | fold std TPR 0.0086 FPR 0.0081
+      -1 행(실제 unmon 9000): -1로 8561, mon으로 439 (FP가 많은 사이트 [(1, 439)])
+      -1 열(-1로 예측된 mon): 1506 = FN
+
+## E9-binary-rf-cand134: 입력 134개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9886 (fold std 0.0009)  PR-AUC 0.9934  | pooled best TPR@FPR≤0.1/1/5% 0.4784 / 0.7705 / 0.9356  | per-fold TPR@FPR≤1% 0.7735 ± 0.0326
+  [E9-binary-rf-cand134-argmax] TPR 0.9899  FPR 0.1356  precision 0.9328  macro_f1 0.9392  | det_TPR 0.9899  wrong_site 0 (0.00%)  FN 172  FP 1220  | fold std TPR 0.0014 FPR 0.0065
+      -1 행(실제 unmon 9000): -1로 7780, mon으로 1220 (FP가 많은 사이트 [(1, 1220)])
+      -1 열(-1로 예측된 mon): 172 = FN
+  [E9-binary-rf-cand134-fpr0.1] TPR 0.4606  FPR 0.0010  precision 0.9989  macro_f1 0.6456  | det_TPR 0.4606  wrong_site 0 (0.00%)  FN 9223  FP 9  | fold std TPR 0.0277 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(1, 9)])
+      -1 열(-1로 예측된 mon): 9223 = FN
+  [E9-binary-rf-cand134-fpr1] TPR 0.7682  FPR 0.0097  precision 0.9934  macro_f1 0.8406  | det_TPR 0.7682  wrong_site 0 (0.00%)  FN 3964  FP 87  | fold std TPR 0.0133 FPR 0.0032
+      -1 행(실제 unmon 9000): -1로 8913, mon으로 87 (FP가 많은 사이트 [(1, 87)])
+      -1 열(-1로 예측된 mon): 3964 = FN
+  [E9-binary-rf-cand134-fpr5] TPR 0.9348  FPR 0.0491  precision 0.9731  macro_f1 0.9351  | det_TPR 0.9348  wrong_site 0 (0.00%)  FN 1115  FP 442  | fold std TPR 0.0056 FPR 0.0058
+      -1 행(실제 unmon 9000): -1로 8558, mon으로 442 (FP가 많은 사이트 [(1, 442)])
+      -1 열(-1로 예측된 mon): 1115 = FN
+
+## E9-binary-rf-cand134-qconst: 입력 121개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9874 (fold std 0.0011)  PR-AUC 0.9925  | pooled best TPR@FPR≤0.1/1/5% 0.3769 / 0.7302 / 0.9362  | per-fold TPR@FPR≤1% 0.7350 ± 0.0300
+  [E9-binary-rf-cand134-qconst-argmax] TPR 0.9884  FPR 0.1309  precision 0.9348  macro_f1 0.9400  | det_TPR 0.9884  wrong_site 0 (0.00%)  FN 199  FP 1178  | fold std TPR 0.0015 FPR 0.0040
+      -1 행(실제 unmon 9000): -1로 7822, mon으로 1178 (FP가 많은 사이트 [(1, 1178)])
+      -1 열(-1로 예측된 mon): 199 = FN
+  [E9-binary-rf-cand134-qconst-fpr0.1] TPR 0.3612  FPR 0.0009  precision 0.9987  macro_f1 0.5762  | det_TPR 0.3612  wrong_site 0 (0.00%)  FN 10924  FP 8  | fold std TPR 0.0173 FPR 0.0007
+      -1 행(실제 unmon 9000): -1로 8992, mon으로 8 (FP가 많은 사이트 [(1, 8)])
+      -1 열(-1로 예측된 mon): 10924 = FN
+  [E9-binary-rf-cand134-qconst-fpr1] TPR 0.7356  FPR 0.0098  precision 0.9931  macro_f1 0.8198  | det_TPR 0.7356  wrong_site 0 (0.00%)  FN 4522  FP 88  | fold std TPR 0.0157 FPR 0.0026
+      -1 행(실제 unmon 9000): -1로 8912, mon으로 88 (FP가 많은 사이트 [(1, 88)])
+      -1 열(-1로 예측된 mon): 4522 = FN
+  [E9-binary-rf-cand134-qconst-fpr5] TPR 0.9354  FPR 0.0494  precision 0.9729  macro_f1 0.9354  | det_TPR 0.9354  wrong_site 0 (0.00%)  FN 1105  FP 445  | fold std TPR 0.0048 FPR 0.0051
+      -1 행(실제 unmon 9000): -1로 8555, mon으로 445 (FP가 많은 사이트 [(1, 445)])
+      -1 열(-1로 예측된 mon): 1105 = FN
+
+## E9-binary-rf-eta-top20: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [20, 20, 20, 20, 20], 5개 fold 공통 16개
+    fold 0: fit 20880 / val 5220  fit 1s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 0s predict 0s
+    fold 3: fit 20880 / val 5220  fit 0s predict 0s
+    fold 4: fit 20880 / val 5220  fit 0s predict 0s
+  ROC-AUC 0.9680 (fold std 0.0020)  PR-AUC 0.9797  | pooled best TPR@FPR≤0.1/1/5% 0.1905 / 0.4877 / 0.7967  | per-fold TPR@FPR≤1% 0.4967 ± 0.0403
+  [E9-binary-rf-eta-top20-argmax] TPR 0.9671  FPR 0.1626  precision 0.9187  macro_f1 0.9119  | det_TPR 0.9671  wrong_site 0 (0.00%)  FN 562  FP 1463  | fold std TPR 0.0030 FPR 0.0058
+      -1 행(실제 unmon 9000): -1로 7537, mon으로 1463 (FP가 많은 사이트 [(1, 1463)])
+      -1 열(-1로 예측된 mon): 562 = FN
+  [E9-binary-rf-eta-top20-fpr0.1] TPR 0.1905  FPR 0.0007  precision 0.9982  macro_f1 0.4425  | det_TPR 0.1905  wrong_site 0 (0.00%)  FN 13842  FP 6  | fold std TPR 0.0159 FPR 0.0009
+      -1 행(실제 unmon 9000): -1로 8994, mon으로 6 (FP가 많은 사이트 [(1, 6)])
+      -1 열(-1로 예측된 mon): 13842 = FN
+  [E9-binary-rf-eta-top20-fpr1] TPR 0.4977  FPR 0.0097  precision 0.9899  macro_f1 0.6675  | det_TPR 0.4977  wrong_site 0 (0.00%)  FN 8590  FP 87  | fold std TPR 0.0250 FPR 0.0037
+      -1 행(실제 unmon 9000): -1로 8913, mon으로 87 (FP가 많은 사이트 [(1, 87)])
+      -1 열(-1로 예측된 mon): 8590 = FN
+  [E9-binary-rf-eta-top20-fpr5] TPR 0.7991  FPR 0.0492  precision 0.9686  macro_f1 0.8455  | det_TPR 0.7991  wrong_site 0 (0.00%)  FN 3436  FP 443  | fold std TPR 0.0112 FPR 0.0067
+      -1 행(실제 unmon 9000): -1로 8557, mon으로 443 (FP가 많은 사이트 [(1, 443)])
+      -1 열(-1로 예측된 mon): 3436 = FN
+
+## E9-binary-rf-eta-top50: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [50, 50, 50, 50, 50], 5개 fold 공통 40개
+    fold 0: fit 20880 / val 5220  fit 1s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 1s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9696 (fold std 0.0020)  PR-AUC 0.9808  | pooled best TPR@FPR≤0.1/1/5% 0.1543 / 0.5291 / 0.8171  | per-fold TPR@FPR≤1% 0.5458 ± 0.0390
+  [E9-binary-rf-eta-top50-argmax] TPR 0.9704  FPR 0.1732  precision 0.9141  macro_f1 0.9098  | det_TPR 0.9704  wrong_site 0 (0.00%)  FN 506  FP 1559  | fold std TPR 0.0035 FPR 0.0044
+      -1 행(실제 unmon 9000): -1로 7441, mon으로 1559 (FP가 많은 사이트 [(1, 1559)])
+      -1 열(-1로 예측된 mon): 506 = FN
+  [E9-binary-rf-eta-top50-fpr0.1] TPR 0.1455  FPR 0.0011  precision 0.9960  macro_f1 0.4027  | det_TPR 0.1455  wrong_site 0 (0.00%)  FN 14612  FP 10  | fold std TPR 0.0502 FPR 0.0009
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(1, 10)])
+      -1 열(-1로 예측된 mon): 14612 = FN
+  [E9-binary-rf-eta-top50-fpr1] TPR 0.5288  FPR 0.0099  precision 0.9903  macro_f1 0.6879  | det_TPR 0.5288  wrong_site 0 (0.00%)  FN 8057  FP 89  | fold std TPR 0.0227 FPR 0.0044
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(1, 89)])
+      -1 열(-1로 예측된 mon): 8057 = FN
+  [E9-binary-rf-eta-top50-fpr5] TPR 0.8147  FPR 0.0496  precision 0.9690  macro_f1 0.8554  | det_TPR 0.8147  wrong_site 0 (0.00%)  FN 3169  FP 446  | fold std TPR 0.0112 FPR 0.0066
+      -1 행(실제 unmon 9000): -1로 8554, mon으로 446 (FP가 많은 사이트 [(1, 446)])
+      -1 열(-1로 예측된 mon): 3169 = FN
+
+## E9-binary-rf-eta-top100: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [100, 100, 100, 100, 100], 5개 fold 공통 93개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 1s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9804 (fold std 0.0013)  PR-AUC 0.9885  | pooled best TPR@FPR≤0.1/1/5% 0.3657 / 0.6784 / 0.8825  | per-fold TPR@FPR≤1% 0.6807 ± 0.0318
+  [E9-binary-rf-eta-top100-argmax] TPR 0.9789  FPR 0.1613  precision 0.9202  macro_f1 0.9207  | det_TPR 0.9789  wrong_site 0 (0.00%)  FN 360  FP 1452  | fold std TPR 0.0031 FPR 0.0070
+      -1 행(실제 unmon 9000): -1로 7548, mon으로 1452 (FP가 많은 사이트 [(1, 1452)])
+      -1 열(-1로 예측된 mon): 360 = FN
+  [E9-binary-rf-eta-top100-fpr0.1] TPR 0.3527  FPR 0.0010  precision 0.9985  macro_f1 0.5700  | det_TPR 0.3527  wrong_site 0 (0.00%)  FN 11069  FP 9  | fold std TPR 0.0131 FPR 0.0004
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(1, 9)])
+      -1 열(-1로 예측된 mon): 11069 = FN
+  [E9-binary-rf-eta-top100-fpr1] TPR 0.6781  FPR 0.0099  precision 0.9924  macro_f1 0.7834  | det_TPR 0.6781  wrong_site 0 (0.00%)  FN 5504  FP 89  | fold std TPR 0.0121 FPR 0.0027
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(1, 89)])
+      -1 열(-1로 예측된 mon): 5504 = FN
+  [E9-binary-rf-eta-top100-fpr5] TPR 0.8812  FPR 0.0493  precision 0.9714  macro_f1 0.8989  | det_TPR 0.8812  wrong_site 0 (0.00%)  FN 2031  FP 444  | fold std TPR 0.0033 FPR 0.0049
+      -1 행(실제 unmon 9000): -1로 8556, mon으로 444 (FP가 많은 사이트 [(1, 444)])
+      -1 열(-1로 예측된 mon): 2031 = FN
+
+## E9-binary-rf-eta-bottom20: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [20, 20, 20, 20, 20], 5개 fold 공통 14개
+    fold 0: fit 20880 / val 5220  fit 1s predict 0s
+    fold 1: fit 20880 / val 5220  fit 1s predict 0s
+    fold 2: fit 20880 / val 5220  fit 1s predict 0s
+    fold 3: fit 20880 / val 5220  fit 1s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.9030 (fold std 0.0097)  PR-AUC 0.9427  | pooled best TPR@FPR≤0.1/1/5% 0.1298 / 0.3122 / 0.5606  | per-fold TPR@FPR≤1% 0.3208 ± 0.0450
+  [E9-binary-rf-eta-bottom20-argmax] TPR 0.9498  FPR 0.4153  precision 0.8129  macro_f1 0.7860  | det_TPR 0.9498  wrong_site 0 (0.00%)  FN 858  FP 3738  | fold std TPR 0.0036 FPR 0.0215
+      -1 행(실제 unmon 9000): -1로 5262, mon으로 3738 (FP가 많은 사이트 [(1, 3738)])
+      -1 열(-1로 예측된 mon): 858 = FN
+  [E9-binary-rf-eta-bottom20-fpr0.1] TPR 0.1219  FPR 0.0012  precision 0.9947  macro_f1 0.3809  | det_TPR 0.1219  wrong_site 0 (0.00%)  FN 15016  FP 11  | fold std TPR 0.0203 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8989, mon으로 11 (FP가 많은 사이트 [(1, 11)])
+      -1 열(-1로 예측된 mon): 15016 = FN
+  [E9-binary-rf-eta-bottom20-fpr1] TPR 0.3184  FPR 0.0094  precision 0.9846  macro_f1 0.5421  | det_TPR 0.3184  wrong_site 0 (0.00%)  FN 11655  FP 85  | fold std TPR 0.0234 FPR 0.0024
+      -1 행(실제 unmon 9000): -1로 8915, mon으로 85 (FP가 많은 사이트 [(1, 85)])
+      -1 열(-1로 예측된 mon): 11655 = FN
+  [E9-binary-rf-eta-bottom20-fpr5] TPR 0.5636  FPR 0.0481  precision 0.9570  macro_f1 0.6970  | det_TPR 0.5636  wrong_site 0 (0.00%)  FN 7463  FP 433  | fold std TPR 0.0209 FPR 0.0060
+      -1 행(실제 unmon 9000): -1로 8567, mon으로 433 (FP가 많은 사이트 [(1, 433)])
+      -1 열(-1로 예측된 mon): 7463 = FN
+
+## E9-binary-rf-reduced095: 입력 376개 → fold 안에서 CorrReduce
+  fold별 선택 개수 [252, 252, 252, 252, 252], 5개 fold 공통 252개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9850 (fold std 0.0009)  PR-AUC 0.9912  | pooled best TPR@FPR≤0.1/1/5% 0.4488 / 0.7084 / 0.9087  | per-fold TPR@FPR≤1% 0.7209 ± 0.0146
+  [E9-binary-rf-reduced095-argmax] TPR 0.9873  FPR 0.1472  precision 0.9272  macro_f1 0.9325  | det_TPR 0.9873  wrong_site 0 (0.00%)  FN 218  FP 1325  | fold std TPR 0.0015 FPR 0.0036
+      -1 행(실제 unmon 9000): -1로 7675, mon으로 1325 (FP가 많은 사이트 [(1, 1325)])
+      -1 열(-1로 예측된 mon): 218 = FN
+  [E9-binary-rf-reduced095-fpr0.1] TPR 0.4488  FPR 0.0008  precision 0.9991  macro_f1 0.6377  | det_TPR 0.4488  wrong_site 0 (0.00%)  FN 9425  FP 7  | fold std TPR 0.0134 FPR 0.0003
+      -1 행(실제 unmon 9000): -1로 8993, mon으로 7 (FP가 많은 사이트 [(1, 7)])
+      -1 열(-1로 예측된 mon): 9425 = FN
+  [E9-binary-rf-reduced095-fpr1] TPR 0.7106  FPR 0.0088  precision 0.9935  macro_f1 0.8044  | det_TPR 0.7106  wrong_site 0 (0.00%)  FN 4949  FP 79  | fold std TPR 0.0132 FPR 0.0024
+      -1 행(실제 unmon 9000): -1로 8921, mon으로 79 (FP가 많은 사이트 [(1, 79)])
+      -1 열(-1로 예측된 mon): 4949 = FN
+  [E9-binary-rf-reduced095-fpr5] TPR 0.9097  FPR 0.0482  precision 0.9729  macro_f1 0.9184  | det_TPR 0.9097  wrong_site 0 (0.00%)  FN 1544  FP 434  | fold std TPR 0.0041 FPR 0.0044
+      -1 행(실제 unmon 9000): -1로 8566, mon으로 434 (FP가 많은 사이트 [(1, 434)])
+      -1 열(-1로 예측된 mon): 1544 = FN
+
+## E9-multi-rf-all376: 입력 376개
+    fold 0: fit 20880 / val 5220  fit 9s predict 0s
+    fold 1: fit 20880 / val 5220  fit 9s predict 0s
+    fold 2: fit 20880 / val 5220  fit 10s predict 0s
+    fold 3: fit 20880 / val 5220  fit 9s predict 0s
+    fold 4: fit 20880 / val 5220  fit 9s predict 0s
+  ROC-AUC 0.9913 (fold std 0.0023)  PR-AUC 0.9954  | pooled best TPR@FPR≤0.1/1/5% 0.7871 / 0.8821 / 0.9267  | per-fold TPR@FPR≤1% 0.8819 ± 0.0227
+  [E9-multi-rf-all376-argmax] TPR 0.8958  FPR 0.0102  precision 0.9731  macro_f1 0.9315  | det_TPR 0.9153  wrong_site 332 (1.94%)  FN 1449  FP 92  | fold std TPR 0.0191 FPR 0.0011
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(60, 5), (15, 4), (47, 3), (45, 3), (64, 3)])
+      -1 열(-1로 예측된 mon): 1449 = FN
+  [E9-multi-rf-all376-fpr0.1] TPR 0.7879  FPR 0.0010  precision 0.9974  macro_f1 0.8750  | det_TPR 0.7894  wrong_site 26 (0.15%)  FN 3601  FP 9  | fold std TPR 0.0219 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(73, 2), (34, 1), (7, 1), (66, 1), (26, 1)])
+      -1 열(-1로 예측된 mon): 3601 = FN
+  [E9-multi-rf-all376-fpr1] TPR 0.8826  FPR 0.0099  precision 0.9856  macro_f1 0.9296  | det_TPR 0.8903  wrong_site 131 (0.77%)  FN 1876  FP 89  | fold std TPR 0.0232 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(75, 7), (48, 6), (66, 4), (31, 4), (86, 3)])
+      -1 열(-1로 예측된 mon): 1876 = FN
+  [E9-multi-rf-all376-fpr5] TPR 0.9267  FPR 0.0471  precision 0.9526  macro_f1 0.9390  | det_TPR 0.9480  wrong_site 365 (2.13%)  FN 889  FP 424  | fold std TPR 0.0186 FPR 0.0033
+      -1 행(실제 unmon 9000): -1로 8576, mon으로 424 (FP가 많은 사이트 [(48, 29), (75, 28), (50, 18), (0, 17), (73, 16)])
+      -1 열(-1로 예측된 mon): 889 = FN
+
+## E9-multi-rf-cand134: 입력 134개
+    fold 0: fit 20880 / val 5220  fit 5s predict 0s
+    fold 1: fit 20880 / val 5220  fit 4s predict 0s
+    fold 2: fit 20880 / val 5220  fit 4s predict 0s
+    fold 3: fit 20880 / val 5220  fit 4s predict 0s
+    fold 4: fit 20880 / val 5220  fit 4s predict 0s
+  ROC-AUC 0.9926 (fold std 0.0013)  PR-AUC 0.9961  | pooled best TPR@FPR≤0.1/1/5% 0.7874 / 0.8926 / 0.9318  | per-fold TPR@FPR≤1% 0.8951 ± 0.0122
+  [E9-multi-rf-cand134-argmax] TPR 0.8960  FPR 0.0078  precision 0.9741  macro_f1 0.9322  | det_TPR 0.9157  wrong_site 337 (1.97%)  FN 1441  FP 70  | fold std TPR 0.0173 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8930, mon으로 70 (FP가 많은 사이트 [(63, 6), (7, 6), (60, 5), (19, 3), (32, 3)])
+      -1 열(-1로 예측된 mon): 1441 = FN
+  [E9-multi-rf-cand134-fpr0.1] TPR 0.7880  FPR 0.0011  precision 0.9972  macro_f1 0.8751  | det_TPR 0.7896  wrong_site 28 (0.16%)  FN 3597  FP 10  | fold std TPR 0.0230 FPR 0.0006
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(22, 2), (63, 2), (26, 1), (66, 1), (70, 1)])
+      -1 열(-1로 예측된 mon): 3597 = FN
+  [E9-multi-rf-cand134-fpr1] TPR 0.8938  FPR 0.0100  precision 0.9833  macro_f1 0.9350  | det_TPR 0.9037  wrong_site 169 (0.99%)  FN 1647  FP 90  | fold std TPR 0.0180 FPR 0.0025
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(0, 7), (63, 7), (75, 6), (71, 6), (94, 4)])
+      -1 열(-1로 예측된 mon): 1647 = FN
+  [E9-multi-rf-cand134-fpr5] TPR 0.9318  FPR 0.0478  precision 0.9513  macro_f1 0.9411  | det_TPR 0.9543  wrong_site 385 (2.25%)  FN 782  FP 430  | fold std TPR 0.0147 FPR 0.0025
+      -1 행(실제 unmon 9000): -1로 8570, mon으로 430 (FP가 많은 사이트 [(0, 30), (50, 24), (71, 23), (75, 20), (94, 16)])
+      -1 열(-1로 예측된 mon): 782 = FN
+
+## E9-multi-rf-cand134-qconst: 입력 121개
+    fold 0: fit 20880 / val 5220  fit 5s predict 0s
+    fold 1: fit 20880 / val 5220  fit 5s predict 0s
+    fold 2: fit 20880 / val 5220  fit 5s predict 0s
+    fold 3: fit 20880 / val 5220  fit 5s predict 0s
+    fold 4: fit 20880 / val 5220  fit 5s predict 0s
+  ROC-AUC 0.9894 (fold std 0.0026)  PR-AUC 0.9944  | pooled best TPR@FPR≤0.1/1/5% 0.7866 / 0.8727 / 0.9157  | per-fold TPR@FPR≤1% 0.8721 ± 0.0217
+  [E9-multi-rf-cand134-qconst-argmax] TPR 0.8632  FPR 0.0040  precision 0.9761  macro_f1 0.9140  | det_TPR 0.8823  wrong_site 326 (1.91%)  FN 2013  FP 36  | fold std TPR 0.0214 FPR 0.0022
+      -1 행(실제 unmon 9000): -1로 8964, mon으로 36 (FP가 많은 사이트 [(38, 5), (44, 2), (29, 2), (19, 2), (7, 2)])
+      -1 열(-1로 예측된 mon): 2013 = FN
+  [E9-multi-rf-cand134-qconst-fpr0.1] TPR 0.7875  FPR 0.0012  precision 0.9957  macro_f1 0.8733  | det_TPR 0.7902  wrong_site 47 (0.27%)  FN 3587  FP 11  | fold std TPR 0.0258 FPR 0.0009
+      -1 행(실제 unmon 9000): -1로 8989, mon으로 11 (FP가 많은 사이트 [(57, 3), (44, 2), (86, 1), (25, 1), (26, 1)])
+      -1 열(-1로 예측된 mon): 3587 = FN
+  [E9-multi-rf-cand134-qconst-fpr1] TPR 0.8739  FPR 0.0102  precision 0.9840  macro_f1 0.9235  | det_TPR 0.8827  wrong_site 151 (0.88%)  FN 2006  FP 92  | fold std TPR 0.0254 FPR 0.0041
+      -1 행(실제 unmon 9000): -1로 8908, mon으로 92 (FP가 많은 사이트 [(75, 9), (57, 6), (7, 5), (86, 4), (66, 4)])
+      -1 열(-1로 예측된 mon): 2006 = FN
+  [E9-multi-rf-cand134-qconst-fpr5] TPR 0.9161  FPR 0.0480  precision 0.9500  macro_f1 0.9321  | det_TPR 0.9391  wrong_site 393 (2.30%)  FN 1042  FP 432  | fold std TPR 0.0214 FPR 0.0090
+      -1 행(실제 unmon 9000): -1로 8568, mon으로 432 (FP가 많은 사이트 [(75, 26), (48, 24), (26, 15), (6, 14), (86, 14)])
+      -1 열(-1로 예측된 mon): 1042 = FN
+
+## E9-multi-rf-eta-top20: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [20, 20, 20, 20, 20], 5개 fold 공통 19개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9848 (fold std 0.0027)  PR-AUC 0.9919  | pooled best TPR@FPR≤0.1/1/5% 0.5980 / 0.7651 / 0.8608  | per-fold TPR@FPR≤1% 0.7659 ± 0.0215
+  [E9-multi-rf-eta-top20-argmax] TPR 0.8670  FPR 0.0530  precision 0.8937  macro_f1 0.8798  | det_TPR 0.9423  wrong_site 1287 (7.53%)  FN 987  FP 477  | fold std TPR 0.0160 FPR 0.0056
+      -1 행(실제 unmon 9000): -1로 8523, mon으로 477 (FP가 많은 사이트 [(71, 23), (47, 22), (37, 14), (65, 14), (55, 13)])
+      -1 열(-1로 예측된 mon): 987 = FN
+  [E9-multi-rf-eta-top20-fpr0.1] TPR 0.5980  FPR 0.0010  precision 0.9933  macro_f1 0.7314  | det_TPR 0.6015  wrong_site 60 (0.35%)  FN 6814  FP 9  | fold std TPR 0.0147 FPR 0.0004
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(42, 2), (71, 2), (47, 1), (16, 1), (73, 1)])
+      -1 열(-1로 예측된 mon): 6814 = FN
+  [E9-multi-rf-eta-top20-fpr1] TPR 0.7650  FPR 0.0099  precision 0.9740  macro_f1 0.8516  | det_TPR 0.7802  wrong_site 260 (1.52%)  FN 3758  FP 89  | fold std TPR 0.0175 FPR 0.0016
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(71, 9), (57, 7), (47, 6), (42, 4), (0, 4)])
+      -1 열(-1로 예측된 mon): 3758 = FN
+  [E9-multi-rf-eta-top20-fpr5] TPR 0.8607  FPR 0.0498  precision 0.9146  macro_f1 0.8860  | det_TPR 0.9149  wrong_site 926 (5.42%)  FN 1456  FP 448  | fold std TPR 0.0173 FPR 0.0056
+      -1 행(실제 unmon 9000): -1로 8552, mon으로 448 (FP가 많은 사이트 [(0, 30), (71, 29), (47, 19), (42, 17), (57, 15)])
+      -1 열(-1로 예측된 mon): 1456 = FN
+
+## E9-multi-rf-eta-top50: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [50, 50, 50, 50, 50], 5개 fold 공통 49개
+    fold 0: fit 20880 / val 5220  fit 6s predict 0s
+    fold 1: fit 20880 / val 5220  fit 5s predict 0s
+    fold 2: fit 20880 / val 5220  fit 5s predict 0s
+    fold 3: fit 20880 / val 5220  fit 5s predict 0s
+    fold 4: fit 20880 / val 5220  fit 5s predict 0s
+  ROC-AUC 0.9844 (fold std 0.0024)  PR-AUC 0.9919  | pooled best TPR@FPR≤0.1/1/5% 0.6611 / 0.8029 / 0.8671  | per-fold TPR@FPR≤1% 0.8017 ± 0.0250
+  [E9-multi-rf-eta-top50-argmax] TPR 0.8630  FPR 0.0360  precision 0.9145  macro_f1 0.8871  | det_TPR 0.9247  wrong_site 1055 (6.17%)  FN 1288  FP 324  | fold std TPR 0.0196 FPR 0.0035
+      -1 행(실제 unmon 9000): -1로 8676, mon으로 324 (FP가 많은 사이트 [(47, 16), (65, 12), (71, 10), (66, 10), (38, 9)])
+      -1 열(-1로 예측된 mon): 1288 = FN
+  [E9-multi-rf-eta-top50-fpr0.1] TPR 0.6585  FPR 0.0011  precision 0.9947  macro_f1 0.7805  | det_TPR 0.6614  wrong_site 50 (0.29%)  FN 5790  FP 10  | fold std TPR 0.0187 FPR 0.0005
+      -1 행(실제 unmon 9000): -1로 8990, mon으로 10 (FP가 많은 사이트 [(47, 1), (84, 1), (37, 1), (51, 1), (31, 1)])
+      -1 열(-1로 예측된 mon): 5790 = FN
+  [E9-multi-rf-eta-top50-fpr1] TPR 0.8024  FPR 0.0100  precision 0.9742  macro_f1 0.8765  | det_TPR 0.8184  wrong_site 273 (1.60%)  FN 3106  FP 90  | fold std TPR 0.0203 FPR 0.0012
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(47, 6), (6, 6), (50, 5), (73, 3), (34, 3)])
+      -1 열(-1로 예측된 mon): 3106 = FN
+  [E9-multi-rf-eta-top50-fpr5] TPR 0.8670  FPR 0.0488  precision 0.9241  macro_f1 0.8936  | det_TPR 0.9125  wrong_site 779 (4.56%)  FN 1496  FP 439  | fold std TPR 0.0190 FPR 0.0041
+      -1 행(실제 unmon 9000): -1로 8561, mon으로 439 (FP가 많은 사이트 [(0, 25), (71, 20), (47, 18), (6, 16), (64, 15)])
+      -1 열(-1로 예측된 mon): 1496 = FN
+
+## E9-multi-rf-eta-top100: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [100, 100, 100, 100, 100], 5개 fold 공통 97개
+    fold 0: fit 20880 / val 5220  fit 9s predict 0s
+    fold 1: fit 20880 / val 5220  fit 9s predict 0s
+    fold 2: fit 20880 / val 5220  fit 8s predict 0s
+    fold 3: fit 20880 / val 5220  fit 9s predict 0s
+    fold 4: fit 20880 / val 5220  fit 8s predict 0s
+  ROC-AUC 0.9837 (fold std 0.0039)  PR-AUC 0.9916  | pooled best TPR@FPR≤0.1/1/5% 0.6648 / 0.8094 / 0.8719  | per-fold TPR@FPR≤1% 0.8091 ± 0.0278
+  [E9-multi-rf-eta-top100-argmax] TPR 0.8594  FPR 0.0287  precision 0.9271  macro_f1 0.8907  | det_TPR 0.9119  wrong_site 898 (5.25%)  FN 1507  FP 258  | fold std TPR 0.0220 FPR 0.0022
+      -1 행(실제 unmon 9000): -1로 8742, mon으로 258 (FP가 많은 사이트 [(47, 11), (15, 9), (40, 8), (60, 8), (6, 7)])
+      -1 열(-1로 예측된 mon): 1507 = FN
+  [E9-multi-rf-eta-top100-fpr0.1] TPR 0.6656  FPR 0.0012  precision 0.9956  macro_f1 0.7867  | det_TPR 0.6678  wrong_site 39 (0.23%)  FN 5680  FP 11  | fold std TPR 0.0238 FPR 0.0008
+      -1 행(실제 unmon 9000): -1로 8989, mon으로 11 (FP가 많은 사이트 [(7, 2), (92, 1), (44, 1), (40, 1), (73, 1)])
+      -1 열(-1로 예측된 mon): 5680 = FN
+  [E9-multi-rf-eta-top100-fpr1] TPR 0.8099  FPR 0.0100  precision 0.9749  macro_f1 0.8811  | det_TPR 0.8255  wrong_site 267 (1.56%)  FN 2984  FP 90  | fold std TPR 0.0209 FPR 0.0017
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(73, 7), (6, 6), (63, 4), (47, 3), (22, 3)])
+      -1 열(-1로 예측된 mon): 2984 = FN
+  [E9-multi-rf-eta-top100-fpr5] TPR 0.8715  FPR 0.0490  precision 0.9281  macro_f1 0.8979  | det_TPR 0.9133  wrong_site 714 (4.18%)  FN 1483  FP 441  | fold std TPR 0.0184 FPR 0.0057
+      -1 행(실제 unmon 9000): -1로 8559, mon으로 441 (FP가 많은 사이트 [(0, 28), (6, 22), (73, 18), (57, 14), (64, 14)])
+      -1 열(-1로 예측된 mon): 1483 = FN
+
+## E9-multi-rf-eta-bottom20: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [20, 20, 20, 20, 20], 5개 fold 공통 15개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 1s predict 0s
+  ROC-AUC 0.7912 (fold std 0.0240)  PR-AUC 0.8679  | pooled best TPR@FPR≤0.1/1/5% 0.0481 / 0.1324 / 0.2349  | per-fold TPR@FPR≤1% 0.1412 ± 0.0371
+  [E9-multi-rf-eta-bottom20-argmax] TPR 0.3082  FPR 0.0943  precision 0.5374  macro_f1 0.3802  | det_TPR 0.5238  wrong_site 3687 (21.56%)  FN 8143  FP 849  | fold std TPR 0.0479 FPR 0.0209
+      -1 행(실제 unmon 9000): -1로 8151, mon으로 849 (FP가 많은 사이트 [(90, 27), (63, 21), (51, 20), (21, 19), (29, 18)])
+      -1 열(-1로 예측된 mon): 8143 = FN
+  [E9-multi-rf-eta-bottom20-fpr0.1] TPR 0.0489  FPR 0.0014  precision 0.9500  macro_f1 0.0884  | det_TPR 0.0507  wrong_site 31 (0.18%)  FN 16233  FP 13  | fold std TPR 0.0078 FPR 0.0019
+      -1 행(실제 unmon 9000): -1로 8987, mon으로 13 (FP가 많은 사이트 [(40, 2), (29, 2), (0, 1), (30, 1), (44, 1)])
+      -1 열(-1로 예측된 mon): 16233 = FN
+  [E9-multi-rf-eta-bottom20-fpr1] TPR 0.1326  FPR 0.0099  precision 0.8733  macro_f1 0.2128  | det_TPR 0.1466  wrong_site 240 (1.40%)  FN 14593  FP 89  | fold std TPR 0.0200 FPR 0.0045
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(75, 5), (82, 5), (74, 5), (86, 4), (40, 4)])
+      -1 열(-1로 예측된 mon): 14593 = FN
+  [E9-multi-rf-eta-bottom20-fpr5] TPR 0.2350  FPR 0.0503  precision 0.7123  macro_f1 0.3343  | det_TPR 0.3035  wrong_site 1170 (6.84%)  FN 11911  FP 453  | fold std TPR 0.0277 FPR 0.0223
+      -1 행(실제 unmon 9000): -1로 8547, mon으로 453 (FP가 많은 사이트 [(74, 19), (75, 14), (42, 13), (87, 13), (86, 11)])
+      -1 열(-1로 예측된 mon): 11911 = FN
+
+## E9-multi-rf-eta-site-top20: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [20, 20, 20, 20, 20], 5개 fold 공통 19개
+    fold 0: fit 20880 / val 5220  fit 2s predict 0s
+    fold 1: fit 20880 / val 5220  fit 2s predict 0s
+    fold 2: fit 20880 / val 5220  fit 2s predict 0s
+    fold 3: fit 20880 / val 5220  fit 2s predict 0s
+    fold 4: fit 20880 / val 5220  fit 2s predict 0s
+  ROC-AUC 0.9714 (fold std 0.0030)  PR-AUC 0.9838  | pooled best TPR@FPR≤0.1/1/5% 0.4040 / 0.6180 / 0.7791  | per-fold TPR@FPR≤1% 0.6173 ± 0.0196
+  [E9-multi-rf-eta-site-top20-argmax] TPR 0.8262  FPR 0.0922  precision 0.8421  macro_f1 0.8334  | det_TPR 0.9326  wrong_site 1820 (10.64%)  FN 1152  FP 830  | fold std TPR 0.0184 FPR 0.0062
+      -1 행(실제 unmon 9000): -1로 8170, mon으로 830 (FP가 많은 사이트 [(47, 25), (42, 23), (94, 23), (0, 23), (92, 20)])
+      -1 열(-1로 예측된 mon): 1152 = FN
+  [E9-multi-rf-eta-site-top20-fpr0.1] TPR 0.4087  FPR 0.0010  precision 0.9953  macro_f1 0.5451  | det_TPR 0.4101  wrong_site 24 (0.14%)  FN 10087  FP 9  | fold std TPR 0.0093 FPR 0.0004
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(94, 2), (84, 1), (93, 1), (59, 1), (47, 1)])
+      -1 열(-1로 예측된 mon): 10087 = FN
+  [E9-multi-rf-eta-site-top20-fpr1] TPR 0.6164  FPR 0.0099  precision 0.9770  macro_f1 0.7376  | det_TPR 0.6257  wrong_site 159 (0.93%)  FN 6400  FP 89  | fold std TPR 0.0154 FPR 0.0014
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(94, 9), (73, 6), (57, 6), (0, 5), (65, 4)])
+      -1 열(-1로 예측된 mon): 6400 = FN
+  [E9-multi-rf-eta-site-top20-fpr5] TPR 0.7792  FPR 0.0494  precision 0.9120  macro_f1 0.8356  | det_TPR 0.8284  wrong_site 841 (4.92%)  FN 2935  FP 445  | fold std TPR 0.0181 FPR 0.0054
+      -1 행(실제 unmon 9000): -1로 8555, mon으로 445 (FP가 많은 사이트 [(94, 27), (57, 23), (0, 21), (47, 17), (79, 15)])
+      -1 열(-1로 예측된 mon): 2935 = FN
+
+## E9-multi-rf-eta-site-top50: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [50, 50, 50, 50, 50], 5개 fold 공통 48개
+    fold 0: fit 20880 / val 5220  fit 6s predict 0s
+    fold 1: fit 20880 / val 5220  fit 5s predict 0s
+    fold 2: fit 20880 / val 5220  fit 5s predict 0s
+    fold 3: fit 20880 / val 5220  fit 5s predict 0s
+    fold 4: fit 20880 / val 5220  fit 6s predict 0s
+  ROC-AUC 0.9723 (fold std 0.0042)  PR-AUC 0.9847  | pooled best TPR@FPR≤0.1/1/5% 0.4216 / 0.6682 / 0.7919  | per-fold TPR@FPR≤1% 0.6735 ± 0.0359
+  [E9-multi-rf-eta-site-top50-argmax] TPR 0.8276  FPR 0.0732  precision 0.8646  macro_f1 0.8444  | det_TPR 0.9187  wrong_site 1558 (9.11%)  FN 1390  FP 659  | fold std TPR 0.0209 FPR 0.0053
+      -1 행(실제 unmon 9000): -1로 8341, mon으로 659 (FP가 많은 사이트 [(64, 20), (47, 19), (0, 18), (22, 17), (63, 16)])
+      -1 열(-1로 예측된 mon): 1390 = FN
+  [E9-multi-rf-eta-site-top50-fpr0.1] TPR 0.4195  FPR 0.0010  precision 0.9968  macro_f1 0.5576  | det_TPR 0.4203  wrong_site 14 (0.08%)  FN 9913  FP 9  | fold std TPR 0.0218 FPR 0.0004
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(47, 2), (84, 1), (57, 1), (59, 1), (71, 1)])
+      -1 열(-1로 예측된 mon): 9913 = FN
+  [E9-multi-rf-eta-site-top50-fpr1] TPR 0.6685  FPR 0.0100  precision 0.9773  macro_f1 0.7802  | det_TPR 0.6788  wrong_site 176 (1.03%)  FN 5492  FP 90  | fold std TPR 0.0190 FPR 0.0020
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(73, 8), (94, 7), (57, 6), (65, 4), (47, 4)])
+      -1 열(-1로 예측된 mon): 5492 = FN
+  [E9-multi-rf-eta-site-top50-fpr5] TPR 0.7924  FPR 0.0496  precision 0.9213  macro_f1 0.8476  | det_TPR 0.8340  wrong_site 711 (4.16%)  FN 2839  FP 446  | fold std TPR 0.0213 FPR 0.0076
+      -1 행(실제 unmon 9000): -1로 8554, mon으로 446 (FP가 많은 사이트 [(57, 31), (94, 22), (0, 21), (47, 13), (73, 13)])
+      -1 열(-1로 예측된 mon): 2839 = FN
+
+## E9-multi-rf-eta-site-top100: 입력 376개 → fold 안에서 EtaSelect
+  fold별 선택 개수 [100, 100, 100, 100, 100], 5개 fold 공통 95개
+    fold 0: fit 20880 / val 5220  fit 10s predict 0s
+    fold 1: fit 20880 / val 5220  fit 9s predict 0s
+    fold 2: fit 20880 / val 5220  fit 9s predict 0s
+    fold 3: fit 20880 / val 5220  fit 9s predict 0s
+    fold 4: fit 20880 / val 5220  fit 9s predict 0s
+  ROC-AUC 0.9782 (fold std 0.0034)  PR-AUC 0.9883  | pooled best TPR@FPR≤0.1/1/5% 0.5588 / 0.7359 / 0.8385  | per-fold TPR@FPR≤1% 0.7374 ± 0.0230
+  [E9-multi-rf-eta-site-top100-argmax] TPR 0.8464  FPR 0.0492  precision 0.9027  macro_f1 0.8724  | det_TPR 0.9118  wrong_site 1117 (6.53%)  FN 1509  FP 443  | fold std TPR 0.0185 FPR 0.0019
+      -1 행(실제 unmon 9000): -1로 8557, mon으로 443 (FP가 많은 사이트 [(68, 15), (38, 13), (64, 13), (57, 13), (45, 11)])
+      -1 열(-1로 예측된 mon): 1509 = FN
+  [E9-multi-rf-eta-site-top100-fpr0.1] TPR 0.5573  FPR 0.0010  precision 0.9973  macro_f1 0.6928  | det_TPR 0.5582  wrong_site 17 (0.10%)  FN 7554  FP 9  | fold std TPR 0.0194 FPR 0.0007
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(47, 1), (57, 1), (25, 1), (91, 1), (65, 1)])
+      -1 열(-1로 예측된 mon): 7554 = FN
+  [E9-multi-rf-eta-site-top100-fpr1] TPR 0.7366  FPR 0.0099  precision 0.9818  macro_f1 0.8336  | det_TPR 0.7450  wrong_site 144 (0.84%)  FN 4360  FP 89  | fold std TPR 0.0159 FPR 0.0021
+      -1 행(실제 unmon 9000): -1로 8911, mon으로 89 (FP가 많은 사이트 [(57, 11), (65, 5), (6, 4), (50, 4), (68, 4)])
+      -1 열(-1로 예측된 mon): 4360 = FN
+  [E9-multi-rf-eta-site-top100-fpr5] TPR 0.8390  FPR 0.0492  precision 0.9291  macro_f1 0.8796  | det_TPR 0.8771  wrong_site 651 (3.81%)  FN 2102  FP 443  | fold std TPR 0.0161 FPR 0.0041
+      -1 행(실제 unmon 9000): -1로 8557, mon으로 443 (FP가 많은 사이트 [(57, 29), (6, 16), (94, 14), (68, 14), (48, 13)])
+      -1 열(-1로 예측된 mon): 2102 = FN
+
+## E9-multi-rf-reduced095: 입력 376개 → fold 안에서 CorrReduce
+  fold별 선택 개수 [252, 252, 252, 252, 252], 5개 fold 공통 252개
+    fold 0: fit 20880 / val 5220  fit 5s predict 0s
+    fold 1: fit 20880 / val 5220  fit 4s predict 0s
+    fold 2: fit 20880 / val 5220  fit 4s predict 0s
+    fold 3: fit 20880 / val 5220  fit 4s predict 0s
+    fold 4: fit 20880 / val 5220  fit 4s predict 0s
+  ROC-AUC 0.9930 (fold std 0.0014)  PR-AUC 0.9963  | pooled best TPR@FPR≤0.1/1/5% 0.7826 / 0.8900 / 0.9371  | per-fold TPR@FPR≤1% 0.8936 ± 0.0196
+  [E9-multi-rf-reduced095-argmax] TPR 0.8885  FPR 0.0057  precision 0.9769  macro_f1 0.9288  | det_TPR 0.9065  wrong_site 309 (1.81%)  FN 1598  FP 51  | fold std TPR 0.0144 FPR 0.0011
+      -1 행(실제 unmon 9000): -1로 8949, mon으로 51 (FP가 많은 사이트 [(63, 6), (60, 3), (71, 2), (40, 2), (91, 2)])
+      -1 열(-1로 예측된 mon): 1598 = FN
+  [E9-multi-rf-reduced095-fpr0.1] TPR 0.7720  FPR 0.0008  precision 0.9968  macro_f1 0.8633  | det_TPR 0.7742  wrong_site 36 (0.21%)  FN 3862  FP 7  | fold std TPR 0.0139 FPR 0.0007
+      -1 행(실제 unmon 9000): -1로 8993, mon으로 7 (FP가 많은 사이트 [(42, 1), (91, 1), (66, 1), (19, 1), (26, 1)])
+      -1 열(-1로 예측된 mon): 3862 = FN
+  [E9-multi-rf-reduced095-fpr1] TPR 0.8915  FPR 0.0100  precision 0.9829  macro_f1 0.9335  | det_TPR 0.9018  wrong_site 175 (1.02%)  FN 1680  FP 90  | fold std TPR 0.0126 FPR 0.0029
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(48, 6), (71, 6), (63, 5), (66, 5), (86, 5)])
+      -1 열(-1로 예측된 mon): 1680 = FN
+  [E9-multi-rf-reduced095-fpr5] TPR 0.9355  FPR 0.0479  precision 0.9512  macro_f1 0.9430  | det_TPR 0.9582  wrong_site 389 (2.27%)  FN 714  FP 431  | fold std TPR 0.0108 FPR 0.0057
+      -1 행(실제 unmon 9000): -1로 8569, mon으로 431 (FP가 많은 사이트 [(0, 35), (75, 23), (71, 19), (48, 18), (50, 16)])
+      -1 열(-1로 예측된 mon): 714 = FN
+
+## η² 상위/하위 20개의 상관 (fold 0 학습 행). |r| 통계는 서로 다른 쌍 190개 기준
+  binary eta-top20     : 평균 |r| 0.148, |r| >= 0.9 쌍 1%, >= 0.95 1% | 길이 계열 0% | 구성 15~28셀 9, bseqlong 4, dir 3, cumulabs 2, bseq 1, order 1
+      dir_007 in_burst_1 first10_out dir_008 bseq_1 dir_001 bseq_2 cumul_at_200 dir_004 cumul_at_100 bseq_11 dir_023 dir_009 dir_021 bseq_72 bseq_40 dir_022 bseq_46 first100_out bseq_80
+  binary eta-bottom20  : 평균 |r| 0.194, |r| >= 0.9 쌍 0%, >= 0.95 0% | 길이 계열 0% | 구성 dir 8, timing 3, burst 3, cumul100 2, count 2, 15~28셀 1, cumulabs 1
+      dir_054 cumul100_001 n_out dir_055 dir_011 iat_zero_frac dir_050 iat_p90 dir_034 cumul_at_3000 dir_053 out_burst_std cumul100_003 in_burst_mean pps_median frac_out in_burst_max dir_099 dir_035 dir_047
+  multi  eta-top20     : 평균 |r| 0.205, |r| >= 0.9 쌍 3%, >= 0.95 2% | 길이 계열 0% | 구성 15~28셀 13, cumul100 2, cumulabs 2, burst 1, 기타 1, order 1
+      dir_004 bseq_4 dir_002 dir_007 dir_008 dir_006 dir_005 in_burst_2 first10_out bseq_5 n_bursts n_bursts_total dir_003 out_order_mean in_burst_3 cumul100_001 cumul100_002 cumul_at_5000 cumul_at_3000 dir_001
+  multi  eta-site-top20: 평균 |r| 0.292, |r| >= 0.9 쌍 12%, >= 0.95 7% | 길이 계열 0% | 구성 15~28셀 11, cumul100 4, cumulabs 2, burst 1, 기타 1, order 1
+      dir_001 dir_002 first10_out in_burst_1 dir_004 bseq_1 bseq_3 in_burst_2 bseq_4 dir_003 dir_006 n_bursts n_bursts_total cumul_at_5000 cumul_at_3000 out_order_mean cumul100_015 cumul100_014 cumul100_013 cumul100_016
+  multi  eta-bottom20  : 평균 |r| 0.203, |r| >= 0.9 쌍 0%, >= 0.95 0% | 길이 계열 0% | 구성 dir 14, timing 4, bseq 1, 15~28셀 1
+      iat_p90 bseq_10 bseq_2 iat_out_std dir_074 iat_out_mean dir_073 dir_077 dir_079 dir_078 dir_072 dir_076 dir_075 dir_080 dir_085 t_50pct dir_065 dir_068 dir_084 dir_083
+
+## 요약 E9 (RF 고정) — TPR@FPR≤1% fold 평균 ± sd. Δ = cand134 대비, 유의 = |Δ| > max(1%p, cand134 fold sd)
+  binary
+    all376           376.0개 | 0.7224 ± 0.0339 | Δ -0.0511 (유의) | AUC 0.9855 | TPR@0.1% 0.3837 @5% 0.9140 | prec@1% 0.9932 | fit 4s
+    cand134          134.0개 | 0.7735 ± 0.0326 | Δ +0.0000 (기준) | AUC 0.9886 | TPR@0.1% 0.4784 @5% 0.9356 | prec@1% 0.9934 | fit 2s
+    cand134-qconst   121.0개 | 0.7350 ± 0.0300 | Δ -0.0385 (유의) | AUC 0.9874 | TPR@0.1% 0.3769 @5% 0.9362 | prec@1% 0.9931 | fit 2s
+    eta-top20         20.0개 | 0.4967 ± 0.0403 | Δ -0.2768 (유의) | AUC 0.9680 | TPR@0.1% 0.1905 @5% 0.7967 | prec@1% 0.9899 | fit 0s
+    eta-top50         50.0개 | 0.5458 ± 0.0390 | Δ -0.2277 (유의) | AUC 0.9696 | TPR@0.1% 0.1543 @5% 0.8171 | prec@1% 0.9903 | fit 1s
+    eta-top100       100.0개 | 0.6807 ± 0.0318 | Δ -0.0928 (유의) | AUC 0.9804 | TPR@0.1% 0.3657 @5% 0.8825 | prec@1% 0.9924 | fit 1s
+    eta-bottom20      20.0개 | 0.3208 ± 0.0450 | Δ -0.4527 (유의) | AUC 0.9030 | TPR@0.1% 0.1298 @5% 0.5606 | prec@1% 0.9846 | fit 1s
+    reduced095       252.0개 | 0.7209 ± 0.0146 | Δ -0.0526 (유의) | AUC 0.9850 | TPR@0.1% 0.4488 @5% 0.9087 | prec@1% 0.9935 | fit 2s
+  multi
+    all376           376.0개 | 0.8819 ± 0.0227 | Δ -0.0132 (유의) | AUC 0.9913 | TPR@0.1% 0.7871 @5% 0.9267 | prec@1% 0.9856 | fit 9s
+    cand134          134.0개 | 0.8951 ± 0.0122 | Δ +0.0000 (기준) | AUC 0.9926 | TPR@0.1% 0.7874 @5% 0.9318 | prec@1% 0.9833 | fit 4s
+    cand134-qconst   121.0개 | 0.8721 ± 0.0217 | Δ -0.0230 (유의) | AUC 0.9894 | TPR@0.1% 0.7866 @5% 0.9157 | prec@1% 0.9840 | fit 5s
+    eta-top20         20.0개 | 0.7659 ± 0.0215 | Δ -0.1292 (유의) | AUC 0.9848 | TPR@0.1% 0.5980 @5% 0.8608 | prec@1% 0.9740 | fit 2s
+    eta-top50         50.0개 | 0.8017 ± 0.0250 | Δ -0.0934 (유의) | AUC 0.9844 | TPR@0.1% 0.6611 @5% 0.8671 | prec@1% 0.9742 | fit 5s
+    eta-top100       100.0개 | 0.8091 ± 0.0278 | Δ -0.0860 (유의) | AUC 0.9837 | TPR@0.1% 0.6648 @5% 0.8719 | prec@1% 0.9749 | fit 9s
+    eta-bottom20      20.0개 | 0.1412 ± 0.0371 | Δ -0.7539 (유의) | AUC 0.7912 | TPR@0.1% 0.0481 @5% 0.2349 | prec@1% 0.8733 | fit 2s
+    eta-site-top20    20.0개 | 0.6173 ± 0.0196 | Δ -0.2778 (유의) | AUC 0.9714 | TPR@0.1% 0.4040 @5% 0.7791 | prec@1% 0.9770 | fit 2s
+    eta-site-top50    50.0개 | 0.6735 ± 0.0359 | Δ -0.2216 (유의) | AUC 0.9723 | TPR@0.1% 0.4216 @5% 0.7919 | prec@1% 0.9773 | fit 5s
+    eta-site-top100  100.0개 | 0.7374 ± 0.0230 | Δ -0.1577 (유의) | AUC 0.9782 | TPR@0.1% 0.5588 @5% 0.8385 | prec@1% 0.9818 | fit 9s
+    reduced095       252.0개 | 0.8936 ± 0.0196 | Δ -0.0015 (같은 수준) | AUC 0.9930 | TPR@0.1% 0.7826 @5% 0.9371 | prec@1% 0.9829 | fit 4s
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e9_featuresets.png
+      /Users/kangrihyun/Desktop/ML/figures/ow_e9_eta_corr.png
+
+## 보충: η² 상위 k개의 상관 (fold 0 선택·학습 행)
+  multi|eta-top50       : 평균 |r| 0.567, ≥0.9 쌍 45% | 최다 계열 cumul100 29개, 그 안 평균 |r| 0.975, ≥0.9 쌍 88%
+  multi|eta-top100      : 평균 |r| 0.728, ≥0.9 쌍 65% | 최다 계열 cumul100 68개, 그 안 평균 |r| 0.986, ≥0.9 쌍 94%
+  multi|eta-site-top100 : 평균 |r| 0.779, ≥0.9 쌍 73% | 최다 계열 cumul100 70개, 그 안 평균 |r| 0.994, ≥0.9 쌍 100%
+  binary|eta-top50      : 평균 |r| 0.264, ≥0.9 쌍 0% | 최다 계열 bseq_ 33개, 그 안 평균 |r| 0.466, ≥0.9 쌍 0%
+  binary|eta-top100     : 평균 |r| 0.172, ≥0.9 쌍 0% | 최다 계열 bseq_ 66개, 그 안 평균 |r| 0.278, ≥0.9 쌍 0%

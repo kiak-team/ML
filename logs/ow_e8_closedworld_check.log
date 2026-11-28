@@ -1,0 +1,11 @@
+그룹 단독 closed-world 정확도 (train mon 17,100, 95클래스, visit 5-fold, RF 200 rs=42)
+  Count          4개  closed-world acc 0.4750
+  Timing        18개  closed-world acc 0.5527
+  Order·Conc.   10개  closed-world acc 0.8133
+  Burst         11개  closed-world acc 0.8791
+  CUMUL         12개  closed-world acc 0.7203
+  @early         6개  closed-world acc 0.6464
+  @bseq         24개  closed-world acc 0.7152
+  @cumulabs     13개  closed-world acc 0.8035
+  @dir50        36개  closed-world acc 0.4605
+  @qconst       13개  closed-world acc 0.6355

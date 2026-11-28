@@ -1,0 +1,42 @@
+[TEST holdout 1회 평가]
+학습 26100행 (mon 17100, unmon 9000) / 평가 2900행 (mon 1900, unmon 1000). 임계값은 학습 행의 5-fold OOF 점수로 정한다
+
+## TEST-multi-rf-cand134: 피처 134개
+  임계값용 OOF 점수 = E7 RF OOF와 같음 확인
+  임계값 (train OOF unmon 9000개): fpr0.1 t=0.3850, fpr1 t=0.2300, fpr5 t=0.1400  (21s)
+  탐지 ROC-AUC 0.9935  PR-AUC 0.9966
+  [TEST-multi-rf-cand134-argmax] TPR 0.9147 [0.9013, 0.9265]  FPR 0.0060 (6/1000) [0.0028, 0.0130]  precision 0.9786  macro_f1 0.9439  acc 0.9421 | det_TPR 0.9316 wrong_site 32 | prec@1:100 0.5973
+  [TEST-multi-rf-cand134-fpr0.1] TPR 0.8211 [0.8032, 0.8376]  FPR 0.0010 (1/1000) [0.0002, 0.0056]  precision 0.9968  macro_f1 0.8951  acc 0.8824 | det_TPR 0.8232 wrong_site 4 | prec@1:100 0.8894
+  [TEST-multi-rf-cand134-fpr1] TPR 0.9063 [0.8924, 0.9186]  FPR 0.0080 (8/1000) [0.0041, 0.0157]  precision 0.9880  macro_f1 0.9432  acc 0.9359 | det_TPR 0.9132 wrong_site 13 | prec@1:100 0.5290
+      -1 행: unmon 1000 중 mon으로 8 (FP가 많은 사이트 [(42, 1), (88, 1), (66, 1), (63, 1), (82, 1)])
+  [TEST-multi-rf-cand134-fpr5] TPR 0.9400 [0.9284, 0.9498]  FPR 0.0420 (42/1000) [0.0312, 0.0563]  precision 0.9597  macro_f1 0.9491  acc 0.9462 | det_TPR 0.9574 wrong_site 33 | prec@1:100 0.1823
+
+## TEST-binary-rf-cand134: 피처 134개
+  임계값용 OOF 점수 = E7 RF OOF와 같음 확인
+  임계값 (train OOF unmon 9000개): fpr0.1 t=0.9250, fpr1 t=0.8450, fpr5 t=0.7050  (11s)
+  탐지 ROC-AUC 0.9901  PR-AUC 0.9944
+  [TEST-binary-rf-cand134-argmax] TPR 0.9895 [0.9838, 0.9932]  FPR 0.1410 (141/1000) [0.1208, 0.1639]  precision 0.9302  macro_f1 0.9366  acc 0.9445 | det_TPR 0.9895 wrong_site 0 | prec@1:100 0.0656
+  [TEST-binary-rf-cand134-fpr0.1] TPR 0.5116 [0.4891, 0.5340]  FPR 0.0010 (1/1000) [0.0002, 0.0056]  precision 0.9990  macro_f1 0.6796  acc 0.6797 | det_TPR 0.5116 wrong_site 0 | prec@1:100 0.8365
+  [TEST-binary-rf-cand134-fpr1] TPR 0.7842 [0.7651, 0.8021]  FPR 0.0080 (8/1000) [0.0041, 0.0157]  precision 0.9947  macro_f1 0.8515  acc 0.8559 | det_TPR 0.7842 wrong_site 0 | prec@1:100 0.4950
+      -1 행: unmon 1000 중 mon으로 8 (FP가 많은 사이트 [(1, 8)])
+  [TEST-binary-rf-cand134-fpr5] TPR 0.9379 [0.9261, 0.9479]  FPR 0.0410 (41/1000) [0.0304, 0.0551]  precision 0.9775  macro_f1 0.9404  acc 0.9452 | det_TPR 0.9379 wrong_site 0 | prec@1:100 0.1862
+
+## TEST-multi-rf-cand121: 피처 121개
+  임계값 (train OOF unmon 9000개): fpr0.1 t=0.3150, fpr1 t=0.2050, fpr5 t=0.1350  (25s)
+  탐지 ROC-AUC 0.9916  PR-AUC 0.9956
+  [TEST-multi-rf-cand121-argmax] TPR 0.8832 [0.8679, 0.8968]  FPR 0.0040 (4/1000) [0.0016, 0.0102]  precision 0.9784  macro_f1 0.9253  acc 0.9221 | det_TPR 0.9005 wrong_site 33 | prec@1:100 0.6791
+  [TEST-multi-rf-cand121-fpr0.1] TPR 0.8226 [0.8048, 0.8392]  FPR 0.0020 (2/1000) [0.0005, 0.0073]  precision 0.9955  macro_f1 0.8954  acc 0.8831 | det_TPR 0.8253 wrong_site 5 | prec@1:100 0.8024
+  [TEST-multi-rf-cand121-fpr1] TPR 0.8905 [0.8757, 0.9038]  FPR 0.0080 (8/1000) [0.0041, 0.0157]  precision 0.9854  macro_f1 0.9327  acc 0.9255 | det_TPR 0.8995 wrong_site 17 | prec@1:100 0.5240
+      -1 행: unmon 1000 중 mon으로 8 (FP가 많은 사이트 [(55, 1), (88, 1), (66, 1), (25, 1), (15, 1)])
+  [TEST-multi-rf-cand121-fpr5] TPR 0.9316 [0.9193, 0.9421]  FPR 0.0470 (47/1000) [0.0355, 0.0619]  precision 0.9568  macro_f1 0.9434  acc 0.9390 | det_TPR 0.9489 wrong_site 33 | prec@1:100 0.1649
+
+## TEST-binary-rf-cand121: 피처 121개
+  임계값 (train OOF unmon 9000개): fpr0.1 t=0.9300, fpr1 t=0.8350, fpr5 t=0.6750  (12s)
+  탐지 ROC-AUC 0.9879  PR-AUC 0.9931
+  [TEST-binary-rf-cand121-argmax] TPR 0.9863 [0.9800, 0.9906]  FPR 0.1320 (132/1000) [0.1124, 0.1544]  precision 0.9342  macro_f1 0.9381  acc 0.9455 | det_TPR 0.9863 wrong_site 0 | prec@1:100 0.0695
+  [TEST-binary-rf-cand121-fpr0.1] TPR 0.4163 [0.3943, 0.4386]  FPR 0.0000 (0/1000) [0.0000, 0.0038]  precision 1.0000  macro_f1 0.6156  acc 0.6176 | det_TPR 0.4163 wrong_site 0 | prec@1:100 1.0000
+  [TEST-binary-rf-cand121-fpr1] TPR 0.7489 [0.7290, 0.7679]  FPR 0.0090 (9/1000) [0.0047, 0.0170]  precision 0.9937  macro_f1 0.8286  acc 0.8324 | det_TPR 0.7489 wrong_site 0 | prec@1:100 0.4542
+      -1 행: unmon 1000 중 mon으로 9 (FP가 많은 사이트 [(1, 9)])
+  [TEST-binary-rf-cand121-fpr5] TPR 0.9384 [0.9267, 0.9484]  FPR 0.0520 (52/1000) [0.0399, 0.0676]  precision 0.9717  macro_f1 0.9365  acc 0.9417 | det_TPR 0.9384 wrong_site 0 | prec@1:100 0.1529
+
+요약 표: /Users/kangrihyun/Desktop/ML/results/ow_test_summary.csv

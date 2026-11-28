@@ -1,0 +1,80 @@
+
+## E5-subset-free-visit (all376_skip14)
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 0.9923 (fold std 0.0019)
+  [E5-subset-free-visit] TPR 0.9736  FPR 0.0687  precision 0.9341  macro_f1 0.9524  | det_TPR 0.9736  wrong_site 0 (0.00%)  FN 119  FP 309  | fold std TPR 0.0046 FPR 0.0125
+      -1 행(실제 unmon 4501): -1로 4192, mon으로 309 (FP가 많은 사이트 [(1, 309)])
+      -1 열(-1로 예측된 mon): 119 = FN
+  [E5-subset-free-visit-fpr1] TPR 0.8669  FPR 0.0102  precision 0.9883  macro_f1 0.9281  | det_TPR 0.8669  wrong_site 0 (0.00%)  FN 599  FP 46  | fold std TPR 0.0230 FPR 0.0054
+      -1 행(실제 unmon 4501): -1로 4455, mon으로 46 (FP가 많은 사이트 [(1, 46)])
+      -1 열(-1로 예측된 mon): 599 = FN
+  [E5-subset-free-visit-fpr0.1] TPR 0.6053  FPR 0.0011  precision 0.9982  macro_f1 0.7942  | det_TPR 0.6053  wrong_site 0 (0.00%)  FN 1776  FP 5  | fold std TPR 0.0459 FPR 0.0012
+      -1 행(실제 unmon 4501): -1로 4496, mon으로 5 (FP가 많은 사이트 [(1, 5)])
+      -1 열(-1로 예측된 mon): 1776 = FN
+  (비교) multi E1 점수의 탐지 ROC-AUC 0.9952
+
+## E5-subset-free-subpage (all376_skip14)
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 0.9703 (fold std 0.0079)
+  [E5-subset-free-subpage] TPR 0.8769  FPR 0.0638  precision 0.9322  macro_f1 0.9065  | det_TPR 0.8769  wrong_site 0 (0.00%)  FN 554  FP 287  | fold std TPR 0.0458 FPR 0.0103
+      -1 행(실제 unmon 4501): -1로 4214, mon으로 287 (FP가 많은 사이트 [(1, 287)])
+      -1 열(-1로 예측된 mon): 554 = FN
+  [E5-subset-free-subpage-fpr1] TPR 0.7082  FPR 0.0098  precision 0.9864  macro_f1 0.8462  | det_TPR 0.7082  wrong_site 0 (0.00%)  FN 1313  FP 44  | fold std TPR 0.0609 FPR 0.0038
+      -1 행(실제 unmon 4501): -1로 4457, mon으로 44 (FP가 많은 사이트 [(1, 44)])
+      -1 열(-1로 예측된 mon): 1313 = FN
+  [E5-subset-free-subpage-fpr0.1] TPR 0.4873  FPR 0.0009  precision 0.9982  macro_f1 0.7252  | det_TPR 0.4873  wrong_site 0 (0.00%)  FN 2307  FP 4  | fold std TPR 0.0463 FPR 0.0008
+      -1 행(실제 unmon 4501): -1로 4497, mon으로 4 (FP가 많은 사이트 [(1, 4)])
+      -1 열(-1로 예측된 mon): 2307 = FN
+  (비교) multi E1 점수의 탐지 ROC-AUC 0.9644
+
+## E5-subset-leak-visit (all376_leak(skip0))
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 1.0000 (fold std 0.0000)
+  [E5-subset-leak-visit] TPR 0.9998  FPR 0.0000  precision 1.0000  macro_f1 0.9999  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 0  | fold std TPR 0.0004 FPR 0.0000
+      -1 행(실제 unmon 4501): -1로 4501, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 1 = FN
+  [E5-subset-leak-visit-fpr1] TPR 0.9998  FPR 0.0098  precision 0.9903  macro_f1 0.9950  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 44  | fold std TPR 0.0004 FPR 0.0055
+      -1 행(실제 unmon 4501): -1로 4457, mon으로 44 (FP가 많은 사이트 [(1, 44)])
+      -1 열(-1로 예측된 mon): 1 = FN
+  [E5-subset-leak-visit-fpr0.1] TPR 0.9998  FPR 0.0004  precision 0.9996  macro_f1 0.9997  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 2  | fold std TPR 0.0004 FPR 0.0005
+      -1 행(실제 unmon 4501): -1로 4499, mon으로 2 (FP가 많은 사이트 [(1, 2)])
+      -1 열(-1로 예측된 mon): 1 = FN
+  (비교) multi E4-E1 점수의 탐지 ROC-AUC 1.0000
+
+## E5-subset-leak-subpage (all376_leak(skip0))
+    fold 0: fit 7214 (unmon 3614) / val 1787  1s
+    fold 1: fit 7205 (unmon 3605) / val 1796  1s
+    fold 2: fit 7234 (unmon 3634) / val 1767  1s
+    fold 3: fit 7174 (unmon 3574) / val 1827  1s
+    fold 4: fit 7177 (unmon 3577) / val 1824  1s
+  ROC-AUC 1.0000 (fold std 0.0001)
+  [E5-subset-leak-subpage] TPR 0.9998  FPR 0.0000  precision 1.0000  macro_f1 0.9999  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 0  | fold std TPR 0.0004 FPR 0.0000
+      -1 행(실제 unmon 4501): -1로 4501, mon으로 0 (FP가 많은 사이트 [])
+      -1 열(-1로 예측된 mon): 1 = FN
+  [E5-subset-leak-subpage-fpr1] TPR 0.9998  FPR 0.0089  precision 0.9912  macro_f1 0.9954  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 40  | fold std TPR 0.0004 FPR 0.0046
+      -1 행(실제 unmon 4501): -1로 4461, mon으로 40 (FP가 많은 사이트 [(1, 40)])
+      -1 열(-1로 예측된 mon): 1 = FN
+  [E5-subset-leak-subpage-fpr0.1] TPR 0.9998  FPR 0.0009  precision 0.9991  macro_f1 0.9994  | det_TPR 0.9998  wrong_site 0 (0.00%)  FN 1  FP 4  | fold std TPR 0.0004 FPR 0.0008
+      -1 행(실제 unmon 4501): -1로 4497, mon으로 4 (FP가 많은 사이트 [(1, 4)])
+      -1 열(-1로 예측된 mon): 1 = FN
+  (비교) multi E4-E1 점수의 탐지 ROC-AUC 1.0000
+
+## 같은 FPR에서 비교 (pooled): binary TPR | multi 탐지(det_TPR, 사이트 무관) | multi TPR(사이트까지)
+  free visit   FPR≤0.1%: bin 0.6038, multi det 0.8418, multi site 0.8396 | FPR≤1.0%: bin 0.8711, multi det 0.9338, multi site 0.9262 | FPR≤5.0%: bin 0.9596, multi det 0.9751, multi site 0.9544
+  free subpage FPR≤0.1%: bin 0.4856, multi det 0.5262, multi site 0.5196 | FPR≤1.0%: bin 0.7109, multi det 0.6420, multi site 0.6189 | FPR≤5.0%: bin 0.8509, multi det 0.8184, multi site 0.7196
+  leak visit   FPR≤0.1%: bin 0.9998, multi det 0.9998, multi site 0.9640 | FPR≤1.0%: bin 0.9998, multi det 0.9998, multi site 0.9640 | FPR≤5.0%: bin 0.9998, multi det 0.9998, multi site 0.9640
+  leak subpage FPR≤0.1%: bin 0.9998, multi det 0.9953, multi site 0.7700 | FPR≤1.0%: bin 0.9998, multi det 0.9998, multi site 0.7700 | FPR≤5.0%: bin 0.9998, multi det 0.9998, multi site 0.7700
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e5_binary-subset.png

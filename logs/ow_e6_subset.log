@@ -1,0 +1,40 @@
+
+## E6-subset-split-skip14: train 31986 / val 7995 (mon 4037, unmon 3958), 26클래스, 13s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.2289 FPR 0.2292
+  argmax: TPR 0.0505 FPR 0.0099 precision 0.6456 macro_f1 0.1077 det_TPR 0.0686 wrong_site 73 | closed-world acc(mon) 0.2653
+  최고 TPR: FPR≤0.1% 0.0206, ≤1% 0.0538, ≤5% 0.1063
+
+## E6-subset-merged-skip14: train 7196 / val 1799 (mon 900, unmon 899), 26클래스, 3s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.0622 FPR 0.0634
+  argmax: TPR 0.3978 FPR 0.0289 precision 0.8384 macro_f1 0.5166 det_TPR 0.4456 wrong_site 43 | closed-world acc(mon) 0.6900
+  최고 TPR: FPR≤0.1% 0.2033, ≤1% 0.3033, ≤5% 0.4378
+
+## E6-subset-join-skip14: train 7196 / val 1799 (mon 900, unmon 899), 26클래스, 3s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.3656 FPR 0.2169
+  argmax: TPR 0.6800 FPR 0.0089 precision 0.9231 macro_f1 0.7730 det_TPR 0.7278 wrong_site 43 | closed-world acc(mon) 0.8500
+  최고 TPR: FPR≤0.1% 0.5456, ≤1% 0.6800, ≤5% 0.7944
+
+## E6-subset-split-skip0: train 31986 / val 7995 (mon 4037, unmon 3958), 26클래스, 13s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.2854 FPR 0.2451
+  argmax: TPR 0.0681 FPR 0.0066 precision 0.4842 macro_f1 0.1348 det_TPR 0.1343 wrong_site 267 | closed-world acc(mon) 0.2321
+  최고 TPR: FPR≤0.1% 0.0183, ≤1% 0.0681, ≤5% 0.1045
+
+## E6-subset-merged-skip0: train 7196 / val 1799 (mon 900, unmon 899), 26클래스, 3s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.1067 FPR 0.1535
+  argmax: TPR 0.4067 FPR 0.0234 precision 0.8512 macro_f1 0.5257 det_TPR 0.4544 wrong_site 43 | closed-world acc(mon) 0.6933
+  최고 TPR: FPR≤0.1% 0.1933, ≤1% 0.3456, ≤5% 0.4267
+
+## E6-subset-join-skip0: train 7196 / val 1799 (mon 900, unmon 899), 26클래스, 3s
+  잔여 leak 규칙(idx7 outgoing → mon) val: TPR 0.9978 FPR 0.0078
+  argmax: TPR 0.6578 FPR 0.0067 precision 0.8397 macro_f1 0.7370 det_TPR 0.7767 wrong_site 107 | closed-world acc(mon) 0.7411
+  최고 TPR: FPR≤0.1% 0.1411, ≤1% 0.6578, ≤5% 0.6956
+
+## 요약 (검증 fold 0): kind skip | argmax TPR FPR | closed-world | 최고 TPR @FPR≤0.1% 1% 5% | argmax det_TPR
+  split  14 | 0.0505 0.0099 | 0.2653 | 0.0206 0.0538 0.1063 | 0.0686
+  merged 14 | 0.3978 0.0289 | 0.6900 | 0.2033 0.3033 0.4378 | 0.4456
+  join   14 | 0.6800 0.0089 | 0.8500 | 0.5456 0.6800 0.7944 | 0.7278
+  split   0 | 0.0681 0.0066 | 0.2321 | 0.0183 0.0681 0.1045 | 0.1343
+  merged  0 | 0.4067 0.0234 | 0.6933 | 0.1933 0.3456 0.4267 | 0.4544
+  join    0 | 0.6578 0.0067 | 0.7411 | 0.1411 0.6578 0.6956 | 0.7767
+
+그림: /Users/kangrihyun/Desktop/ML/figures/ow_e6_sliver-subset.png

@@ -1,0 +1,11 @@
+[pkl] mon 19000 (test 1900, train 17100), 사이트 95, URL 950
+      unmon 10000 (test 1000, train 9000)
+      fold별 행 수 visit  : mon [3420, 3420, 3420, 3420, 3420], unmon [1800, 1800, 1800, 1800, 1800]
+      fold별 행 수 subpage: mon [3420, 3420, 3420, 3420, 3420] (unmon은 visit과 같다)
+      subpage fold의 사이트별 URL 수: 최소 2, 최대 2 (사이트마다 fold당 정확히 2개)
+      A팀 openworld.split(skip=14)과 train/test/visit fold 모두 일치 (assert 통과)
+      train에서 unmon:mon 1개 사이트 = 9000:180 = 50배
+[sliver] mon 방문 19000, 사이트 95 [0..94], test 1900 (10.0%), 사이트별 test 18–23개
+         비어 있지 않은 split이 없는 방문 0개 (fold -1), fold별 방문 수 [3420, 3420, 3420, 3420, 3420]
+[sliver] unmon 방문 19000, test 1901 (10.0%)
+         비어 있지 않은 split이 없는 방문 0개 (fold -1), fold별 방문 수 [3420, 3420, 3420, 3420, 3419]

@@ -1,0 +1,3 @@
+subset-b exit 1
+e10 exit 0
+e10b exit 0

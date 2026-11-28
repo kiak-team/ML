@@ -1,0 +1,76 @@
+E10 dataset=pkl: RF + 후보 134개 (leak 제거 피처). 격자 {'n_estimators': [100, 200, 300], 'max_depth': [10, 20, None], 'min_samples_split': [2, 5, 10], 'class_weight': [None, 'balanced']} = 54개 조합, visit 5-fold (기존 split 그대로).
+scoring = fold별 TPR@FPR≤1% (multi는 사이트까지 맞힘). 보조 = macro F1(argmax). C팀 튜닝(closed-world accuracy)과 기준이 다르다
+
+######## binary ########
+  격자 탐색 544s. 상위 8개 (TPR@FPR≤1% fold 평균 ± sd | macro F1 | fit s/fold):
+    {n_estimators=300, max_depth=None, min_samples_split=2, class_weight=balanced}  0.7906 ± 0.0235 | 0.9455 | 3.1
+    {n_estimators=200, max_depth=20, min_samples_split=2, class_weight=balanced}  0.7850 ± 0.0289 | 0.9432 | 2.0
+    {n_estimators=200, max_depth=None, min_samples_split=2, class_weight=balanced}  0.7818 ± 0.0266 | 0.9444 | 2.1
+    {n_estimators=300, max_depth=20, min_samples_split=2, class_weight=balanced}  0.7812 ± 0.0241 | 0.9434 | 3.0
+    {n_estimators=300, max_depth=None, min_samples_split=5, class_weight=balanced}  0.7793 ± 0.0237 | 0.9446 | 3.6
+    {n_estimators=200, max_depth=None, min_samples_split=5, class_weight=balanced}  0.7758 ± 0.0290 | 0.9442 | 2.2
+    {n_estimators=100, max_depth=20, min_samples_split=2, class_weight=balanced}  0.7743 ± 0.0247 | 0.9431 | 1.0
+    {n_estimators=200, max_depth=None, min_samples_split=2, class_weight=None}  0.7735 ± 0.0326 | 0.9392 | 2.5
+  기본값 {'n_estimators': 200, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}: 0.7735 ± 0.0326 (54개 중 8위)
+  일관성: 격자의 기본값 fold별 [0.7325, 0.7675, 0.7611, 0.7743, 0.8322] vs E7 RF [0.7325, 0.7675, 0.7611, 0.7743, 0.8322] → 같다
+  최고 {'n_estimators': 300, 'max_depth': None, 'min_samples_split': 2, 'class_weight': 'balanced'}: 0.7906 ± 0.0235 | Δ vs 기본값 +0.0171 (기준 0.0326) → 유의한 개선 아님 | 짝지은 fold 차이 [0.0386, 0.0199, 0.0155, 0.0073, 0.0041] (5개 중 5개 fold에서 개선)
+  격자 경계: n_estimators=300 (범위 끝) | max_depth=None은 제한 없음(확장 불필요) | min_samples_split=2는 허용 최솟값 — 확장 여부는 아래 파라미터별 최고값이 범위 끝으로 갈수록 계속 오르는지로 판단
+  파라미터별 최고값: {'n_estimators': {'100': 0.774327485380117, '200': 0.7849707602339181, '300': 0.7905847953216375}, 'max_depth': {'10': 0.5441520467836257, '20': 0.7849707602339181, 'None': 0.7905847953216375}, 'min_samples_split': {'2': 0.7905847953216375, '5': 0.7792982456140352, '10': 0.7577777777777779}, 'class_weight': {'None': 0.7735087719298245, 'balanced': 0.7905847953216375}}
+
+## E10-binary-rf-tuned: {'n_estimators': 300, 'max_depth': None, 'min_samples_split': 2, 'class_weight': 'balanced'}
+    fold 0: fit 20880 / val 5220  fit 4s predict 0s
+    fold 1: fit 20880 / val 5220  fit 3s predict 0s
+    fold 2: fit 20880 / val 5220  fit 3s predict 0s
+    fold 3: fit 20880 / val 5220  fit 3s predict 0s
+    fold 4: fit 20880 / val 5220  fit 3s predict 0s
+  ROC-AUC 0.9893 (fold std 0.0010)  PR-AUC 0.9939  | pooled best TPR@FPR≤0.1/1/5% 0.4709 / 0.7904 / 0.9433  | per-fold TPR@FPR≤1% 0.7906 ± 0.0235
+  [E10-binary-rf-tuned-argmax] TPR 0.9832  FPR 0.1082  precision 0.9452  macro_f1 0.9455  | det_TPR 0.9832  wrong_site 0 (0.00%)  FN 288  FP 974  | fold std TPR 0.0021 FPR 0.0073
+      -1 행(실제 unmon 9000): -1로 8026, mon으로 974 (FP가 많은 사이트 [(1, 974)])
+      -1 열(-1로 예측된 mon): 288 = FN
+  [E10-binary-rf-tuned-fpr0.1] TPR 0.4799  FPR 0.0012  precision 0.9987  macro_f1 0.6585  | det_TPR 0.4799  wrong_site 0 (0.00%)  FN 8893  FP 11  | fold std TPR 0.0215 FPR 0.0009
+      -1 행(실제 unmon 9000): -1로 8989, mon으로 11 (FP가 많은 사이트 [(1, 11)])
+      -1 열(-1로 예측된 mon): 8893 = FN
+  [E10-binary-rf-tuned-fpr1] TPR 0.7906  FPR 0.0098  precision 0.9935  macro_f1 0.8549  | det_TPR 0.7906  wrong_site 0 (0.00%)  FN 3580  FP 88  | fold std TPR 0.0172 FPR 0.0034
+      -1 행(실제 unmon 9000): -1로 8912, mon으로 88 (FP가 많은 사이트 [(1, 88)])
+      -1 열(-1로 예측된 mon): 3580 = FN
+  [E10-binary-rf-tuned-fpr5] TPR 0.9429  FPR 0.0492  precision 0.9733  macro_f1 0.9406  | det_TPR 0.9429  wrong_site 0 (0.00%)  FN 976  FP 443  | fold std TPR 0.0057 FPR 0.0077
+      -1 행(실제 unmon 9000): -1로 8557, mon으로 443 (FP가 많은 사이트 [(1, 443)])
+      -1 열(-1로 예측된 mon): 976 = FN
+
+######## multi ########
+  격자 탐색 1390s. 상위 8개 (TPR@FPR≤1% fold 평균 ± sd | macro F1 | fit s/fold):
+    {n_estimators=300, max_depth=None, min_samples_split=2, class_weight=None}  0.8962 ± 0.0148 | 0.9339 | 6.9
+    {n_estimators=200, max_depth=None, min_samples_split=2, class_weight=None}  0.8951 ± 0.0122 | 0.9316 | 4.5
+    {n_estimators=100, max_depth=None, min_samples_split=2, class_weight=None}  0.8921 ± 0.0128 | 0.9286 | 2.3
+    {n_estimators=300, max_depth=20, min_samples_split=2, class_weight=None}  0.8894 ± 0.0164 | 0.9306 | 6.6
+    {n_estimators=200, max_depth=20, min_samples_split=2, class_weight=None}  0.8867 ± 0.0158 | 0.9302 | 4.4
+    {n_estimators=300, max_depth=None, min_samples_split=5, class_weight=None}  0.8867 ± 0.0148 | 0.9291 | 6.6
+    {n_estimators=200, max_depth=None, min_samples_split=5, class_weight=None}  0.8836 ± 0.0146 | 0.9278 | 4.5
+    {n_estimators=300, max_depth=20, min_samples_split=5, class_weight=None}  0.8796 ± 0.0200 | 0.9254 | 6.7
+  기본값 {'n_estimators': 200, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}: 0.8951 ± 0.0122 (54개 중 2위)
+  일관성: 격자의 기본값 fold별 [0.9041, 0.9003, 0.898, 0.902, 0.8711] vs E7 RF [0.9041, 0.9003, 0.898, 0.902, 0.8711] → 같다
+  최고 {'n_estimators': 300, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}: 0.8962 ± 0.0148 | Δ vs 기본값 +0.0011 (기준 0.0122) → 유의한 개선 아님 | 짝지은 fold 차이 [0.0029, -0.0012, 0.0058, 0.002, -0.0041] (5개 중 3개 fold에서 개선)
+  격자 경계: n_estimators=300 (범위 끝) | max_depth=None은 제한 없음(확장 불필요) | min_samples_split=2는 허용 최솟값 — 확장 여부는 아래 파라미터별 최고값이 범위 끝으로 갈수록 계속 오르는지로 판단
+  파라미터별 최고값: {'n_estimators': {'100': 0.8921052631578947, '200': 0.8950877192982455, '300': 0.8961988304093568}, 'max_depth': {'10': 0.5871929824561404, '20': 0.8893567251461988, 'None': 0.8961988304093568}, 'min_samples_split': {'2': 0.8961988304093568, '5': 0.8866666666666665, '10': 0.8700584795321638}, 'class_weight': {'None': 0.8961988304093568, 'balanced': 0.8191228070175439}}
+
+## E10-multi-rf-tuned: {'n_estimators': 300, 'max_depth': None, 'min_samples_split': 2, 'class_weight': None}
+    fold 0: fit 20880 / val 5220  fit 8s predict 0s
+    fold 1: fit 20880 / val 5220  fit 8s predict 0s
+    fold 2: fit 20880 / val 5220  fit 7s predict 0s
+    fold 3: fit 20880 / val 5220  fit 7s predict 0s
+    fold 4: fit 20880 / val 5220  fit 7s predict 0s
+  ROC-AUC 0.9928 (fold std 0.0014)  PR-AUC 0.9962  | pooled best TPR@FPR≤0.1/1/5% 0.7861 / 0.8951 / 0.9345  | per-fold TPR@FPR≤1% 0.8962 ± 0.0148
+  [E10-multi-rf-tuned-argmax] TPR 0.8989  FPR 0.0078  precision 0.9756  macro_f1 0.9345  | det_TPR 0.9173  wrong_site 314 (1.84%)  FN 1415  FP 70  | fold std TPR 0.0170 FPR 0.0020
+      -1 행(실제 unmon 9000): -1로 8930, mon으로 70 (FP가 많은 사이트 [(63, 6), (7, 6), (60, 5), (38, 4), (37, 3)])
+      -1 열(-1로 예측된 mon): 1415 = FN
+  [E10-multi-rf-tuned-fpr0.1] TPR 0.7856  FPR 0.0010  precision 0.9973  macro_f1 0.8734  | det_TPR 0.7872  wrong_site 27 (0.16%)  FN 3639  FP 9  | fold std TPR 0.0221 FPR 0.0005
+      -1 행(실제 unmon 9000): -1로 8991, mon으로 9 (FP가 많은 사이트 [(63, 2), (66, 2), (94, 1), (71, 1), (26, 1)])
+      -1 열(-1로 예측된 mon): 3639 = FN
+  [E10-multi-rf-tuned-fpr1] TPR 0.8946  FPR 0.0100  precision 0.9842  macro_f1 0.9359  | det_TPR 0.9037  wrong_site 155 (0.91%)  FN 1647  FP 90  | fold std TPR 0.0184 FPR 0.0022
+      -1 행(실제 unmon 9000): -1로 8910, mon으로 90 (FP가 많은 사이트 [(0, 8), (63, 7), (75, 6), (71, 5), (66, 4)])
+      -1 열(-1로 예측된 mon): 1647 = FN
+  [E10-multi-rf-tuned-fpr5] TPR 0.9352  FPR 0.0489  precision 0.9520  macro_f1 0.9433  | det_TPR 0.9566  wrong_site 366 (2.14%)  FN 742  FP 440  | fold std TPR 0.0153 FPR 0.0037
+      -1 행(실제 unmon 9000): -1로 8560, mon으로 440 (FP가 많은 사이트 [(0, 36), (50, 26), (75, 22), (71, 21), (94, 17)])
+      -1 열(-1로 예측된 mon): 742 = FN
+
+격자 결과: results/ow_e10_grid_{binary,multi}.csv
