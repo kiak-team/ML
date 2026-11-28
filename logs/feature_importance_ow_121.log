@@ -1,0 +1,18 @@
+피처 121개, X (29000, 121), 그룹: count(4) timing(18) order(10) burst(11) cumul(12) early(6) bseq(24) dir50(36)
+fold 0: 기준 TPR@FPR1% 0.8728 (누적 25초)
+fold 1: 기준 TPR@FPR1% 0.8728 (누적 48초)
+fold 2: 기준 TPR@FPR1% 0.8848 (누적 71초)
+fold 3: 기준 TPR@FPR1% 0.9018 (누적 91초)
+fold 4: 기준 TPR@FPR1% 0.8175 (누적 113초)
+
+## 요약 — 피처 121개, 기준 TPR@FPR1% 0.8699 (fold 평균), 섞었을 때 하락 %p (fold 평균 ± sd)
+  @burst   (11개)   50.63 ± 2.57
+  @timing  (18개)   16.62 ± 0.83
+  @cumul   (12개)   15.69 ± 1.76
+  @bseq    (24개)   13.99 ± 1.67
+  @early   ( 6개)    8.61 ± 0.96
+  @order   (10개)    8.46 ± 1.09
+  @dir50   (36개)    2.69 ± 0.74
+  @count   ( 4개)    1.57 ± 0.60
+DONE
+saved figures/fi_ow_group_compare.png
