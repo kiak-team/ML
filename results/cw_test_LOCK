@@ -1,0 +1,1 @@
+2026-11-28 17:30 final=stack:lgbm_tuned+et_base+rf_base+df_base+df_iat+knn_tuned+lr_base compare=['lgbm_tuned', 'et_base', 'rf_base', 'df_base', 'df_iat', 'knn_tuned', 'lr_base']
